@@ -1,7 +1,7 @@
 {
   "name": "mi-biblioteca",
   "version": "1.0.0",
-  "description": "Biblioteca de libros de Google Drive para Kobo",
+  "description": "Biblioteca de libros para Kobo con Express y Google Drive API",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
@@ -12,5 +12,8 @@
   },
   "engines": {
     "node": "18.x"
-  }
+  },
+  "keywords": ["biblioteca", "ebooks", "kobo", "google-drive"],
+  "author": "",
+  "license": "MIT"
 }
