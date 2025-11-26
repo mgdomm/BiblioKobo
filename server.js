@@ -28,7 +28,7 @@ try {
   console.warn('No se encontró la carpeta cover. Se usarán placeholders.');
 }
 
-// CSS estilo Hogwarts mejorado
+// CSS Hogwarts + grid compatible Kobo
 const css = `
 @import url('https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap');
 
@@ -62,22 +62,18 @@ input, select {
   color:#3e2f1c;
 }
 #grid {
-  display:flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap:12px;
+  text-align:center;
 }
 .book {
-  display:flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  align-items: center;
+  display:inline-block;
+  vertical-align: top;
   width:160px;
-  min-height:220px;
+  min-height:240px;
   background: linear-gradient(145deg, #f5e6c4, #e8d7aa);
   padding:8px;
   border-radius:12px;
   border: 2px solid #d4af7f;
+  margin:6px;
   text-align:center;
   word-wrap: break-word;
 }
@@ -96,16 +92,17 @@ input, select {
   margin-bottom:6px;
 }
 .meta a {
-  font-size:12px;
+  font-size:14px;
+  font-weight:bold;
   text-decoration:none;
   color:#d4af7f;
+  display:block;
 }
 .meta a:visited {
   color:#b5895e;
 }
 `;
 
-// Función para listar todos los archivos con paginación
 async function listAllFiles(folderId) {
   let files = [];
   let pageToken = null;
@@ -147,13 +144,17 @@ app.get('/', async (req, res) => {
 
     files = ordenarFiles(files, orden);
 
+    // Determinar altura máxima de la tarjeta
+    const heights = files.map(f => Math.max(150, 150 + 36 + 24)); // imagen + título + botón
+    const maxHeight = Math.max(...heights);
+
     const booksHtml = files.map(file => {
       const cover = coverImages.length ? coverImages[Math.floor(Math.random()*coverImages.length)] : null;
       const imgHtml = cover
         ? `<img src="${cover}" />`
         : `<div style="width:100px;height:150px;background:#8b735e;border-radius:6px;">📖</div>`;
       return `
-<div class="book">
+<div class="book" style="min-height:${maxHeight}px">
   ${imgHtml}
   <div class="title">${file.name}</div>
   <div class="meta"><a href="https://drive.google.com/uc?export=download&id=${file.id}" target="_blank">Descargar</a></div>
