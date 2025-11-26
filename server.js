@@ -18,7 +18,7 @@ const auth = new google.auth.GoogleAuth({
 const drive = google.drive({ version: 'v3', auth });
 
 // ID de la carpeta de Google Drive
-const folderId = '1-4G6gGNtt6KVS90AbWbtH3JlpetHrPEi';
+const folderId = 'TU_ID_DE_CARPETA_AQUI'; // reemplaza con tu carpeta
 
 // Leer imágenes cover locales
 let coverImages = [];
@@ -36,10 +36,9 @@ try {
   console.warn('No se encontró books.json o está mal formado.');
 }
 
-// CSS Hogwarts + grid compatible Kobo con efecto 3D
+// CSS global
 const css = `
 @import url('https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap');
-
 body {
   font-family: 'Garamond', serif;
   margin:10px; padding:0;
@@ -128,6 +127,7 @@ input, select {
 }
 `;
 
+// Función para listar archivos de Drive
 async function listAllFiles(folderId) {
   let files = [];
   let pageToken = null;
@@ -155,7 +155,7 @@ function ordenarFiles(files, criterio) {
   return sorted;
 }
 
-// Ruta principal
+// Página principal: lista de libros
 app.get('/', async (req, res) => {
   try {
     const query = (req.query.buscar || '').toLowerCase();
@@ -173,7 +173,6 @@ app.get('/', async (req, res) => {
     const maxHeight = Math.max(...heights);
 
     const booksHtml = files.map(file => {
-      // Buscar metadata en books.json
       const metadata = bookMetadata.find(b => b.id === file.id);
       const title = metadata ? metadata.title : file.name;
       const author = metadata ? metadata.author : '';
@@ -202,7 +201,7 @@ app.get('/', async (req, res) => {
 </head>
 <body>
 <h1>🪄 Azkaban Reads</h1>
-
+<p><a href="/autores" style="color:#d4af7f; font-weight:bold;">Ver autores</a></p>
 <form method="get" action="/">
   <input type="search" name="buscar" value="${req.query.buscar || ''}" placeholder="Buscar título..." />
   <select name="ordenar" onchange="this.form.submit()">
@@ -221,6 +220,81 @@ app.get('/', async (req, res) => {
     console.error(err);
     res.send('<p>Error al cargar los libros. Revisa permisos del Service Account.</p>');
   }
+});
+
+// Página de autores
+app.get('/autores', (req, res) => {
+  const autores = [...new Set(bookMetadata.map(b => b.author).filter(a => a))].sort();
+  const autoresHtml = autores.map(a => `<li><a href="/autor?name=${encodeURIComponent(a)}">${a}</a></li>`).join('');
+
+  const html = `
+  <!DOCTYPE html>
+  <html lang="es">
+  <head>
+    <meta charset="UTF-8">
+    <title>Autores - Azkaban Reads</title>
+    <style>
+      body { font-family: 'Garamond', serif; background:#1c1a13; color:#f5e6c4; padding:20px;}
+      h1 { font-family: 'MedievalSharp', cursive; font-size:36px; text-shadow: 2px 2px 4px #000; color:#d4af7f; }
+      ul { list-style:none; padding:0; }
+      li { margin:6px 0; }
+      a { color:#b5884e; text-decoration:none; font-weight:bold; }
+      a:hover { color:#fff; }
+    </style>
+  </head>
+  <body>
+    <h1>Autores</h1>
+    <ul>${autoresHtml}</ul>
+    <p><a href="/">← Volver a la lista de libros</a></p>
+  </body>
+  </html>
+  `;
+  res.send(html);
+});
+
+// Página de libros por autor
+app.get('/autor', (req, res) => {
+  const nombreAutor = req.query.name;
+  if(!nombreAutor) return res.redirect('/autores');
+
+  const libros = bookMetadata.filter(b => b.author === nombreAutor);
+
+  const booksHtml = libros.map(book => {
+    const cover = coverImages.length ? coverImages[Math.floor(Math.random()*coverImages.length)] : null;
+    const imgHtml = cover
+      ? `<img src="${cover}" />`
+      : `<div style="width:100px;height:150px;background:#8b735e;border-radius:6px;">📖</div>`;
+
+    return `
+    <div class="book" style="display:inline-block; vertical-align: top; width:160px; margin:6px; text-align:center;">
+      ${imgHtml}
+      <div class="title">${book.title}</div>
+      <div class="meta"><a href="https://drive.google.com/uc?export=download&id=${book.id}" target="_blank">Descargar</a></div>
+    </div>`;
+  }).join('');
+
+  const html = `
+  <!DOCTYPE html>
+  <html lang="es">
+  <head>
+    <meta charset="UTF-8">
+    <title>Libros de ${nombreAutor}</title>
+    <style>
+      body { font-family: 'Garamond', serif; background:#1c1a13; color:#f5e6c4; padding:20px;}
+      h1 { font-family: 'MedievalSharp', cursive; font-size:36px; text-shadow: 2px 2px 4px #000; color:#d4af7f; }
+      .title { font-size:15px; font-weight:700; color:#3e2f1c; font-family: 'MedievalSharp', cursive; margin-bottom:3px; text-shadow: 1px 1px 0 #fff, -1px -1px 0 #000; }
+      .meta a { font-size:14px; font-weight:bold; text-decoration:none; color:#fff; background: #b5884e; padding:6px 12px; border-radius:8px; display:inline-block; margin-top:6px; }
+    </style>
+  </head>
+  <body>
+    <h1>Libros de ${nombreAutor}</h1>
+    <div id="grid">${booksHtml}</div>
+    <p><a href="/autores">← Volver a la lista de autores</a></p>
+  </body>
+  </html>
+  `;
+
+  res.send(html);
 });
 
 app.listen(PORT, ()=>console.log(`Servidor escuchando en puerto ${PORT}`));
