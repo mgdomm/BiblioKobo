@@ -2,10 +2,11 @@ const express = require('express');
 const { google } = require('googleapis');
 const fs = require('fs');
 const path = require('path');
+
 const app = express();
 
 // Servir carpeta cover
-app.use('/cover', express.static('cover'));
+app.use('/cover', express.static(path.join(__dirname, 'cover')));
 
 // ID de la carpeta pública de Google Drive
 const folderId = '1-4G6gGNtt6KVS90AbWbtH3JlpetHrPEi';
@@ -14,7 +15,7 @@ const PORT = process.env.PORT || 3000;
 // Leer imágenes cover locales
 let coverImages = [];
 try {
-  coverImages = fs.readdirSync(path.join(__dirname,'cover')).map(f => `/cover/${f}`);
+  coverImages = fs.readdirSync(path.join(__dirname, 'cover')).map(f => `/cover/${f}`);
 } catch(err) {
   console.warn('No se encontró la carpeta cover. Se usarán placeholders.');
 }
@@ -53,12 +54,24 @@ h1 {
   background:#e0d6c3;
 }
 
-.titulo { font-family: 'OfficinaSansMediumC', sans-serif; font-size:13px; color:#3e3a36; font-weight:500; flex-grow:1; overflow:hidden; text-overflow:ellipsis; }
+.titulo { 
+  font-family: 'OfficinaSansMediumC', sans-serif; 
+  font-size:13px; color:#3e3a36; font-weight:500; 
+  flex-grow:1; overflow:hidden; text-overflow:ellipsis; 
+}
 
-.meta a { padding:3px 8px; border-radius:4px; text-decoration:none; background:#c49a6c; color:#fff; font-size:11px; }
+.meta a { 
+  padding:3px 8px; border-radius:4px; text-decoration:none; 
+  background:#c49a6c; color:#fff; font-size:11px; 
+}
+
 .meta a:hover { background:#a67c4e; }
 
-input, select { margin-top:8px; padding:6px 10px; border-radius:15px; border:1px solid #6b5e4d; width:90%; font-size:14px; background:#f5f3ef; color:#3e3a36; }
+input, select { 
+  margin-top:8px; padding:6px 10px; border-radius:15px; 
+  border:1px solid #6b5e4d; width:90%; font-size:14px; 
+  background:#f5f3ef; color:#3e3a36; 
+}
 `;
 
 // Ruta principal
@@ -99,6 +112,7 @@ const grid = document.getElementById('grid');
 const input = document.getElementById('buscar');
 const ordenar = document.getElementById('ordenar');
 
+// Función para renderizar libros
 function renderFiles(list) {
   grid.innerHTML = list.map(file => {
     const cover = covers.length ? covers[Math.floor(Math.random()*covers.length)] : null;
@@ -107,11 +121,14 @@ function renderFiles(list) {
 <div class="libro">
   \${imgHtml}
   <div class="titulo">\${file.name}</div>
-  <div class="meta"><a href="https://drive.google.com/uc?export=download&id=\${file.id}" target="_blank">Descargar</a></div>
+  <div class="meta">
+    <a href="https://drive.google.com/uc?export=download&id=\${file.id}" target="_blank">Descargar</a>
+  </div>
 </div>\`;
   }).join('');
 }
 
+// Función para ordenar libros
 function ordenarFiles(criteria) {
   let sorted = [...files];
   if(criteria==='alfabetico') sorted.sort((a,b)=> a.name.localeCompare(b.name));
@@ -123,19 +140,20 @@ function ordenarFiles(criteria) {
 // Render inicial
 renderFiles(ordenarFiles('alfabetico'));
 
-// Eventos
+// Eventos de búsqueda y orden
 input.addEventListener('input', e => {
   const q = e.target.value.toLowerCase();
-  renderFiles(ordenarFiles(ordenar.value).filter(f=>f.name.toLowerCase().includes(q)));
+  renderFiles(ordenarFiles(ordenar.value).filter(f => f.name.toLowerCase().includes(q)));
 });
 
 ordenar.addEventListener('change', e => {
   const q = input.value.toLowerCase();
-  renderFiles(ordenarFiles(ordenar.value).filter(f=>f.name.toLowerCase().includes(q)));
+  renderFiles(ordenarFiles(ordenar.value).filter(f => f.name.toLowerCase().includes(q)));
 });
 </script>
 </body>
-</html>`;
+</html>
+`;
 
     res.send(html);
   } catch(err) {
@@ -144,4 +162,4 @@ ordenar.addEventListener('change', e => {
   }
 });
 
-app.listen(PORT, ()=>console.log(`Servidor escuchando en puerto ${PORT}`));
+app.listen(PORT, () => console.log(`Servidor escuchando en puerto ${PORT}`));
