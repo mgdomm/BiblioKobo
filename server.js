@@ -53,7 +53,7 @@ body {
   text-align:center;
 }
 h1 {
-  font-size:56px;
+  font-size:112px;
   font-family: 'MedievalSharp', cursive;
   color:#d4af7f;
   margin:10px 0;
