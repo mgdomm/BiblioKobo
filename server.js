@@ -28,22 +28,25 @@ try {
   console.warn('No se encontró la carpeta cover. Se usarán placeholders.');
 }
 
-// CSS estilo Hogwarts mágico
+// CSS estilo Hogwarts mejorado
 const css = `
+@import url('https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap');
+
 body {
   font-family: 'Garamond', serif;
   margin:10px; padding:0;
-  background: #1b1912; /* fondo biblioteca antigua */
-  background-image: url('https://i.imgur.com/qZp0rBg.png'); /* sutil textura de pergamino */
+  background:#1c1a13;
+  background-image: url('https://i.imgur.com/qZp0rBg.png');
   background-size: cover;
   color:#f5e6c4;
 }
 h1 {
   text-align:center;
-  font-size:30px;
-  color:#d4af7f; /* dorado viejo */
+  font-size:45px;
+  font-family: 'MedievalSharp', cursive;
+  color:#d4af7f;
   margin-bottom:15px;
-  text-shadow: 2px 2px 4px #000;
+  text-shadow: 2px 2px 6px #000;
 }
 form {
   text-align:center;
@@ -58,46 +61,51 @@ input, select {
   background:#f5e6c4;
   color:#3e2f1c;
 }
+#grid {
+  display:flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap:12px;
+}
 .book {
-  display:inline-block;
-  width:100px;
-  height:160px;
-  margin:6px;
-  vertical-align:top;
+  display:flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  width:160px;
+  min-height:220px;
   background: linear-gradient(145deg, #f5e6c4, #e8d7aa);
-  padding:5px;
+  padding:8px;
   border-radius:12px;
+  border: 2px solid #d4af7f;
   text-align:center;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.3), inset 0 0 6px rgba(255,255,255,0.2);
-  position: relative;
-  clip-path: polygon(
-    2% 0%, 98% 0%, 100% 3%, 100% 97%, 98% 100%, 2% 100%, 0% 97%, 0% 3%
-  );
+  word-wrap: break-word;
 }
 .book img {
-  width:80px;
-  height:120px;
-  display:block;
-  margin:0 auto 5px;
+  width:100px;
+  height:150px;
   border-radius:6px;
   object-fit:cover;
   filter: sepia(0.4) contrast(1.1) brightness(0.95);
+  margin-bottom:6px;
 }
 .title {
-  font-size:12px;
+  font-size:14px;
   color:#3e2f1c;
-  overflow:hidden;
-  height:36px;
+  font-family: 'MedievalSharp', cursive;
+  margin-bottom:6px;
 }
 .meta a {
-  display:block;
-  margin-top:3px;
-  font-size:11px;
+  font-size:12px;
   text-decoration:none;
   color:#d4af7f;
 }
+.meta a:visited {
+  color:#b5895e;
+}
 `;
 
+// Función para listar todos los archivos con paginación
 async function listAllFiles(folderId) {
   let files = [];
   let pageToken = null;
@@ -125,6 +133,7 @@ function ordenarFiles(files, criterio) {
   return sorted;
 }
 
+// Ruta principal
 app.get('/', async (req, res) => {
   try {
     const query = (req.query.buscar || '').toLowerCase();
@@ -142,7 +151,7 @@ app.get('/', async (req, res) => {
       const cover = coverImages.length ? coverImages[Math.floor(Math.random()*coverImages.length)] : null;
       const imgHtml = cover
         ? `<img src="${cover}" />`
-        : `<div style="width:80px;height:120px;background:#8b735e;margin:0 auto;border-radius:4px;">📖</div>`;
+        : `<div style="width:100px;height:150px;background:#8b735e;border-radius:6px;">📖</div>`;
       return `
 <div class="book">
   ${imgHtml}
@@ -156,11 +165,11 @@ app.get('/', async (req, res) => {
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Mi Biblioteca Hogwarts</title>
+<title>Azkaban Reads</title>
 <style>${css}</style>
 </head>
 <body>
-<h1>🪄 Mi Biblioteca Hogwarts</h1>
+<h1>🪄 Azkaban Reads</h1>
 
 <form method="get" action="/">
   <input type="search" name="buscar" value="${req.query.buscar || ''}" placeholder="Buscar título..." />
