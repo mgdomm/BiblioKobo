@@ -18,7 +18,7 @@ const auth = new google.auth.GoogleAuth({
 const drive = google.drive({ version: 'v3', auth });
 
 // ID de la carpeta de Google Drive
-const folderId = 'TU_ID_DE_CARPETA_AQUI'; // reemplaza con tu carpeta
+const folderId = '1-4G6gGNtt6KVS90AbWbtH3JlpetHrPEi';
 
 // Leer imágenes cover locales
 let coverImages = [];
