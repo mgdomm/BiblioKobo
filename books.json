@@ -1,1 +1,782 @@
+{
+    "id": "17En7BBYuLawoNoLgaS2uucrBGburTSZ8",
+    "title": "Wilder",
+    "author": "Rebecca Yarros"
+  },
+  {
+    "id": "1FMQ_X0coWT-naS_bx43PNz5vPTWn0YT7",
+    "title": "Un destino teñido de sangre",
+    "author": "Danielle L. Jensen"
+  },
+  {
+    "id": "1-K_1raa6_b-M-mirI3gSfe6oCblTfS1h",
+    "title": "Un destino teñido de sangre",
+    "author": "Danielle L. Jensen"
+  },
+  {
+    "id": "1GLdLBbXd-Zti27RHBLG4eRFBlY4bh0y1",
+    "title": "Un laberinto de traiciones oscuras",
+    "author": "Lexi Ryan"
+  },
+  {
+    "id": "14UfNxVAF-NUFU67Jrjav5SP0zijFUrSZ",
+    "title": "La corte de los cuchillos rotos",
+    "author": "Anna Smith Spark"
+  },
+  {
+    "id": "1ZGhbVgdPt9XNaaTV80ffmgU8bBxzeRHq",
+    "title": "Un Reino De Promesas Malditas",
+    "author": "Lexi Ryan"
+  },
+  {
+    "id": "1y16fIFjEWyBA1aUrun2xhuJoXkjehx0R",
+    "title": "El reino del puente",
+    "author": "Danielle L. Jensen"
+  },
+  {
+    "id": "1-xQl4uhRXygflxvJT2u77BCrMyd1pnQJ",
+    "title": "Novia",
+    "author": "Ali Hazelwood"
+  },
+  {
+    "id": "1mrit8I2aXK34phaFF5vkHoXJXYTZjAZa",
+    "title": "Las chicas Gilmore",
+    "author": "Cathy East Dubowsky"
+  },
+  {
+    "id": "1x6S0NH3xP_fQWCZrQfgnfasr-TCUerJm",
+    "title": "Más alto que el deseo",
+    "author": "Rebecca Yarros"
+  },
+  {
+    "id": "1umZrMTvSUxEVCic_9CSpuNcscZ1O1G1L",
+    "title": "Más fuerte que el peligro",
+    "author": "Rebecca Yarros"
+  },
+  {
+    "id": "106lic5gds3CWGRmUy4uYuSfEAnv9srRY",
+    "title": "Mas intenso que el placer",
+    "author": "Rebecca Yarros"
+  },
+  {
+    "id": "1WCFJhEnS8pp25TJbxRutwIxE9gG4PL2P",
+    "title": "Arianne",
+    "author": "George R R Martin"
+  },
+  {
+    "id": "1-vB2bI9XHlJDzDFU7n8FRQSGy-8tyv05",
+    "title": "Imperio de Fuego Azul",
+    "author": "Lucia Cerezo"
+  },
+  {
+    "id": "1-n75YakYuj0km8uEFTPmHLj45B8FvY12",
+    "title": "El verano en que me enamore",
+    "author": "Jenny Han"
+  },
+  {
+    "id": "1-guua-FczhYcaG9NClMi2ROCa45YoNv-",
+    "title": "Siempre nos quedara el verano",
+    "author": "Jenny Han"
+  },
+  {
+    "id": "1-d3beHqyHK0ulScANojC3Y8MXwbneq9r",
+    "title": "El verano en que me enamore",
+    "author": "Jenny Han"
+  },
+  {
+    "id": "1-c0bKEOROywNqkpPqGGv6HrxpDvS5Cgp",
+    "title": "Imperio de Fuego Azul",
+    "author": "Lucia Cerezo"
+  },
+  {
+    "id": "1-XgP6SfX-neTbC9VvvoKW_9weLhfHzMH",
+    "title": "La letra escarlata",
+    "author": "Nathaniel Hawthorne"
+  },
+  {
+    "id": "1-PtiaxrzreNh2AvX_gbyDUSlc-16B8pv",
+    "title": "The Wonderful Wizard of Oz",
+    "author": "Lyman Frank Baum"
+  },
+  {
+    "id": "10-rtMRfdNRTRDJD6uuyXb6J5AyOgL3wU",
+    "title": "The Emerald City of Oz",
+    "author": "Lyman Frank Baum"
+  },
+  {
+    "id": "1-JRxNHOFFw2rMT4O8rV9R3bSBlxpqHmd",
+    "title": "Ozma de Oz",
+    "author": "Lyman Frank Baum"
+  },
+  {
+    "id": "1-GXmS7AjYU73RFHzPdgV7O1gae8_4t9k",
+    "title": "El País de Oz",
+    "author": "Lyman Frank Baum"
+  },
+  {
+    "id": "1-DUWQXet4dTAeOXs18rRS8F2_VFrPMpp",
+    "title": "The Wonderful Wizard of Oz",
+    "author": "Lyman Frank Baum"
+  },
+  {
+    "id": "10KdsInd-9zf0LtLijf_CQ0yOQA_XCj1U",
+    "title": "El Mago de Oz Ilustrado",
+    "author": "Lyman Frank Baum"
+  },
+  {
+    "id": "10BqR84yihK4mzTlsAPb42nCE43VplgUx",
+    "title": "Visiones de Carne y Sangre",
+    "author": "Jennifer L Armentrout"
+  },
+  {
+    "id": "1-D468bUq-BeF36PyZEjjkviDTeECX2Rt",
+    "title": "Un alma de ceniza y sangre",
+    "author": "Jennifer L Armentrout"
+  },
+  {
+    "id": "1-zoa_qKuVaN086OVio713kxrZSNM29_L",
+        "title": "La guerra de las dos reinas",
+    "author": "Jennifer L Armentrout"
+  },
+  {
+    "id": "1-wqGSt7OhoAoTraMMXiuy-hzcqCjJjYi",
+        "title": "Una corona de huesos dorados",
+    "author": "Jennifer L Armentrout"
+  },
+  {
+    "id": "1-wS9j1pFAfib6u2R-ouwemNvtxvlXUEJ",
+        "title": "Un reino de carne y fuego",
+    "author": "Jennifer L Armentrout"
+  },
+  {
+    "id": "109JdTQshSFHtDKFNxRtPHU3akyDc85pO",
+    "title": "De Sangre y Cenizas",
+    "author": "Jennifer L Armentrout"
+  },
+  {
+    "id": "106YoD2LGfHbYXcoGpR837IMtuojakWPZ",
+    "title": "Quicksilver",
+    "author": "Callie Hart"
+  },
+  {
+    "id": "105tUf2NhX_ZFvWPBiukp-nASyrWmoINw",
+    "title": "Imperio de Fuego Azul",
+    "author": "Lucia Cerezo"
+  },
+  {
+    "id": "10hb1vtz20Zzj5T0einbsRLb13oRNu2aB",
+    "title": "La sexta trampa",
+    "author": "J D Barker"
+  },
+  {
+    "id": "10fEK_6W8a6v-rvCnt0Z_KHrHg6YzrKPK",
+    "title": "La quinta victima",
+    "author": "J D Barker"
+  },
+  {
+    "id": "10e8FXg7LBjLlGqMtYnCp-fTqiDJ2C_W7",
+    "title": "El Cuarto Mono",
+    "author": "J D Barker"
+  },
+  {
+    "id": "10WuoKM4VBD5BS7DO2RRCX4bNO5rir4yY",
+    "title": "Y todo arde",
+    "author": "Kiersten-White"
+  },
+  {
+    "id": "10S0nQESg8hoGUnSn3FyTfllLjF4EQvJY",
+    "title": "Renace de las sombras",
+    "author": "Kiersten-White"
+  },
+  {
+    "id": "10PzA44OY4Ji_Pdsz91Pvs9HnIbmy-bOI",
+    "title": "Hija-De-Las-Tinieblas",
+    "author": "Kiersten-White"
+  },
+  {
+    "id": "10s2ntlDvX1Kmdk18PKxX_F9_BgSLMncT",
+    "title": "Los hijos del rey",
+    "author": "Shelby Mahurin"
+  },
+  {
+    "id": "10rbn81M6ZjLAVgVaEzJnzDbKugfEON_b",
+    "title": "Bruja Blanca",
+    "author": "Shelby Mahurin"
+  },
+  {
+    "id": "10rI2KwMMChhuBUBoTGWbeoYMvxRLmlmV",
+    "title": "Reino de cenizas",
+    "author": "Sarah J Maas"
+  },
+  {
+    "id": "10jvSWPaey8MiOfInREG7O-xnW0PowlOU",
+    "title": "Torre del alba",
+    "author": "Sarah J Maas"
+  },
+  {
+    "id": "10sAMwdE2MOliNubpQ53iJA1spMOa4q6o",
+    "title": "Imperio de tormentas",
+    "author": "Sarah J Maas"
+  },
+  {
+    "id": "11NIG2yngnErKMwqtdnbn_4FUDmAfaz4O",
+    "title": "Reina de sombras",
+    "author": "Sarah J Maas"
+  },
+  {
+    "id": "11MtXPacgBt_7sRF5e1Keb2fRORMsEci1",
+    "title": "Heredera de fuego",
+    "author": "Sarah J Maas"
+  },
+  {
+    "id": "11M-ElOd20G_m1mr3eWg2PNKg9GQ4NZFl",
+    "title": "Corona de medianoche",
+    "author": "Sarah J Maas"
+  },
+  {
+    "id": "11Iaauo4ENUv-j99heDJwHytGQs6AxvsR",
+    "title": "La espada de la asesina",
+    "author": "Sarah J Maas"
+  },
+  {
+    "id": "11ETXy8yJs5YgijqnPl3fx5lGudq2sB2W",
+    "title": "Trono de cristal",
+    "author": "Sarah J Maas"
+  },
+  {
+    "id": "117hpINZ--We3ORaS21Wl8P6PvU-qS6sh",
+    "title": "Indómita",
+    "author": "Raisa Martin Espinosa"
+  },
+  {
+    "id": "1166pUTkkMH3kPLmQ_lfXNwdjyyM345Rz",
+    "title": "El despertar del Fuegoeterno",
+    "author": "Penn Cole"
+  },
+  {
+    "id": "1126mmBhZs0CiUUg5F1s2ii60aZoyT0o_",
+    "title": "El Resplandor del Fuegoeterno",
+    "author": "Penn Cole"
+  },
+  {
+    "id": "111EyOUR5gR-zCCtHoP_dIJXUo2oGzKqn",
+    "title": "La llama del Fuegoeterno",
+    "author": "Penn Cole"
+  },
+  {
+    "id": "13RFDrYJsMFgmFBt8P-u1Vk-HzZJhz1Bf",
+    "title": "Ocaso",
+    "author": "Nerea Llanes"
+  },
+  {
+    "id": "11-A-T9ELvebO4Y48fKMbM9k9mRF9u_qH",
+    "title": "La Caída Del Rey",
+    "author": "Marie Niehoff"
 
+  },
+  {
+    "id": "13IMWhX2KessLw6Ss8he9DYzCLnqE1iYF",
+    "title": "Inquebrantable",
+    "author": "Raisa Martin Espinosa"
+  },
+  {
+    "id": "13A57JQney9wAY6SUVsnzaIGMeqt42fLP",
+    "title": "La búsqueda del asesino",
+    "author": "Robin Hobb"
+  },
+  {
+    "id": "137NLoRtID8p7I0uoOJJOkg5p4bASNakw",
+    "title": "Asesino Real",
+    "author": "Robin Hobb"
+  },
+  {
+    "id": "136p41oyXcBPDjEK7RnOeWyf1a0Y7D7ma",
+    "title": "Aprendiz de asesino",
+    "author": "Robin Hobb"
+  },
+  {
+    "id": "133qydoo4dKAzyr8_Wwj7D2q4ToEpsqV6",
+    "title": "El dragon renacido",
+    "author": "Robert Jordan"
+  },
+  {
+    "id": "12r2o6Ai413FbelvtzAZXoRPb-frQL0wy",
+    "title": "El despertar de los heroes",
+    "author": "Robert Jordan"
+  },
+  {
+    "id": "12pNpEV9u1jsNMdO-yaxOpvGgyGl6Tnre",
+    "title": "Un recuerdo de luz",
+    "author": "Robert Jordan"
+  },
+  {
+    "id": "12_uXmU9GehD7s8zEfEe-8Fnev_GFwZ9U",
+    "title": "Torres de medianoche",
+    "author": "Robert Jordan"
+  },
+  {
+    "id": "12_IH2qDFv52F9dG726rSt5D9VMb596eQ",
+    "title": "La tormenta",
+    "author": "Robert Jordan"
+  },
+  {
+    "id": "12Pv_mpk8dOC4ypvox2-iqH00DcdLESyg",
+    "title": "Cuchillo de sueños",
+    "author": "Robert Jordan"
+  },
+  {
+    "id": "12NJmpPPKyCMp6ZPRp8nk8rs5SEbIzO_h",
+    "title": "Encrucijada en el crepusculo",
+    "author": "Robert Jordan"
+  },
+  {
+    "id": "12BTUq7e1EzYY0cwZwuSwfYmxLzjKMFbC",
+    "title": "El corazon del invierno",
+    "author": "Robert Jordan"
+  },
+  {
+    "id": "1279OXQiuqkiQ3DrZ6oJZY4g9K1j63rFN",
+    "title": "El camino de dagas",
+    "author": "Robert Jordan"
+  },
+  {
+    "id": "126zek3I19hsA-QGm3KU2Zdr1bqDe3wow",
+    "title": "La corona de espadas",
+    "author": "Robert Jordan"
+  },
+  {
+    "id": "125To_xl-FG-xdBFLD_6W9OyIhwOGlB-n",
+    "title": "El senor del caos",
+    "author": "Robert Jordan"
+  },
+  {
+    "id": "11ln9ZDmUIFm5zHI1owz7PQLeUyxGGjeo",
+    "title": "Cielo en llamas",
+    "author": "Robert Jordan"
+  },
+  {
+    "id": "11j6OnmxnTjgGeewBdbblWs0ltiG96KLO",
+    "title": "El aumento de la sombra",
+    "author": "Robert Jordan"
+  },
+  {
+    "id": "11dyrKk6uJK3dhQxcHpIE51EPE_E9tbZ3",
+    "title": "El ojo del mundo",
+    "author": "Robert Jordan"
+  },
+  {
+    "id": "12ADMLHLOJ0EUAVlht0aakMwdj04_oj_r",
+    "title": "Nueva primavera",
+    "author": "Robert Jordan"
+  },
+  {
+    "id": "11OFXKr4oOZXQuu8d1PGHovlcp34ydQEJ",
+    "title": "Fuego y sangre",
+    "author": "George R R Martin"
+  },
+  {
+    "id": "11XS5XEO7DFDZaZn9f5D_Uk_GPvgvphYq",
+    "title": "El caballero misterioso",
+    "author": "George R R Martin"
+  },
+  {
+    "id": "14-nbWJ4sCQoGllzc-jdrzlH5rX9qccgJ",
+    "title": "La espada leal",
+    "author": "George R R Martin"
+  },
+  {
+    "id": "13xbY4Cvqx7XtoYTCINqMc9Wk4LMp-NVQ",
+    "title": "El caballero errante",
+    "author": "George R R Martin"
+  },
+  {
+    "id": "13neB5_2sTGMedbUijZEdQESuOB4nUwb0",
+    "title": "El caballero de los Siete Reinos",
+    "author": "George R R Martin"
+  },
+  {
+    "id": "13gQL-ImJngxNhIVshtHFjyY2HgnZ8Zt-",
+    "title": "El caballero de los Siete Reinos",
+    "author": "George R R Martin"
+  },
+  {
+    "id": "13g2uSlXI5NkL3TwgBc9o6VkeuGrYiIEc",
+    "title": "Arianne",
+    "author": "George R R Martin"
+  },
+  {
+    "id": "13ccHohC0D9yk-QSMAhC09OSt3T6YKXqO",
+    "title": "Danza de dragones",
+    "author": "George R R Martin"
+  },
+  {
+    "id": "13cK7d2Azv_bxc5ezsdy0w-j7ncoMiTjQ",
+    "title": "Festin de cuervos",
+    "author": "George R R Martin"
+  },
+  {
+    "id": "13VjxpzfEBbnQU6ItFSs1hkqu2ZHVrxbx",
+    "title": "Tormenta de espadas Ed. ilustrada",
+    "author": "George R R Martin"
+  },
+  {
+    "id": "1413NYJCLGdqwLaOXtmrtaOX_wW_bK1z5",
+    "title": "Choque de reyes Ed. ilustrada",
+    "author": "George R R Martin"
+  },
+  {
+    "id": "14DpX0vQlHlIW98NYX-L9RMy5f1-2cTM2",
+    "title": "Juego de tronos Ed. ilustrada",
+    "author": "George R R Martin"
+  },
+  {
+    "id": "14ett6ZzMGggdvtESPdChkT4zvS0gSiLe",
+    "title": "La dama del lago",
+    "author": "Andrzej Sapkowski"
+  },
+  {
+    "id": "14e7P_JrArp4oZp05GgXieGImJIJbG6RD",
+    "title": "La torre de la golondrina",
+    "author": "Andrzej Sapkowski"
+  },
+  {
+    "id": "14dvOJC6V3fvuybXJuUhA3kKF9347hK4w",
+    "title": "Bautismo de fuego",
+    "author": "Andrzej Sapkowski"
+  },
+  {
+    "id": "14UxX-l-U7gY_v-SAvsv59dMcyopG5bWW",
+    "title": "Tiempo de odio",
+    "author": "Andrzej Sapkowski"
+  },
+  {
+    "id": "14PoKbvVH39KLFfA7Oa4DbMDvbsvkzp_6",
+    "title": "La sangre de los Elfos",
+    "author": "Andrzej Sapkowski"
+  },
+  {
+    "id": "14P2Kh10FlEury8FoXYmBlim63R70XNBD",
+    "title": "La espada del destino",
+    "author": "Andrzej Sapkowski"
+  },
+  {
+    "id": "14MOl0m9QBnKn5gnfP40Hg3b-ETdhxhPG",
+    "title": "El ultimo deseo",
+    "author": "Andrzej Sapkowski"
+  },
+  {
+    "id": "14KwG31anHnbi8QrcG9Y9sZFhls2p_GuQ",
+    "title": "Estacion de tormentas",
+    "author": "Andrzej Sapkowski"
+  },
+  {
+    "id": "14JL7EG2U0NeSol6d7rzctDRDcFrB7o8y",
+    "title": "Jonathan Strange y el Sr. Norrell",
+    "author": "Andrzej Sapkowski"
+  },
+  {
+    "id": "15BH0pz-0Ai0FCH_lX07VXriIFt5zjOBe",
+    "title": "El cielo de piedra",
+    "author": "N K Jemisin"
+  },
+  {
+    "id": "154QC5lf88SCV5Zr4usqyDVO_iU_AY3rh",
+    "title": "El Portal de los Obeliscos",
+    "author": "N K Jemisin"
+  },
+  {
+    "id": "153jJVRlPeOkGZpwbkYFf_aih6WRhMT2_",
+    "title": "La quinta estacion",
+    "author": "N K Jemisin"
+  },
+  {
+    "id": "152_QP0-e-RfRP1i-AkSyYVTEkFVfFU7W",
+    "title": "La sabiduria de las multitudes",
+    "author": "Joe Abercrombie"
+  },
+  {
+    "id": "150oFZ6eJ3Mb1UddVsZ-aCCImVSFpNrYk",
+    "title": "El problema de la paz",
+    "author": "Joe Abercrombie"
+  },
+  {
+    "id": "14zBo3svS8WIbb9AnECHBm5Ee6BNIEuTd",
+    "title": "Un poco de odio",
+    "author": "Joe Abercrombie"
+  },
+  {
+    "id": "14oylNI4lMaOO7ChRUYzZ3KsfmMbzsT9k",
+    "title": "En el otro viento",
+    "author": "Ursula K Le Guin"
+  },
+  {
+    "id": "14kviIG4BGYV_IQLOYcczMC6BtgyryiZ0",
+    "title": "Historias de Terramar",
+    "author": "Ursula K Le Guin"
+  },
+  {
+    "id": "14iM77wJDytkqth9KBL9SUVmgMmg5DtD3",
+    "title": "Cuentos de Terramar II",
+    "author": "Ursula K Le Guin"
+  },
+  {
+    "id": "15JRDb1N9JKfVHxl1M613YwcDkpuhtHPx",
+    "title": "Cuentos de Terramar I",
+    "author": "Ursula K Le Guin"
+  },
+  {
+    "id": "15Hd9JZfLUc-uJmjRBYyEIm-g0d2r5qWz",
+    "title": "Ruina y ascenso",
+    "author": "Leigh Bardugo"
+  },
+  {
+    "id": "15CS7j5_LEx8qko3_uO3PtlIPmRqgsZvb",
+    "title": "Asedio y tormenta",
+    "author": "Leigh Bardugo"
+  },
+  {
+    "id": "15PEKLtonkP4Br9nnDbN_4yNVw0os-XRb",
+    "title": "Sombra y hueso",
+    "author": "Leigh Bardugo"
+  },
+  {
+    "id": "15PBSUvAPWjLF6PSzdobdO_aF757yCuq3",
+    "title": "Fearless",
+    "author": "Lauren Roberts"
+  },
+  {
+    "id": "15WkNPXTnNOoLTTenIq8VC-9x0ii6ba8k",
+    "title": "Haunting Adeline",
+    "author": "H D Carlton"
+  },
+  {
+    "id": "15WQU_6vXEZbkg-ZgJNPaI-m4i6ZWhtuy",
+    "title": "Te encontraré",
+    "author": "H D Carlton"
+  },
+  {
+    "id": "16eEJl2wWGPDWD7X9Y1Ioo2mJjZfKsxcV",
+    "title": "Cenizas de Medianoche",
+    "author": "Lara Adrian"
+  },
+  {
+    "id": "16UW2wdWM3rpP4OQf4hPM09I3acySm38U",
+    "title": "El Beso de Medianoche",
+    "author": "Lara Adrian"
+  },
+  {
+    "id": "16SXr5uM56nk2T8Bi7nW_7YST6XsCdGBL",
+    "title": "Profundidad de la Medianoche",
+    "author": "Lara Adrian"
+  },
+  {
+    "id": "161qWLwhNn1CuDJpJtbQgJYcxsnAdj1z8",
+    "title": "Rebelion a Medianoche",
+    "author": "Lara Adrian"
+  },
+  {
+    "id": "16-34yih7wxKOSlvGqzqSAPQJGzs3FgvZ",
+    "title": "Sombras de Medianoche",
+    "author": "Lara Adrian"
+  },
+  {
+    "id": "15v-t_Pu46hUkBp7RJwPKJOpyGs6PdrBs",
+    "title": "El Beso Carmesí",
+    "author": "Lara Adrian"
+  },
+  {
+    "id": "15u8q9yy088NUAHaNAQpeImCNG-AbqCdC",
+    "title": "Bruma de Medianoche",
+    "author": "Lara Adrian"
+  },
+  {
+    "id": "15rVqWDYfqEHWYlT7F9-ILtwChvsTHNrd",
+    "title": "Las Puertas de la Medianoche",
+    "author": "Lara Adrian"
+  },
+  {
+    "id": "15n83NuT37VqQ26D-9N2xhovQE6TUd1cM",
+    "title": "El Despertar de la Medianoche",
+    "author": "Lara Adrian"
+  },
+  {
+    "id": "15iSiJalin2pJVwxjRMzLQcoKAyG0r3Xv",
+    "title": "Throne of Glass Bonus Scenes and Chapters",
+    "author": "Sarah J Maas"
+  },
+  {
+    "id": "15gDsNm-az8Z1JW9uEYbDRUGdIir4HzMG",
+    "title": "Trono de cristal",
+    "author": "Sarah J Maas"
+  },
+  {
+    "id": "15c8Gv_eElBwVFzuSyl77-oq0lwUQ17Nb",
+    "title": "La prisionera de oro",
+    "author": "Raven Kenedy"
+  },
+  {
+    "id": "15bJcnfO_KZhw6gOehgCvUwMc_3D3PFFN",
+    "title": "Brillo",
+    "author": "Raven Kenedy"
+  },
+  {
+    "id": "15_fHl9wT1YlaHyMaBuT1S1dQF9og8gBu",
+    "title": "Destello",
+    "author": "Raven Kenedy"
+  },
+  {
+    "id": "15ZLWCdy-UC3pXfVaocH_jMpfJepvhs4-",
+    "title": "Harry Potter y El Legado Maldito",
+    "author": "J K Rowling"
+  },
+  {
+    "id": "16nm9Zl3J70ERmAORm41e41GTP-UWhHuc",
+    "title": "Promised in Fire",
+    "author": "Jasmine Walt"
+  },
+  {
+    "id": "16ieJ2W9syhma1saoD3rGsM0vNqbD7W2Y",
+    "title": "Caged in Shadow",
+    "author": "Jasmine Walt"
+  },
+  {
+    "id": "177lw8Z3Clz4nu8cDtrTgRfNz1sMLVQAT",
+    "title": "Forged in Frost",
+    "author": "Jasmine Walt"
+  },
+  {
+    "id": "174cz1_jyYGpzo3lY1zKp2c9sw-KwyyLJ",
+    "title": "Hogwarts una guia incompleta y poco fiable",
+    "author": "J K Rowling"
+  },
+  {
+    "id": "173flml08xrCPX96MIiRrebXWp_-_LzyF",
+    "title": "Harry Potter y Las Reliquias de la Muerte",
+    "author": "J K Rowling"
+  },
+  {
+    "id": "172Pvwfr-EpP5bft1Xzu88rGlmNG1HgXQ",
+    "title": "Harry Potter y El Misterio del Príncipe",
+    "author": "J K Rowling"
+  },
+  {
+    "id": "16zFng7ySeEwv-Y5u-LmYBM3a_jqlx098",
+    "title": "Harry Potter y La Orden del Fénix",
+    "author": "J K Rowling"
+  },
+  {
+    "id": "16r959BSKfSRxQCINayXpu2erxdiiTIig",
+    "title": "Harry Potter y El Cáliz de Fuego",
+    "author": "J K Rowling"
+  },
+  {
+    "id": "17ChqZht8xBLhJ-XpwaA4nXl9NqkaLpeG",
+    "title": "Harry Potter y El Prisionero de Azkaban",
+    "author": "J K Rowling"
+  },
+  {
+    "id": "178KsreY7HOVuk4-V5F6FWrR6XiSM_v1Z",
+    "title": "Harry Potter y La Camara Secreta",
+    "author": "J K Rowling"
+  },
+  {
+    "id": "177yZ-7z7SRIYZZv9PjomnIJhqiBeKA-H",
+    "title": "Harry Potter y La Piedra Filosofal",
+    "author": "J K Rowling"
+  },
+  {
+    "id": "16pCpqXRfM8lSgXTypH69oFyukfs16jep",
+    "title": "Harry Potter (La Precuela)",
+    "author": "J K Rowling"
+  },
+  {
+    "id": "17RfMbHShIX0l681IoXxexsJf9XxLcEHW",
+    "title": "Harry Potter (saga completa)",
+    "author": "J K Rowling"
+  },
+  {
+    "id": "17OA6AkGtaVmX832jZZF1NpgWTic11RQ3",
+    "title": "Casa de Tierra y Sangre",
+    "author": "Sarah J Maas"
+  },
+  {
+    "id": "17NM98hy5DvDrqbCA2JqSUYanleCl3BqV",
+    "title": "Casa de Cielo y Aliento",
+    "author": "Sarah J Maas"
+  },
+  {
+    "id": "17gXalK285hXHF4ud_bVhBKxArGLSfdda",
+    "title": "Casa de Flama y Sombra",
+    "author": "Sarah J Maas"
+  },
+  {
+    "id": "17_iZURx7ubtwt2U3wmstTf0J-ScD5J2r",
+    "title": "Una Corte de Llamas Plateadas",
+    "author": "Sarah J Maas"
+  },
+  {
+    "id": "17ZkZiX8Uuca7i0pLwfn_-ijT7B7lKxGp",
+    "title": "Una Corte de Hielo y Estrellas",
+    "author": "Sarah J Maas"
+  },
+  {
+    "id": "17XizHsFgUoMAEuPM8wsfIJw_X800TRIU",
+    "title": "Una Corte de Alas y Ruina",
+    "author": "Sarah J Maas"
+  },
+  {
+    "id": "17SKJjoJy5ET0W3ah3lSYS3jRLqnW3Jbl",
+    "title": "Una Corte de Niebla y Furia",
+    "author": "Sarah J Maas"
+  },
+  {
+    "id": "17S7GPiUjwXxqxqAqAtYEw_XT78FGv26D",
+    "title": "Una Corte de Rosas y Espinas",
+    "author": "Sarah J Maas"
+  },
+  {
+    "id": "17kTX09doETFYR3AT-qtN2k46AOwBBC0X",
+    "title": "Reckless",
+    "author": "Lauren Roberts"
+  },
+  {
+    "id": "187FBB6vuJZxNOfVcz6andHxBoA2AWHxi",
+    "title": "Reckless",
+    "author": "Lauren Roberts"
+  },
+  {
+    "id": "182do7I8HIP9Ab_7qujv2krvmEPVF-95r",
+    "title": "Powerless",
+    "author": "Lauren Roberts"
+  },
+  {
+    "id": "17wNgvZxKKQmAahQJvffN5Mlq-Ibx4b8w",
+    "title": "Éxtasis",
+    "author": "Tracy Wolff"
+  },
+  {
+    "id": "17u_1_YVdMkO4XU7txzExLPs6qv0gIGe3",
+    "title": "Furia",
+    "author": "Tracy Wolff"
+  },
+  {
+    "id": "189RY5TW779ot9ARWsWxFtChYvsO9dlVC",
+    "title": "Anhelo",
+    "author": "Tracy Wolff"
+  },
+  {
+    "id": "189irWkWBrho6CN2Cf415yrNgKJfm0lth",
+    "title": "Fulgor",
+    "author": "Tracy Wolff"
+  },
+  {
+    "id": "18MgHbNrEezXhEr9pHeguOut7P5WUEycF",
+    "title": "Ansia",
+    "author": "Tracy Wolff"
+  },
+  {
+    "id": "18IHPPD0khd08PadgkeiisLhOpLct_YGI",
+    "title": "Hechizo",
+    "author": "Tracy Wolff"
+  }
+]
