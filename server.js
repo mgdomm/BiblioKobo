@@ -36,7 +36,7 @@ try {
   console.warn('No se encontró books.json o está mal formado.');
 }
 
-// CSS global unificado para todas las tarjetas
+// CSS global compatible con Kobo
 const css = `
 @import url('https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap');
 
@@ -72,11 +72,9 @@ input, select {
   color:#3e2f1c;
 }
 
+/* Grid estilo Kobo: inline-block centrado */
 #grid {
-  display:flex;
-  flex-wrap:wrap;
-  justify-content:center;
-  gap:12px;
+  text-align:center;
 }
 
 .card {
@@ -91,12 +89,6 @@ input, select {
   margin:6px;
   text-align:center;
   word-wrap: break-word;
-  transition: all 0.2s ease;
-}
-
-.card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.5);
 }
 
 .card img {
@@ -104,7 +96,6 @@ input, select {
   height:150px;
   border-radius:6px;
   object-fit:cover;
-  filter: none;
   margin-bottom:6px;
 }
 
@@ -191,127 +182,4 @@ app.get('/', async (req, res) => {
 
     files = ordenarFiles(files, orden);
 
-    const heights = files.map(f => Math.max(150, 150 + 36 + 24));
-    const maxHeight = Math.max(...heights);
-
-    const booksHtml = files.map(file => {
-      const metadata = bookMetadata.find(b => b.id === file.id);
-      const title = metadata ? metadata.title : file.name;
-      const author = metadata ? metadata.author : '';
-
-      const cover = coverImages.length ? coverImages[Math.floor(Math.random()*coverImages.length)] : null;
-      const imgHtml = cover
-        ? `<img src="${cover}" />`
-        : `<div style="width:100px;height:150px;background:#8b735e;border-radius:6px;">📖</div>`;
-
-      return `
-<div class="card" style="min-height:${maxHeight}px">
-  ${imgHtml}
-  <div class="title">${title}</div>
-  ${author ? `<div class="author">${author}</div>` : ''}
-  <div class="meta"><a href="https://drive.google.com/uc?export=download&id=${file.id}" target="_blank">Descargar</a></div>
-</div>`;
-    }).join('');
-
-    const html = `
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<title>Azkaban Reads</title>
-<style>${css}</style>
-</head>
-<body>
-<h1>🪄 Azkaban Reads</h1>
-<p><a href="/autores" style="color:#d4af7f; font-weight:bold;">Ver autores</a></p>
-<form method="get" action="/">
-  <input type="search" name="buscar" value="${req.query.buscar || ''}" placeholder="Buscar título..." />
-  <select name="ordenar" onchange="this.form.submit()">
-    <option value="alfabetico" ${orden==='alfabetico'?'selected':''}>Alfabético</option>
-    <option value="recientes" ${orden==='recientes'?'selected':''}>Más recientes</option>
-  </select>
-</form>
-
-<div id="grid">${booksHtml}</div>
-</body>
-</html>
-`;
-
-    res.send(html);
-  } catch(err) {
-    console.error(err);
-    res.send('<p>Error al cargar los libros. Revisa permisos del Service Account.</p>');
-  }
-});
-
-// Página de autores
-app.get('/autores', (req, res) => {
-  const autores = [...new Set(bookMetadata.map(b => b.author).filter(a => a))].sort();
-  const autoresHtml = autores.map(a => `
-<div class="card" style="min-height:60px; display:flex; align-items:center; justify-content:center;">
-  <a href="/autor?name=${encodeURIComponent(a)}" class="title">${a}</a>
-</div>
-  `).join('');
-
-  const html = `
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<title>Autores - Azkaban Reads</title>
-<style>${css}</style>
-</head>
-<body>
-<h1>Autores</h1>
-<div id="grid">${autoresHtml}</div>
-<p><a href="/">← Volver a la lista de libros</a></p>
-</body>
-</html>
-  `;
-  res.send(html);
-});
-
-// Página de libros por autor
-app.get('/autor', (req, res) => {
-  const nombreAutor = req.query.name;
-  if(!nombreAutor) return res.redirect('/autores');
-
-  const libros = bookMetadata.filter(b => b.author === nombreAutor);
-
-  const booksHtml = libros.map(book => {
-    const cover = coverImages.length ? coverImages[Math.floor(Math.random()*coverImages.length)] : null;
-    const imgHtml = cover
-      ? `<img src="${cover}" />`
-      : `<div style="width:100px;height:150px;background:#8b735e;border-radius:6px;">📖</div>`;
-
-    return `
-<div class="card" style="min-height:240px">
-  ${imgHtml}
-  <div class="title">${book.title}</div>
-  <div class="meta"><a href="https://drive.google.com/uc?export=download&id=${book.id}" target="_blank">Descargar</a></div>
-</div>`;
-  }).join('');
-
-  const html = `
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<title>Libros de ${nombreAutor}</title>
-<style>${css}</style>
-</head>
-<body>
-<h1>Libros de ${nombreAutor}</h1>
-<div id="grid">${booksHtml}</div>
-<p>
-  <a href="/autores" style="margin-right:20px;">← Volver a la lista de autores</a>
-  <a href="/">📚 Libros</a>
-</p>
-</body>
-</html>
-  `;
-
-  res.send(html);
-});
-
-app.listen(PORT, ()=>console.log(`Servidor escuchando en puerto ${PORT}`));
+    const heights
