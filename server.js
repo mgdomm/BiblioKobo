@@ -111,8 +111,21 @@ input, select {
   transform: translateY(-1px);
 }
 .meta a:visited { color:#fff; }
-a.button { display:inline-block; margin:5px; text-decoration:none; padding:3px 6px; background:#b5884e; color:#fff; border-radius:5px; font-size:11px; font-weight:bold; }
-a.button:hover { background:#8b5f2c; }
+a.button { 
+  display:inline-block; 
+  margin:10px; 
+  text-decoration:none; 
+  padding:12px 24px; 
+  background:#b5884e; 
+  color:#fff; 
+  border-radius:10px; 
+  font-size:24px; 
+  font-weight:bold; 
+  box-shadow: inset 0 -3px 5px rgba(0,0,0,0.4), 3px 5px 8px rgba(0,0,0,0.5);
+}
+a.button:hover { 
+  background:#8b5f2c; 
+}
 `;
 
 // Funciones auxiliares
