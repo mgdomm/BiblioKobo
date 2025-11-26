@@ -47,7 +47,7 @@ body {
   text-align:center;
 }
 h1 {
-  font-size:28px;
+  font-size:56px;
   font-family: 'MedievalSharp', cursive;
   color:#d4af7f;
   margin:10px 0;
