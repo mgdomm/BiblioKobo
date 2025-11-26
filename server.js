@@ -28,20 +28,22 @@ try {
   console.warn('No se encontró la carpeta cover. Se usarán placeholders.');
 }
 
-// CSS estilo vintage con bordes irregulares y textura
+// CSS estilo Hogwarts mágico
 const css = `
 body {
-  font-family: sans-serif;
+  font-family: 'Garamond', serif;
   margin:10px; padding:0;
-  background: linear-gradient(120deg, #2b2418, #3a3123);
-  background-image: repeating-linear-gradient(45deg, rgba(255,255,255,0.02) 0px, rgba(255,255,255,0.02) 1px, transparent 1px, transparent 4px);
-  color:#f5f3ef;
+  background: #1b1912; /* fondo biblioteca antigua */
+  background-image: url('https://i.imgur.com/qZp0rBg.png'); /* sutil textura de pergamino */
+  background-size: cover;
+  color:#f5e6c4;
 }
 h1 {
   text-align:center;
-  font-size:28px;
-  color:#d4c0a1;
+  font-size:30px;
+  color:#d4af7f; /* dorado viejo */
   margin-bottom:15px;
+  text-shadow: 2px 2px 4px #000;
 }
 form {
   text-align:center;
@@ -53,22 +55,20 @@ input, select {
   font-size:14px;
   border-radius:8px;
   border:1px solid #a67c4e;
-  background:#f5f3ef;
-  color:#3e3a36;
+  background:#f5e6c4;
+  color:#3e2f1c;
 }
 .book {
   display:inline-block;
   width:100px;
   height:160px;
-  margin:5px;
+  margin:6px;
   vertical-align:top;
-  background: linear-gradient(145deg, #f5f3dc, #e9dfc5);
+  background: linear-gradient(145deg, #f5e6c4, #e8d7aa);
   padding:5px;
   border-radius:12px;
   text-align:center;
-  box-shadow: inset -2px -2px 4px rgba(255,255,255,0.3),
-              inset 2px 2px 6px rgba(0,0,0,0.2),
-              4px 4px 8px rgba(0,0,0,0.25);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3), inset 0 0 6px rgba(255,255,255,0.2);
   position: relative;
   clip-path: polygon(
     2% 0%, 98% 0%, 100% 3%, 100% 97%, 98% 100%, 2% 100%, 0% 97%, 0% 3%
@@ -81,11 +81,11 @@ input, select {
   margin:0 auto 5px;
   border-radius:6px;
   object-fit:cover;
-  box-shadow: inset 0 0 4px rgba(0,0,0,0.2);
+  filter: sepia(0.4) contrast(1.1) brightness(0.95);
 }
 .title {
   font-size:12px;
-  color:#5b3a21;
+  color:#3e2f1c;
   overflow:hidden;
   height:36px;
 }
@@ -94,7 +94,7 @@ input, select {
   margin-top:3px;
   font-size:11px;
   text-decoration:none;
-  color:#c49a6c;
+  color:#d4af7f;
 }
 `;
 
@@ -156,11 +156,11 @@ app.get('/', async (req, res) => {
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Mi Biblioteca Kobo</title>
+<title>Mi Biblioteca Hogwarts</title>
 <style>${css}</style>
 </head>
 <body>
-<h1>📚 Mi Biblioteca Kobo</h1>
+<h1>🪄 Mi Biblioteca Hogwarts</h1>
 
 <form method="get" action="/">
   <input type="search" name="buscar" value="${req.query.buscar || ''}" placeholder="Buscar título..." />
