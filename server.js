@@ -26,7 +26,7 @@ const drive = google.drive({
   auth: 'AIzaSyAKD8XSGB8wCb8tq9Z5mT20AS6nI_lQ0IY'
 });
 
-// CSS actualizado
+// CSS actualizado: fondo vintage oscuro, portadas 1.5cm
 const css = `
 @import url("https://db.onlinewebfonts.com/c/852651dd87a0da3b4f8f8f01afca866e?family=Letter+Gothic+Extra+Bold");
 @import url("https://db.onlinewebfonts.com/c/ee6883e353ce9d6f08983a8273ad664b?family=OfficinaSansMediumC");
@@ -35,8 +35,8 @@ body {
   font-family: 'OfficinaSansMediumC', sans-serif;
   margin:10px;
   padding:0;
-  background:#f5f3ef;
-  color:#3e3a36;
+  background:#2e2b25; /* fondo vintage oscuro */
+  color:#f5f3ef;
 }
 
 header {
@@ -47,15 +47,15 @@ header {
 h1 {
   font-family: 'Letter Gothic Extra Bold', monospace;
   font-size: 36px;
-  color:#5b3a21;
-  text-shadow: 1px 1px 0 #a67c4e;
+  color:#d4c0a1;
+  text-shadow: 1px 1px 0 #8b735e;
   margin-bottom: 10px;
 }
 
 #grid {
   display:flex;
   flex-direction:column;
-  gap:8px;
+  gap:10px;
   padding-bottom:20px;
 }
 
@@ -64,28 +64,31 @@ h1 {
   flex-direction:row;
   align-items:center;
   gap:12px;
-  background: rgba(210, 200, 180, 0.85);
+  background: #3e3a36; /* caja vintage oscura */
   padding:10px 12px;
   border-radius:8px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+  height: 100px; /* alto uniforme */
 }
 
 .libro:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
 }
 
 .placeholder {
-  width: 60px;
-  height: 90px;
+  width: 1.5cm;
+  height: 2.25cm; /* proporción aproximada 2:3 */
   border-radius: 6px;
   overflow: hidden;
-  background: #c9b8a3;
+  background: #8b735e; /* beige vintage oscuro */
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  font-size: 16px;
+  color: #f5f3ef;
 }
 
 .cover-img {
@@ -97,8 +100,8 @@ h1 {
 
 .titulo {
   font-family: 'OfficinaSansMediumC', sans-serif;
-  font-size:13px;
-  color:#3e3a36;
+  font-size:14px;
+  color:#f5f3ef;
   font-weight:500;
   flex-grow:1;
   overflow:hidden;
@@ -125,8 +128,8 @@ input, select {
   border:1px solid #6b5e4d;
   width:90%;
   font-size:14px;
-  background:#f5f3ef;
-  color:#3e3a36;
+  background:#3e3a36;
+  color:#f5f3ef;
 }
 `;
 
