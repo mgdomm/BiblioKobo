@@ -141,7 +141,7 @@ function ordenarFiles(files, criterio) {
 app.get('/', async (req, res) => {
   try {
     const query = (req.query.buscar || '').toLowerCase();
-    const orden = req.query.ordenar || '';
+    const orden = req.query.ordenar || 'alfabetico';
 
     let files = await listAllFiles(folderId);
 
@@ -150,7 +150,7 @@ app.get('/', async (req, res) => {
       files = files.filter(f => f.name.toLowerCase().includes(query));
     }
 
-    // Ordenar si corresponde
+    // Ordenar
     files = ordenarFiles(files, orden);
 
     // Generar HTML de libros
@@ -190,7 +190,6 @@ app.get('/', async (req, res) => {
       <form method="get" action="/">
         <input type="search" name="buscar" value="${req.query.buscar || ''}" placeholder="Buscar…" />
         <select name="ordenar" onchange="this.form.submit()">
-          <option value="">Sin ordenar</option>
           <option value="alfabetico" ${orden === 'alfabetico' ? 'selected' : ''}>Alfabético</option>
           <option value="recientes" ${orden === 'recientes' ? 'selected' : ''}>Más recientes</option>
         </select>
