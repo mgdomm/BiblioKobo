@@ -23,64 +23,116 @@ try {
 // Instancia de Google Drive con API Key
 const drive = google.drive({
   version: 'v3',
-  auth: 'AIzaSyAKD8XSGB8wCb8tq9Z5mT20AS6nI_lQ0IY' // Tu API Key
+  auth: 'AIzaSyAKD8XSGB8wCb8tq9Z5mT20AS6nI_lQ0IY'
 });
 
-// CSS optimizado para Kobo
+// CSS actualizado
 const css = `
 @import url("https://db.onlinewebfonts.com/c/852651dd87a0da3b4f8f8f01afca866e?family=Letter+Gothic+Extra+Bold");
 @import url("https://db.onlinewebfonts.com/c/ee6883e353ce9d6f08983a8273ad664b?family=OfficinaSansMediumC");
 
-body { font-family: 'OfficinaSansMediumC', sans-serif; margin:10px; padding:0; background:#f5f3ef; color:#3e3a36; }
-header { text-align:center; margin-bottom:10px; }
+body {
+  font-family: 'OfficinaSansMediumC', sans-serif;
+  margin:10px;
+  padding:0;
+  background:#f5f3ef;
+  color:#3e3a36;
+}
 
-h1 { 
-  font-family: 'Letter Gothic Extra Bold', monospace; 
+header {
+  text-align:center;
+  margin-bottom:10px;
+}
+
+h1 {
+  font-family: 'Letter Gothic Extra Bold', monospace;
   font-size: 36px;
   color:#5b3a21;
   text-shadow: 1px 1px 0 #a67c4e;
   margin-bottom: 10px;
 }
 
-#grid { display:flex; flex-direction:column; gap:8px; padding-bottom:20px; }
+#grid {
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  padding-bottom:20px;
+}
 
 .libro {
-  display:flex; flex-direction:row; align-items:center; gap:8px;
-  background: rgba(210,200,180,0.85);
-  padding:6px 8px; border-radius:6px;
-  box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+  display:flex;
+  flex-direction:row;
+  align-items:center;
+  gap:12px;
+  background: rgba(210, 200, 180, 0.85);
+  padding:10px 12px;
+  border-radius:8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.libro:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
 .placeholder {
-  width:2cm; height:3cm; border-radius:4px;
-  flex-shrink:0; object-fit:cover;
-  background:#e0d6c3;
+  width: 60px;
+  height: 90px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #c9b8a3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
-.titulo { 
-  font-family: 'OfficinaSansMediumC', sans-serif; 
-  font-size:13px; color:#3e3a36; font-weight:500; 
-  flex-grow:1; overflow:hidden; text-overflow:ellipsis; 
+.cover-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 6px;
 }
 
-.meta a { 
-  padding:3px 8px; border-radius:4px; text-decoration:none; 
-  background:#c49a6c; color:#fff; font-size:11px; 
+.titulo {
+  font-family: 'OfficinaSansMediumC', sans-serif;
+  font-size:13px;
+  color:#3e3a36;
+  font-weight:500;
+  flex-grow:1;
+  overflow:hidden;
+  text-overflow:ellipsis;
 }
 
-.meta a:hover { background:#a67c4e; }
+.meta a {
+  padding:3px 8px;
+  border-radius:4px;
+  text-decoration:none;
+  background:#c49a6c;
+  color:#fff;
+  font-size:11px;
+}
 
-input, select { 
-  margin-top:8px; padding:6px 10px; border-radius:15px; 
-  border:1px solid #6b5e4d; width:90%; font-size:14px; 
-  background:#f5f3ef; color:#3e3a36; 
+.meta a:hover {
+  background:#a67c4e;
+}
+
+input, select {
+  margin-top:8px;
+  padding:6px 10px;
+  border-radius:15px;
+  border:1px solid #6b5e4d;
+  width:90%;
+  font-size:14px;
+  background:#f5f3ef;
+  color:#3e3a36;
 }
 `;
 
 // Ruta principal
 app.get('/', async (req, res) => {
   try {
-    // Listar archivos públicos de la carpeta
     const response = await drive.files.list({
       q: `'${folderId}' in parents and trashed=false`,
       fields: 'files(id, name, createdTime)',
@@ -118,7 +170,7 @@ const ordenar = document.getElementById('ordenar');
 function renderFiles(list) {
   grid.innerHTML = list.map(file => {
     const cover = covers.length ? covers[Math.floor(Math.random()*covers.length)] : null;
-    const imgHtml = cover ? '<img src="'+cover+'" class="placeholder">' : '<div class="placeholder">📖</div>';
+    const imgHtml = cover ? '<img src="'+cover+'" class="cover-img">' : '<div class="placeholder">📖</div>';
     return \`
 <div class="libro">
   \${imgHtml}
