@@ -36,8 +36,6 @@ body {
   font-family: 'Garamond', serif;
   margin:10px; padding:0;
   background:#1c1a13;
-  background-image: url('https://i.imgur.com/qZp0rBg.png');
-  background-size: cover;
   color:#f5e6c4;
 }
 h1 {
@@ -46,7 +44,7 @@ h1 {
   font-family: 'MedievalSharp', cursive;
   color:#d4af7f;
   margin-bottom:15px;
-  text-shadow: 2px 2px 6px #000;
+  text-shadow: 2px 2px 4px #000;
 }
 form {
   text-align:center;
@@ -69,7 +67,7 @@ input, select {
   vertical-align: top;
   width:160px;
   min-height:240px;
-  background: linear-gradient(145deg, #f5e6c4, #e8d7aa);
+  background: #e8d7aa; /* eliminamos gradiente para tinta electrónica */
   padding:8px;
   border-radius:12px;
   border: 2px solid #d4af7f;
@@ -82,32 +80,34 @@ input, select {
   height:150px;
   border-radius:6px;
   object-fit:cover;
-  filter: sepia(0.4) contrast(1.1) brightness(0.95);
+  filter: none; /* eliminamos sepia/contrast para mejor visibilidad en e-ink */
   margin-bottom:6px;
 }
 .title {
-  font-size:14px;
+  font-size:17px; /* más grande */
+  font-weight:700; /* más grueso */
   color:#3e2f1c;
-  font-family: 'MedievalSharp', cursive;
+  font-family: 'MedievalSharp', cursive; 
   margin-bottom:6px;
+  text-shadow: 1px 1px 1px rgba(255,255,255,0.6); /* sombra sutil para contraste */
 }
 .meta a {
   font-size:14px;
   font-weight:bold;
   text-decoration:none;
-  color:#fff; /* blanco para que contraste */
-  background: #d4af7f; /* color de botón */
+  color:#fff; 
+  background: #b5884e; /* color más contrastante en e-ink */
   padding:6px 12px;
   border-radius:8px;
   display:inline-block;
   margin-top:6px;
-  box-shadow: 2px 4px 6px rgba(0,0,0,0.5); /* sombra */
+  box-shadow: 1px 2px 3px rgba(0,0,0,0.5); /* sombra más ligera para e-ink */
   transition: all 0.2s ease;
 }
 .meta a:hover {
-  background:#b5884e;
-  box-shadow: 2px 6px 10px rgba(0,0,0,0.6);
-  transform: translateY(-2px);
+  background:#8b5f2c; /* contraste mayor al hover */
+  box-shadow: 1px 3px 5px rgba(0,0,0,0.5);
+  transform: translateY(-1px);
 }
 .meta a:visited {
   color:#fff;
@@ -155,8 +155,7 @@ app.get('/', async (req, res) => {
 
     files = ordenarFiles(files, orden);
 
-    // Determinar altura máxima de la tarjeta
-    const heights = files.map(f => Math.max(150, 150 + 36 + 24)); // imagen + título + botón
+    const heights = files.map(f => Math.max(150, 150 + 36 + 24)); 
     const maxHeight = Math.max(...heights);
 
     const booksHtml = files.map(file => {
