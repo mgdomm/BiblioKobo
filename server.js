@@ -18,7 +18,7 @@ const auth = new google.auth.GoogleAuth({
 const drive = google.drive({ version: 'v3', auth });
 
 // ID de la carpeta de Google Drive
-const folderId = '1-4G6gGNtt6KVS90AbWbtH3JlpetHrPEi';
+const folderId = 'TU_ID_DE_CARPETA_AQUI'; // reemplaza con tu carpeta
 
 // Leer imágenes cover locales
 let coverImages = [];
@@ -26,6 +26,14 @@ try {
   coverImages = fs.readdirSync(path.join(__dirname,'cover')).map(f => `/cover/${f}`);
 } catch(err) {
   console.warn('No se encontró la carpeta cover. Se usarán placeholders.');
+}
+
+// Leer JSON con metadata de libros
+let bookMetadata = [];
+try {
+  bookMetadata = JSON.parse(fs.readFileSync(path.join(__dirname, 'books.json')));
+} catch(err) {
+  console.warn('No se encontró books.json o está mal formado.');
 }
 
 // CSS Hogwarts + grid compatible Kobo con efecto 3D
@@ -84,12 +92,18 @@ input, select {
   margin-bottom:6px;
 }
 .title {
-  font-size:15px; /* tamaño más cómodo para Kobo */
+  font-size:15px;
   font-weight:700;
   color:#3e2f1c;
   font-family: 'MedievalSharp', cursive;
+  margin-bottom:3px;
+  text-shadow: 1px 1px 0 #fff, -1px -1px 0 #000;
+}
+.author {
+  font-size:12px;
+  color:#5a4632;
   margin-bottom:6px;
-  text-shadow: 1px 1px 0 #fff, -1px -1px 0 #000; /* efecto 3D */
+  font-family: 'Garamond', serif;
 }
 .meta a {
   font-size:14px;
@@ -159,14 +173,20 @@ app.get('/', async (req, res) => {
     const maxHeight = Math.max(...heights);
 
     const booksHtml = files.map(file => {
+      const metadata = bookMetadata.find(b => b.id === file.id);
+      const title = metadata ? metadata.title : file.name;
+      const author = metadata ? metadata.author : '';
+
       const cover = coverImages.length ? coverImages[Math.floor(Math.random()*coverImages.length)] : null;
       const imgHtml = cover
         ? `<img src="${cover}" />`
         : `<div style="width:100px;height:150px;background:#8b735e;border-radius:6px;">📖</div>`;
+      
       return `
 <div class="book" style="min-height:${maxHeight}px">
   ${imgHtml}
-  <div class="title">${file.name}</div>
+  <div class="title">${title}</div>
+  ${author ? `<div class="author">${author}</div>` : ''}
   <div class="meta"><a href="https://drive.google.com/uc?export=download&id=${file.id}" target="_blank">Descargar</a></div>
 </div>`;
     }).join('');
