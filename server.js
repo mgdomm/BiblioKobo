@@ -95,11 +95,22 @@ input, select {
   font-size:14px;
   font-weight:bold;
   text-decoration:none;
-  color:#d4af7f;
-  display:block;
+  color:#fff; /* blanco para que contraste */
+  background: #d4af7f; /* color de botón */
+  padding:6px 12px;
+  border-radius:8px;
+  display:inline-block;
+  margin-top:6px;
+  box-shadow: 2px 4px 6px rgba(0,0,0,0.5); /* sombra */
+  transition: all 0.2s ease;
+}
+.meta a:hover {
+  background:#b5884e;
+  box-shadow: 2px 6px 10px rgba(0,0,0,0.6);
+  transform: translateY(-2px);
 }
 .meta a:visited {
-  color:#b5895e;
+  color:#fff;
 }
 `;
 
