@@ -36,26 +36,32 @@ try {
   console.warn('No se encontró books.json o está mal formado.');
 }
 
-// CSS global unificado
+// CSS global unificado para todas las tarjetas
 const css = `
 @import url('https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap');
+
 body {
   font-family: 'Garamond', serif;
-  margin:10px; padding:0;
+  margin:10px;
+  padding:0;
   background:#1c1a13;
   color:#f5e6c4;
 }
+
 h1 {
   text-align:center;
+  font-size:45px;
   font-family: 'MedievalSharp', cursive;
   color:#d4af7f;
   margin-bottom:15px;
   text-shadow: 2px 2px 4px #000;
 }
+
 form {
   text-align:center;
   margin-bottom:15px;
 }
+
 input, select {
   padding:6px 10px;
   margin:0 5px;
@@ -65,14 +71,19 @@ input, select {
   background:#f5e6c4;
   color:#3e2f1c;
 }
+
 #grid {
-  text-align:center;
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:12px;
 }
-.book {
+
+.card {
   display:inline-block;
   vertical-align: top;
   width:160px;
-  min-height:80px;
+  min-height:60px;
   background: #e8d7aa;
   padding:8px;
   border-radius:12px;
@@ -80,8 +91,15 @@ input, select {
   margin:6px;
   text-align:center;
   word-wrap: break-word;
+  transition: all 0.2s ease;
 }
-.book img {
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+}
+
+.card img {
   width:100px;
   height:150px;
   border-radius:6px;
@@ -89,6 +107,7 @@ input, select {
   filter: none;
   margin-bottom:6px;
 }
+
 .title {
   font-size:15px;
   font-weight:700;
@@ -97,12 +116,14 @@ input, select {
   margin-bottom:3px;
   text-shadow: 1px 1px 0 #fff, -1px -1px 0 #000;
 }
+
 .author {
   font-size:12px;
   color:#5a4632;
   margin-bottom:6px;
   font-family: 'Garamond', serif;
 }
+
 .meta a {
   font-size:14px;
   font-weight:bold;
@@ -116,32 +137,15 @@ input, select {
   box-shadow: inset 0 -2px 3px rgba(0,0,0,0.4), 2px 4px 6px rgba(0,0,0,0.5);
   transition: all 0.2s ease;
 }
+
 .meta a:hover {
   background:#8b5f2c;
   box-shadow: inset 0 -2px 3px rgba(0,0,0,0.5), 2px 6px 10px rgba(0,0,0,0.6);
   transform: translateY(-1px);
 }
+
 .meta a:visited {
   color:#fff;
-}
-.buttons {
-  margin-top:30px;
-  text-align:center;
-}
-.buttons a {
-  color:#fff;
-  background:#b5884e;
-  padding:6px 12px;
-  border-radius:8px;
-  margin:0 6px;
-  text-decoration:none;
-  font-weight:bold;
-  display:inline-block;
-  transition: all 0.2s ease;
-}
-.buttons a:hover {
-  background:#8b5f2c;
-  transform: translateY(-1px);
 }
 `;
 
@@ -201,7 +205,7 @@ app.get('/', async (req, res) => {
         : `<div style="width:100px;height:150px;background:#8b735e;border-radius:6px;">📖</div>`;
 
       return `
-<div class="book" style="min-height:${maxHeight}px">
+<div class="card" style="min-height:${maxHeight}px">
   ${imgHtml}
   <div class="title">${title}</div>
   ${author ? `<div class="author">${author}</div>` : ''}
@@ -219,9 +223,7 @@ app.get('/', async (req, res) => {
 </head>
 <body>
 <h1>🪄 Azkaban Reads</h1>
-<p class="buttons">
-  <a href="/autores">Autores</a>
-</p>
+<p><a href="/autores" style="color:#d4af7f; font-weight:bold;">Ver autores</a></p>
 <form method="get" action="/">
   <input type="search" name="buscar" value="${req.query.buscar || ''}" placeholder="Buscar título..." />
   <select name="ordenar" onchange="this.form.submit()">
@@ -245,30 +247,26 @@ app.get('/', async (req, res) => {
 // Página de autores
 app.get('/autores', (req, res) => {
   const autores = [...new Set(bookMetadata.map(b => b.author).filter(a => a))].sort();
-
   const autoresHtml = autores.map(a => `
-    <div class="book" style="min-height:80px;">
-      <div class="title">${a}</div>
-      <div class="meta"><a href="/autor?name=${encodeURIComponent(a)}">Ver libros</a></div>
-    </div>
+<div class="card" style="min-height:60px; display:flex; align-items:center; justify-content:center;">
+  <a href="/autor?name=${encodeURIComponent(a)}" class="title">${a}</a>
+</div>
   `).join('');
 
   const html = `
-  <!DOCTYPE html>
-  <html lang="es">
-  <head>
-    <meta charset="UTF-8">
-    <title>Autores - Azkaban Reads</title>
-    <style>${css}</style>
-  </head>
-  <body>
-    <h1>Autores</h1>
-    <div id="grid">${autoresHtml}</div>
-    <div class="buttons">
-      <a href="/">📚 Volver a libros</a>
-    </div>
-  </body>
-  </html>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Autores - Azkaban Reads</title>
+<style>${css}</style>
+</head>
+<body>
+<h1>Autores</h1>
+<div id="grid">${autoresHtml}</div>
+<p><a href="/">← Volver a la lista de libros</a></p>
+</body>
+</html>
   `;
   res.send(html);
 });
@@ -276,45 +274,43 @@ app.get('/autores', (req, res) => {
 // Página de libros por autor
 app.get('/autor', (req, res) => {
   const nombreAutor = req.query.name;
-  if (!nombreAutor) return res.redirect('/autores');
+  if(!nombreAutor) return res.redirect('/autores');
 
   const libros = bookMetadata.filter(b => b.author === nombreAutor);
 
-  const heights = libros.map(() => Math.max(150, 150 + 36 + 24));
-  const maxHeight = Math.max(...heights);
-
   const booksHtml = libros.map(book => {
-    const cover = coverImages.length ? coverImages[Math.floor(Math.random() * coverImages.length)] : null;
+    const cover = coverImages.length ? coverImages[Math.floor(Math.random()*coverImages.length)] : null;
     const imgHtml = cover
       ? `<img src="${cover}" />`
       : `<div style="width:100px;height:150px;background:#8b735e;border-radius:6px;">📖</div>`;
 
     return `
-      <div class="book" style="min-height:${maxHeight}px">
-        ${imgHtml}
-        <div class="title">${book.title}</div>
-        <div class="meta"><a href="https://drive.google.com/uc?export=download&id=${book.id}" target="_blank">Descargar</a></div>
-      </div>`;
+<div class="card" style="min-height:240px">
+  ${imgHtml}
+  <div class="title">${book.title}</div>
+  <div class="meta"><a href="https://drive.google.com/uc?export=download&id=${book.id}" target="_blank">Descargar</a></div>
+</div>`;
   }).join('');
 
   const html = `
-  <!DOCTYPE html>
-  <html lang="es">
-  <head>
-    <meta charset="UTF-8">
-    <title>Libros de ${nombreAutor}</title>
-    <style>${css}</style>
-  </head>
-  <body>
-    <h1>Libros de ${nombreAutor}</h1>
-    <div id="grid">${booksHtml}</div>
-    <div class="buttons">
-      <a href="/autores">← Volver a autores</a>
-      <a href="/">📚 Libros</a>
-    </div>
-  </body>
-  </html>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Libros de ${nombreAutor}</title>
+<style>${css}</style>
+</head>
+<body>
+<h1>Libros de ${nombreAutor}</h1>
+<div id="grid">${booksHtml}</div>
+<p>
+  <a href="/autores" style="margin-right:20px;">← Volver a la lista de autores</a>
+  <a href="/">📚 Libros</a>
+</p>
+</body>
+</html>
   `;
+
   res.send(html);
 });
 
