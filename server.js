@@ -18,7 +18,7 @@ const auth = new google.auth.GoogleAuth({
 const drive = google.drive({ version: 'v3', auth });
 
 // ID de la carpeta de Google Drive
-const folderId = 'TU_ID_DE_CARPETA_AQUI'; // reemplaza con tu carpeta
+const folderId = '1-4G6gGNtt6KVS90AbWbtH3JlpetHrPEi';
 
 // Leer imágenes cover locales
 let coverImages = [];
@@ -173,6 +173,7 @@ app.get('/', async (req, res) => {
     const maxHeight = Math.max(...heights);
 
     const booksHtml = files.map(file => {
+      // Buscar metadata en books.json
       const metadata = bookMetadata.find(b => b.id === file.id);
       const title = metadata ? metadata.title : file.name;
       const author = metadata ? metadata.author : '';
@@ -181,7 +182,7 @@ app.get('/', async (req, res) => {
       const imgHtml = cover
         ? `<img src="${cover}" />`
         : `<div style="width:100px;height:150px;background:#8b735e;border-radius:6px;">📖</div>`;
-      
+
       return `
 <div class="book" style="min-height:${maxHeight}px">
   ${imgHtml}
