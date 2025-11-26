@@ -84,15 +84,12 @@ input, select {
   margin-bottom:6px;
 }
 .title {
-  font-size:17px;
+  font-size:15px; /* tamaño más cómodo para Kobo */
   font-weight:700;
   color:#3e2f1c;
   font-family: 'MedievalSharp', cursive;
   margin-bottom:6px;
-  /* efecto relieve 3D */
-  text-shadow: 
-     1px 1px 0 #fff, 
-    -1px -1px 0 #000;
+  text-shadow: 1px 1px 0 #fff, -1px -1px 0 #000; /* efecto 3D */
 }
 .meta a {
   font-size:14px;
@@ -187,7 +184,7 @@ app.get('/', async (req, res) => {
 
 <form method="get" action="/">
   <input type="search" name="buscar" value="${req.query.buscar || ''}" placeholder="Buscar título..." />
-  <select name="ordenar">
+  <select name="ordenar" onchange="this.form.submit()">
     <option value="alfabetico" ${orden==='alfabetico'?'selected':''}>Alfabético</option>
     <option value="recientes" ${orden==='recientes'?'selected':''}>Más recientes</option>
   </select>
