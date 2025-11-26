@@ -36,6 +36,8 @@ body {
   background:#2e2b25; color:#f5f3ef;
 }
 h1 { text-align:center; font-size:28px; color:#d4c0a1; margin-bottom:10px; }
+form { text-align:center; margin-bottom:10px; }
+input, select { padding:4px 6px; margin:0 5px; font-size:14px; }
 .book { display:inline-block; width:120px; margin:5px; vertical-align:top; background:#3e3a36; padding:5px; border-radius:6px; text-align:center; }
 .book img { width:80px; height:120px; display:block; margin:0 auto 5px; border-radius:4px; }
 .title { font-size:12px; color:#f5f3ef; overflow:hidden; height:36px; }
@@ -63,10 +65,29 @@ async function listAllFiles(folderId) {
   return files;
 }
 
-// Ruta principal
+// Función para ordenar archivos
+function ordenarFiles(files, criterio) {
+  let sorted = [...files];
+  if(criterio === 'alfabetico') sorted.sort((a,b)=> a.name.localeCompare(b.name));
+  else if(criterio === 'autor') sorted.sort((a,b)=> (a.name.split('-')[0]||'').trim().localeCompare((b.name.split('-')[0]||'').trim()));
+  return sorted;
+}
+
+// Ruta principal con búsqueda y ordenar
 app.get('/', async (req, res) => {
   try {
-    const files = await listAllFiles(folderId);
+    const query = (req.query.buscar || '').toLowerCase();
+    const orden = req.query.ordenar || 'alfabetico';
+
+    let files = await listAllFiles(folderId);
+
+    // Filtrar búsqueda
+    if(query) {
+      files = files.filter(f => f.name.toLowerCase().includes(query));
+    }
+
+    // Ordenar
+    files = ordenarFiles(files, orden);
 
     // Generar HTML completo en el servidor
     const booksHtml = files.map(file => {
@@ -90,6 +111,16 @@ app.get('/', async (req, res) => {
 </head>
 <body>
 <h1>📚 Mi Biblioteca Kobo</h1>
+
+<form method="get" action="/">
+  <input type="search" name="buscar" value="${req.query.buscar || ''}" placeholder="Buscar título..." />
+  <select name="ordenar">
+    <option value="alfabetico" ${orden==='alfabetico'?'selected':''}>Alfabético</option>
+    <option value="autor" ${orden==='autor'?'selected':''}>Por Autor</option>
+  </select>
+  <button type="submit">Aplicar</button>
+</form>
+
 <div id="grid">${booksHtml}</div>
 </body>
 </html>
