@@ -28,109 +28,11 @@ try {
   console.warn('No se encontró la carpeta cover. Se usarán placeholders.');
 }
 
-// CSS compatible con Kobo
+// === ESTILO MEDIEVAL / PERGAMINO ===
 const css = `
 body {
-  font-family: sans-serif;
-  margin:10px; padding:0;
-  background:#2e2b25; color:#f5f3ef;
-}
-h1 { text-align:center; font-size:28px; color:#d4c0a1; margin-bottom:10px; }
-form { text-align:center; margin-bottom:10px; }
-input, select { padding:4px 6px; margin:0 5px; font-size:14px; }
-.book { display:inline-block; width:120px; margin:5px; vertical-align:top; background:#3e3a36; padding:5px; border-radius:6px; text-align:center; }
-.book img { width:80px; height:120px; display:block; margin:0 auto 5px; border-radius:4px; }
-.title { font-size:12px; color:#f5f3ef; overflow:hidden; height:36px; }
-.meta a { display:block; margin-top:3px; font-size:11px; text-decoration:none; color:#c49a6c; }
-.meta a:hover { color:#a67c4e; }
-`;
-
-// Función para listar todos los archivos con paginación
-async function listAllFiles(folderId) {
-  let files = [];
-  let pageToken = null;
-
-  do {
-    const res = await drive.files.list({
-      q: `'${folderId}' in parents and trashed=false`,
-      fields: 'nextPageToken, files(id,name)',
-      pageSize: 1000,
-      pageToken: pageToken || undefined
-    });
-
-    files = files.concat(res.data.files);
-    pageToken = res.data.nextPageToken;
-  } while(pageToken);
-
-  return files;
-}
-
-// Función para ordenar archivos
-function ordenarFiles(files, criterio) {
-  let sorted = [...files];
-  if(criterio === 'alfabetico') sorted.sort((a,b)=> a.name.localeCompare(b.name));
-  else if(criterio === 'autor') sorted.sort((a,b)=> (a.name.split('-')[0]||'').trim().localeCompare((b.name.split('-')[0]||'').trim()));
-  return sorted;
-}
-
-// Ruta principal con búsqueda y ordenar
-app.get('/', async (req, res) => {
-  try {
-    const query = (req.query.buscar || '').toLowerCase();
-    const orden = req.query.ordenar || 'alfabetico';
-
-    let files = await listAllFiles(folderId);
-
-    // Filtrar búsqueda
-    if(query) {
-      files = files.filter(f => f.name.toLowerCase().includes(query));
-    }
-
-    // Ordenar
-    files = ordenarFiles(files, orden);
-
-    // Generar HTML completo en el servidor
-    const booksHtml = files.map(file => {
-      const cover = coverImages.length ? coverImages[Math.floor(Math.random()*coverImages.length)] : null;
-      const imgHtml = cover ? `<img src="${cover}" />` : `<div style="width:80px;height:120px;background:#8b735e;margin:0 auto;border-radius:4px;">📖</div>`;
-      return `
-<div class="book">
-  ${imgHtml}
-  <div class="title">${file.name}</div>
-  <div class="meta"><a href="https://drive.google.com/uc?export=download&id=${file.id}" target="_blank">Descargar</a></div>
-</div>`;
-    }).join('');
-
-    const html = `
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<title>Mi Biblioteca Kobo</title>
-<style>${css}</style>
-</head>
-<body>
-<h1>📚 Mi Biblioteca Kobo</h1>
-
-<form method="get" action="/">
-  <input type="search" name="buscar" value="${req.query.buscar || ''}" placeholder="Buscar título..." />
-  <select name="ordenar">
-    <option value="alfabetico" ${orden==='alfabetico'?'selected':''}>Alfabético</option>
-    <option value="autor" ${orden==='autor'?'selected':''}>Por Autor</option>
-  </select>
-  <button type="submit">Aplicar</button>
-</form>
-
-<div id="grid">${booksHtml}</div>
-</body>
-</html>
-`;
-
-    res.send(html);
-  } catch(err) {
-    console.error(err);
-    res.send('<p>Error al cargar los libros. Revisa permisos del Service Account.</p>');
-  }
-});
-
-app.listen(PORT, ()=>console.log(`Servidor escuchando en puerto ${PORT}`));
+  margin: 0;
+  padding: 12px;
+  font-family: "Georgia", serif;
+  background: #3a2f2f; 
+  background-image: url('https://i.imgur.com/ztJEN2j.jpeg'); /* fondo pergamino oscu*
