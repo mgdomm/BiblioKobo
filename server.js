@@ -36,6 +36,23 @@ try {
   console.warn('No se encontró books.json o está mal formado.');
 }
 
+/* ---------------------------------------------------------
+   🔥 ELIMINAR LIBROS DUPLICADOS (mismo title + author)
+--------------------------------------------------------- */
+const uniqueBooks = [];
+const seen = new Set();
+
+for (const b of bookMetadata) {
+  const key = (b.title + "||" + b.author).toLowerCase();
+  if (!seen.has(key)) {
+    seen.add(key);
+    uniqueBooks.push(b);
+  }
+}
+
+bookMetadata = uniqueBooks;
+/* --------------------------------------------------------- */
+
 // CSS global adaptado para Kobo/Kindle
 const css = `
 @import url('https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap');
