@@ -28,7 +28,7 @@ try {
   console.warn('No se encontró la carpeta cover. Se usarán placeholders.');
 }
 
-// CSS Hogwarts + grid compatible Kobo
+// CSS Hogwarts + grid compatible Kobo con efecto 3D
 const css = `
 @import url('https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap');
 
@@ -67,7 +67,7 @@ input, select {
   vertical-align: top;
   width:160px;
   min-height:240px;
-  background: #e8d7aa; /* eliminamos gradiente para tinta electrónica */
+  background: #e8d7aa;
   padding:8px;
   border-radius:12px;
   border: 2px solid #d4af7f;
@@ -80,33 +80,36 @@ input, select {
   height:150px;
   border-radius:6px;
   object-fit:cover;
-  filter: none; /* eliminamos sepia/contrast para mejor visibilidad en e-ink */
+  filter: none;
   margin-bottom:6px;
 }
 .title {
-  font-size:17px; /* más grande */
-  font-weight:700; /* más grueso */
+  font-size:17px;
+  font-weight:700;
   color:#3e2f1c;
-  font-family: 'MedievalSharp', cursive; 
+  font-family: 'MedievalSharp', cursive;
   margin-bottom:6px;
-  text-shadow: 1px 1px 1px rgba(255,255,255,0.6); /* sombra sutil para contraste */
+  /* efecto relieve 3D */
+  text-shadow: 
+     1px 1px 0 #fff, 
+    -1px -1px 0 #000;
 }
 .meta a {
   font-size:14px;
   font-weight:bold;
   text-decoration:none;
-  color:#fff; 
-  background: #b5884e; /* color más contrastante en e-ink */
+  color:#fff;
+  background: #b5884e;
   padding:6px 12px;
   border-radius:8px;
   display:inline-block;
   margin-top:6px;
-  box-shadow: 1px 2px 3px rgba(0,0,0,0.5); /* sombra más ligera para e-ink */
+  box-shadow: inset 0 -2px 3px rgba(0,0,0,0.4), 2px 4px 6px rgba(0,0,0,0.5);
   transition: all 0.2s ease;
 }
 .meta a:hover {
-  background:#8b5f2c; /* contraste mayor al hover */
-  box-shadow: 1px 3px 5px rgba(0,0,0,0.5);
+  background:#8b5f2c;
+  box-shadow: inset 0 -2px 3px rgba(0,0,0,0.5), 2px 6px 10px rgba(0,0,0,0.6);
   transform: translateY(-1px);
 }
 .meta a:visited {
@@ -155,7 +158,7 @@ app.get('/', async (req, res) => {
 
     files = ordenarFiles(files, orden);
 
-    const heights = files.map(f => Math.max(150, 150 + 36 + 24)); 
+    const heights = files.map(f => Math.max(150, 150 + 36 + 24));
     const maxHeight = Math.max(...heights);
 
     const booksHtml = files.map(file => {
