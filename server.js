@@ -28,30 +28,19 @@ try {
   console.warn('No se encontró la carpeta cover. Se usarán placeholders.');
 }
 
-// Leer JSON con metadata de libros
+// Leer o crear JSON con metadata de libros
 let bookMetadata = [];
+const BOOKS_FILE = path.join(__dirname, 'books.json');
 try {
-  bookMetadata = JSON.parse(fs.readFileSync(path.join(__dirname, 'books.json')));
-} catch(err) {
-  console.warn('No se encontró books.json o está mal formado.');
-}
-
-/* ---------------------------------------------------------
-   🔥 ELIMINAR LIBROS DUPLICADOS (mismo title + author)
---------------------------------------------------------- */
-const uniqueBooks = [];
-const seen = new Set();
-
-for (const b of bookMetadata) {
-  const key = (b.title + "||" + b.author).toLowerCase();
-  if (!seen.has(key)) {
-    seen.add(key);
-    uniqueBooks.push(b);
+  if (fs.existsSync(BOOKS_FILE)) {
+    bookMetadata = JSON.parse(fs.readFileSync(BOOKS_FILE));
+  } else {
+    fs.writeFileSync(BOOKS_FILE, JSON.stringify([], null, 2));
   }
+} catch(err) {
+  console.warn('Error leyendo books.json. Se usará un arreglo vacío.');
+  bookMetadata = [];
 }
-
-bookMetadata = uniqueBooks;
-/* --------------------------------------------------------- */
 
 // CSS global adaptado para Kobo/Kindle
 const css = `
@@ -161,6 +150,39 @@ async function listAllFiles(folderId) {
   return files;
 }
 
+// Elimina duplicados por título+autor
+function uniqueBooks(arr) {
+  const seen = new Set();
+  return arr.filter(b => {
+    const key = (b.title+'|'+b.author).toLowerCase();
+    if(seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+// Actualiza books.json automáticamente
+function actualizarBooksJSON(newFiles) {
+  let updated = false;
+  newFiles.forEach(f => {
+    const exists = bookMetadata.some(b => b.id === f.id);
+    if(!exists) {
+      // Extraer título y autor desde nombre de archivo "Título - Autor.ext"
+      const base = f.name.replace(/\.[^/.]+$/, ""); // elimina extensión
+      const parts = base.split(' - ');
+      const title = parts[0]?.trim() || f.name;
+      const author = parts[1]?.trim() || 'Desconocido';
+      bookMetadata.push({ id: f.id, title, author });
+      updated = true;
+    }
+  });
+  if(updated) {
+    bookMetadata = uniqueBooks(bookMetadata);
+    fs.writeFileSync(BOOKS_FILE, JSON.stringify(bookMetadata, null, 2));
+  }
+}
+
+// Ordenar archivos
 function ordenarFiles(files, criterio) {
   let sorted = [...files];
   if(criterio === 'alfabetico') sorted.sort((a,b)=> a.name.localeCompare(b.name));
@@ -174,15 +196,22 @@ app.get('/', async (req, res) => {
     const query = (req.query.buscar || '').toLowerCase();
     const orden = req.query.ordenar || 'alfabetico';
     let files = await listAllFiles(folderId);
-    if(query) files = files.filter(f => f.name.toLowerCase().includes(query));
+
+    actualizarBooksJSON(files);
+
+    if(query) files = files.filter(f => {
+      const metadata = bookMetadata.find(b => b.id === f.id);
+      const title = metadata ? metadata.title.toLowerCase() : f.name.toLowerCase();
+      return title.includes(query);
+    });
     files = ordenarFiles(files, orden);
 
     const maxHeight = 180;
-
     const booksHtml = files.map(file => {
       const metadata = bookMetadata.find(b => b.id === file.id);
-      const title = metadata ? metadata.title : file.name;
-      const author = metadata ? metadata.author : '';
+      if(!metadata) return '';
+      const title = metadata.title;
+      const author = metadata.author;
       const cover = coverImages.length ? coverImages[Math.floor(Math.random()*coverImages.length)] : null;
       const imgHtml = cover ? `<img src="${cover}" />` : `<div style="width:80px;height:120px;background:#8b735e;border-radius:5px;">📖</div>`;
       return `
@@ -212,6 +241,7 @@ app.get('/', async (req, res) => {
 </body>
 </html>`;
     res.send(html);
+
   } catch(err) {
     console.error(err);
     res.send('<p>Error al cargar los libros. Revisa permisos del Service Account.</p>');
@@ -244,7 +274,9 @@ app.get('/autores', (req, res) => {
 app.get('/autor', (req, res) => {
   const nombreAutor = req.query.name;
   if(!nombreAutor) return res.redirect('/autores');
+
   const libros = bookMetadata.filter(b => b.author === nombreAutor);
+
   const booksHtml = libros.map(book => {
     const cover = coverImages.length ? coverImages[Math.floor(Math.random()*coverImages.length)] : null;
     const imgHtml = cover ? `<img src="${cover}" />` : `<div style="width:80px;height:120px;background:#8b735e;border-radius:5px;">📖</div>`;
@@ -268,7 +300,6 @@ app.get('/autor', (req, res) => {
   | 
   <a href="/" class="button">🪄 Libros</a>
 </p>
-
 </body>
 </html>`;
   res.send(html);
