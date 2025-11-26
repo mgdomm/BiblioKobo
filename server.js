@@ -246,7 +246,12 @@ app.get('/autor', (req, res) => {
 <body>
 <h1>Libros de ${nombreAutor}</h1>
 <div id="grid">${booksHtml}</div>
-<p><a href="/autores" class="button">← Volver a autores</a> | <a href="/" class="button">📚 Libros</a></p>
+<p>
+  <a href="/autores" class="button">← Volver a autores</a> 
+  | 
+  <a href="/" class="button">🪄 Libros</a>
+</p>
+
 </body>
 </html>`;
   res.send(html);
