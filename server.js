@@ -1,6 +1,7 @@
 const express = require('express');
 const { google } = require('googleapis');
 const path = require('path');
+const fs = require('fs');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -22,7 +23,6 @@ const folderId = '1-4G6gGNtt6KVS90AbWbtH3JlpetHrPEi';
 // Leer imágenes cover locales
 let coverImages = [];
 try {
-  const fs = require('fs');
   coverImages = fs.readdirSync(path.join(__dirname,'cover')).map(f => `/cover/${f}`);
 } catch(err) {
   console.warn('No se encontró la carpeta cover. Se usarán placeholders.');
@@ -43,17 +43,30 @@ h1 { text-align:center; font-size:28px; color:#d4c0a1; margin-bottom:10px; }
 .meta a:hover { color:#a67c4e; }
 `;
 
+// Función para listar todos los archivos con paginación
+async function listAllFiles(folderId) {
+  let files = [];
+  let pageToken = null;
+
+  do {
+    const res = await drive.files.list({
+      q: `'${folderId}' in parents and trashed=false`,
+      fields: 'nextPageToken, files(id,name)',
+      pageSize: 1000,
+      pageToken: pageToken || undefined
+    });
+
+    files = files.concat(res.data.files);
+    pageToken = res.data.nextPageToken;
+  } while(pageToken);
+
+  return files;
+}
+
 // Ruta principal
 app.get('/', async (req, res) => {
   try {
-    // Listar todos los archivos de la carpeta (hasta 2000)
-    const response = await drive.files.list({
-      q: `'${folderId}' in parents and trashed=false`,
-      fields: 'files(id,name)',
-      pageSize: 2000
-    });
-
-    const files = response.data.files || [];
+    const files = await listAllFiles(folderId);
 
     // Generar HTML completo en el servidor
     const booksHtml = files.map(file => {
