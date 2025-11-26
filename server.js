@@ -20,8 +20,11 @@ try {
   console.warn('No se encontró la carpeta cover. Se usarán placeholders.');
 }
 
-// Instancia de Google Drive sin autenticación (público)
-const drive = google.drive({ version: 'v3' });
+// Instancia de Google Drive con API Key
+const drive = google.drive({
+  version: 'v3',
+  auth: 'AIzaSyAKD8XSGB8wCb8tq9Z5mT20AS6nI_lQ0IY' // Tu API Key
+});
 
 // CSS optimizado para Kobo
 const css = `
@@ -112,7 +115,6 @@ const grid = document.getElementById('grid');
 const input = document.getElementById('buscar');
 const ordenar = document.getElementById('ordenar');
 
-// Función para renderizar libros
 function renderFiles(list) {
   grid.innerHTML = list.map(file => {
     const cover = covers.length ? covers[Math.floor(Math.random()*covers.length)] : null;
@@ -121,14 +123,11 @@ function renderFiles(list) {
 <div class="libro">
   \${imgHtml}
   <div class="titulo">\${file.name}</div>
-  <div class="meta">
-    <a href="https://drive.google.com/uc?export=download&id=\${file.id}" target="_blank">Descargar</a>
-  </div>
+  <div class="meta"><a href="https://drive.google.com/uc?export=download&id=\${file.id}" target="_blank">Descargar</a></div>
 </div>\`;
   }).join('');
 }
 
-// Función para ordenar libros
 function ordenarFiles(criteria) {
   let sorted = [...files];
   if(criteria==='alfabetico') sorted.sort((a,b)=> a.name.localeCompare(b.name));
@@ -137,10 +136,8 @@ function ordenarFiles(criteria) {
   return sorted;
 }
 
-// Render inicial
 renderFiles(ordenarFiles('alfabetico'));
 
-// Eventos de búsqueda y orden
 input.addEventListener('input', e => {
   const q = e.target.value.toLowerCase();
   renderFiles(ordenarFiles(ordenar.value).filter(f => f.name.toLowerCase().includes(q)));
