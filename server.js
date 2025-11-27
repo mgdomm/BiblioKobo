@@ -211,7 +211,7 @@ app.get('/', async (req, res) => {
   <div class="meta">
     <a href="https://drive.google.com/uc?export=download&id=${file.id}" target="_blank">Descargar</a>
     <br/>
-    <a href="/read-online.html?id=${file.id}" target="_blank" style="color:inherit; text-decoration:underline;">Leer Online</a>
+    <a href="/read-online.html?id=${book.id}" target="_blank" style="color:inherit; text-decoration:none;">Leer Online</a>
   </div>
 </div>`;
     }).join('');
