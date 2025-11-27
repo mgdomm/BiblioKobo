@@ -4,10 +4,13 @@ const path = require('path');
 const fs = require('fs');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 10000;
 
 // Servir carpeta cover
 app.use('/cover', express.static(path.join(__dirname, 'cover')));
+
+// Servir epub.js desde CDN
+app.use('/epubjs', express.static(path.join(__dirname, 'node_modules', 'epubjs', 'dist')));
 
 // Service Account
 const SERVICE_ACCOUNT_FILE = path.join(__dirname, 'service-account.json');
@@ -144,7 +147,7 @@ function renderBookPage({ libros, titlePage, tipo, nombre, req }) {
   ${book.saga?.number ? `<div class="number-span">#${book.saga.number}</div>` : ''}
   <div class="meta">
     <a href="https://drive.google.com/uc?export=download&id=${book.id}" target="_blank">Descargar</a>
-    <a href="/read/${book.id}" target="_blank">Leer Online</a>
+    <a href="/read/${book.id}" style="margin-left:5px;">Leer Online</a>
   </div>
 </div>`;
   }).join('');
@@ -175,6 +178,52 @@ function renderBookPage({ libros, titlePage, tipo, nombre, req }) {
 }
 
 // -------------------- Rutas --------------------
+
+// Proxy para leer EPUB (evita CORS)
+app.get('/proxy/:id', async (req,res)=>{
+  const fileId = req.params.id;
+  try {
+    const file = await drive.files.get({ fileId, alt:'media' }, { responseType:'stream' });
+    res.setHeader('Content-Type','application/epub+zip');
+    file.data.pipe(res);
+  } catch(e) {
+    res.status(500).send('Error cargando libro.');
+  }
+});
+
+// Leer Online
+app.get('/read/:id', (req,res)=>{
+  const fileId = req.params.id;
+  const html = `
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Leer Libro</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/epub.js/0.3.88/epub.min.js"></script>
+<style>
+body{margin:0;background:#000;color:#fff;text-align:center;}
+#viewer{width:100%;height:100vh;}
+button{position:fixed;top:10px;background:#333;color:#fff;border:none;padding:10px;font-size:16px;cursor:pointer;}
+#prev{left:10px;}
+#next{right:10px;}
+</style>
+</head>
+<body>
+<div id="viewer"></div>
+<button id="prev">Anterior</button>
+<button id="next">Siguiente</button>
+<script>
+const book = ePub("/proxy/${fileId}");
+const rendition = book.renderTo("viewer", { width:"100%", height:"100%" });
+rendition.display();
+document.getElementById("prev").addEventListener("click", ()=>rendition.prev());
+document.getElementById("next").addEventListener("click", ()=>rendition.next());
+</script>
+</body>
+</html>`;
+  res.send(html);
+});
 
 // Página de inicio
 app.get('/', async (req, res) => {
@@ -207,7 +256,7 @@ app.get('/', async (req, res) => {
   ${author ? `<div class="author"><a href="/autor?name=${encodeURIComponent(author)}">${author}</a></div>` : ''}
   <div class="meta">
     <a href="https://drive.google.com/uc?export=download&id=${file.id}" target="_blank">Descargar</a>
-    <a href="/read/${file.id}" target="_blank">Leer Online</a>
+    <a href="/read/${file.id}" style="margin-left:5px;">Leer Online</a>
   </div>
 </div>`;
     }).join('');
@@ -298,55 +347,4 @@ app.get('/saga', (req, res) => {
   res.send(renderBookPage({ libros, titlePage: `Libros de ${nombreSaga}`, tipo: 'saga', nombre: nombreSaga, req }));
 });
 
-// -------------------- Leer Online --------------------
-
-// Proxy para servir EPUB desde Google Drive
-app.get('/proxy/:id', async (req, res) => {
-  const fileId = req.params.id;
-  try {
-    const fileStream = await drive.files.get({ fileId, alt: 'media' }, { responseType: 'stream' });
-    res.setHeader('Content-Type', 'application/epub+zip');
-    fileStream.data.pipe(res);
-  } catch(err) {
-    console.error(err);
-    res.status(500).send('No se pudo cargar el libro.');
-  }
-});
-
-// Página Leer Online
-app.get('/read/:id', (req, res) => {
-  const fileId = req.params.id;
-  const html = `
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<title>Leer Online</title>
-<script src="https://cdn.jsdelivr.net/npm/epubjs/dist/epub.min.js"></script>
-<style>
-body { margin:0; background:#000; color:#fff; display:flex; flex-direction:column; height:100vh; }
-#viewer { flex:1; }
-#controls { padding:10px; text-align:center; }
-button { font-size:18px; margin:5px; }
-</style>
-</head>
-<body>
-<div id="viewer"></div>
-<div id="controls">
-  <button id="prev">Anterior</button>
-  <button id="next">Siguiente</button>
-</div>
-<script>
-const book = ePub("/proxy/${fileId}");
-const rendition = book.renderTo("viewer", { width:"100%", height:"100%" });
-rendition.display();
-document.getElementById("next").addEventListener("click", () => rendition.next());
-document.getElementById("prev").addEventListener("click", () => rendition.prev());
-</script>
-</body>
-</html>`;
-  res.send(html);
-});
-
-// -------------------- Servidor --------------------
 app.listen(PORT, ()=>console.log(`Servidor escuchando en puerto ${PORT}`));
