@@ -9,10 +9,6 @@ const PORT = process.env.PORT || 3000;
 // Servir carpeta cover
 app.use('/cover', express.static(path.join(__dirname, 'cover')));
 
-// Servir librería EPUB.js y lectura online
-app.use('/epubjs', express.static(path.join(__dirname, 'epubjs')));
-app.use('/read-online', express.static(path.join(__dirname, 'read-online.html')));
-
 // Service Account
 const SERVICE_ACCOUNT_FILE = path.join(__dirname, 'service-account.json');
 const auth = new google.auth.GoogleAuth({
@@ -22,7 +18,7 @@ const auth = new google.auth.GoogleAuth({
 const drive = google.drive({ version: 'v3', auth });
 
 // ID de la carpeta de Google Drive
-const folderId = '1-4G6gGNtt6KVS90AbWbtH3JlpetHrPEi';
+const folderId = 'TU_ID_DE_CARPETA_AQUI';
 
 // Leer imágenes cover locales
 let coverImages = [];
@@ -61,7 +57,7 @@ input, select { padding:4px 6px; margin:0 2px; font-size:12px; border-radius:6px
 .meta a { font-size:11px; font-weight:bold; text-decoration:none; color:#fff; background: #b5884e; padding:3px 6px; border-radius:5px; display:inline-block; margin-top:3px; box-shadow: inset 0 -2px 2px rgba(0,0,0,0.4), 1px 2px 3px rgba(0,0,0,0.5); transition: all 0.2s ease; }
 .meta a:hover { background:#8b5f2c; box-shadow: inset 0 -2px 2px rgba(0,0,0,0.5), 1px 3px 5px rgba(0,0,0,0.6); transform: translateY(-1px); }
 .meta a:visited { color:#fff; }
-.meta .read-online { display:block; margin-top:2px; color:#f5e6c4; text-decoration:none; font-weight:bold; font-size:11px; }
+.meta .read-online { display:block; margin-top:2px; color:#3e2f1c; text-decoration:none; font-weight:bold; font-size:11px; }
 .meta .read-online:hover { text-decoration:underline; }
 a.button { display:inline-block; margin:10px; text-decoration:none; padding:12px 24px; background:#b5884e; color:#fff; border-radius:10px; font-size:24px; font-weight:bold; box-shadow: inset 0 -3px 5px rgba(0,0,0,0.4), 3px 5px 8px rgba(0,0,0,0.5); }
 a.button:hover { background:#8b5f2c; }
@@ -126,6 +122,8 @@ function ordenarFiles(files, criterio) {
   return sorted;
 }
 
+// -------------------- PÁGINAS --------------------
+
 // Página principal
 app.get('/', async (req, res) => {
   try {
@@ -189,8 +187,130 @@ app.get('/', async (req, res) => {
   }
 });
 
-// Página de lectura online
-// read-online.html debe estar en la raíz del proyecto
-// Contendrá el ejemplo que te di antes con epub.js
+// Página de autores
+app.get('/autores', (req, res) => {
+  const autores = [...new Set(bookMetadata.map(b => b.author).filter(a => a))].sort();
+  const authorsHtml = autores.map(a => `
+<div class="book" style="min-height:100px">
+  <div class="title">${a}</div>
+  <div class="meta"><a href="/autor?name=${encodeURIComponent(a)}">Ver libros</a></div>
+</div>`).join('');
 
+  const html = `
+<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"><title>Autores - Azkaban Reads</title><style>${css}</style></head>
+<body>
+<h1>Autores</h1>
+<div id="grid">${authorsHtml}</div>
+<p>
+  <a href="/" class="button">← Volver a libros</a>
+  <a href="/sagas" class="button">Sagas</a>
+</p>
+</body>
+</html>`;
+  res.send(html);
+});
+
+// Página de libros por autor
+app.get('/autor', (req, res) => {
+  const nombreAutor = req.query.name;
+  if(!nombreAutor) return res.redirect('/autores');
+
+  const libros = bookMetadata.filter(b => b.author === nombreAutor);
+
+  const booksHtml = libros.map(book => {
+    const cover = coverImages.length ? coverImages[Math.floor(Math.random()*coverImages.length)] : null;
+    const imgHtml = cover ? `<img src="${cover}" />` : `<div style="width:80px;height:120px;background:#8b735e;border-radius:5px;">📖</div>`;
+    return `
+<div class="book" style="min-height:160px">
+  ${imgHtml}
+  <div class="title">${book.title}</div>
+  <div class="author" style="color:#bfa66a;">${book.author}</div>
+  ${book.saga?.number?`<div class="meta" style="color:#bfa66a;">#${book.saga.number}</div>`:''}
+  <div class="meta">
+    <a href="https://drive.google.com/uc?export=download&id=${book.id}" target="_blank">Descargar</a>
+    <a href="/read-online.html?id=${book.id}" target="_blank" class="read-online">Leer Online</a>
+  </div>
+</div>`;
+  }).join('');
+
+  const html = `
+<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"><title>Libros de ${nombreAutor}</title><style>${css}</style></head>
+<body>
+<h1>Libros de ${nombreAutor}</h1>
+<div id="grid">${booksHtml}</div>
+<p>
+  <a href="/autores" class="button">← Volver a autores</a>
+  <a href="/" class="button">🪄 Libros</a>
+</p>
+</body>
+</html>`;
+  res.send(html);
+});
+
+// Página de sagas
+app.get('/sagas', (req, res) => {
+  const sagas = [...new Set(bookMetadata.map(b => b.saga?.name).filter(a => a))].sort();
+  const sagasHtml = sagas.map(s => `
+<div class="book" style="min-height:100px">
+  <div class="title">${s}</div>
+  <div class="meta"><a href="/saga?name=${encodeURIComponent(s)}">Ver libros</a></div>
+</div>`).join('');
+
+  const html = `
+<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"><title>Sagas - Azkaban Reads</title><style>${css}</style></head>
+<body>
+<h1>Sagas</h1>
+<div id="grid">${sagasHtml}</div>
+<p>
+  <a href="/" class="button">← Volver a libros</a>
+  <a href="/autores" class="button">Autores</a>
+</p>
+</body>
+</html>`;
+  res.send(html);
+});
+
+// Página de libros por saga
+app.get('/saga', (req, res) => {
+  const nombreSaga = req.query.name;
+  if(!nombreSaga) return res.redirect('/sagas');
+
+  const libros = bookMetadata
+    .filter(b => b.saga?.name === nombreSaga)
+    .sort((a,b) => (a.saga?.number||0) - (b.saga?.number||0));
+
+  const booksHtml = libros.map(book => `
+<div class="book" style="min-height:160px">
+  <div class="title">${book.title}</div>
+  <div class="author" style="color:#bfa66a;">${book.author}</div>
+  ${book.saga?.number?`<div class="meta" style="color:#bfa66a;">#${book.saga.number}</div>`:''}
+  <div class="meta">
+    <a href="https://drive.google.com/uc?export=download&id=${book.id}" target="_blank">Descargar</a>
+    <a href="/read-online.html?id=${book.id}" target="_blank" class="read-online">Leer Online</a>
+  </div>
+</div>`).join('');
+
+  const html = `
+<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"><title>Libros de ${nombreSaga}</title><style>${css}</style></head>
+<body>
+<h1>${nombreSaga}</h1>
+<div id="grid">${booksHtml}</div>
+<p>
+  <a href="/sagas" class="button">← Volver a sagas</a>
+  <a href="/" class="button">🪄 Libros</a>
+</p>
+</body>
+</html>`;
+  res.send(html);
+});
+
+// -------------------- Servidor --------------------
 app.listen(PORT, ()=>console.log(`Servidor escuchando en puerto ${PORT}`));
