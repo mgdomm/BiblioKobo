@@ -4,7 +4,7 @@ const path = require('path');
 const fs = require('fs');
 
 const app = express();
-const PORT = process.env.PORT || 10000;
+const PORT = process.env.PORT || 3000;
 
 // Servir carpeta cover
 app.use('/cover', express.static(path.join(__dirname, 'cover')));
@@ -144,8 +144,7 @@ function renderBookPage({ libros, titlePage, tipo, nombre, req }) {
   ${book.saga?.number ? `<div class="number-span">#${book.saga.number}</div>` : ''}
   <div class="meta">
     <a href="https://drive.google.com/uc?export=download&id=${book.id}" target="_blank">Descargar</a>
-    <br/>
-    <a href="/book/${book.id}" target="_blank">Leer Online</a>
+    <a href="/read/${book.id}" target="_blank">Leer Online</a>
   </div>
 </div>`;
   }).join('');
@@ -208,8 +207,7 @@ app.get('/', async (req, res) => {
   ${author ? `<div class="author"><a href="/autor?name=${encodeURIComponent(author)}">${author}</a></div>` : ''}
   <div class="meta">
     <a href="https://drive.google.com/uc?export=download&id=${file.id}" target="_blank">Descargar</a>
-    <br/>
-    <a href="/book/${file.id}" target="_blank">Leer Online</a>
+    <a href="/read/${file.id}" target="_blank">Leer Online</a>
   </div>
 </div>`;
     }).join('');
@@ -301,45 +299,54 @@ app.get('/saga', (req, res) => {
 });
 
 // -------------------- Leer Online --------------------
-app.get('/book/:id', async (req, res) => {
-  const bookId = req.params.id;
-  const book = bookMetadata.find(b => b.id === bookId);
-  if (!book) return res.send('<p>Libro no encontrado.</p>');
 
-  const epubUrl = `https://drive.google.com/uc?export=download&id=${bookId}`;
+// Proxy para servir EPUB desde Google Drive
+app.get('/proxy/:id', async (req, res) => {
+  const fileId = req.params.id;
+  try {
+    const fileStream = await drive.files.get({ fileId, alt: 'media' }, { responseType: 'stream' });
+    res.setHeader('Content-Type', 'application/epub+zip');
+    fileStream.data.pipe(res);
+  } catch(err) {
+    console.error(err);
+    res.status(500).send('No se pudo cargar el libro.');
+  }
+});
 
+// Página Leer Online
+app.get('/read/:id', (req, res) => {
+  const fileId = req.params.id;
   const html = `
 <!DOCTYPE html>
-<html lang="es">
+<html>
 <head>
 <meta charset="UTF-8">
-<title>${book.title}</title>
+<title>Leer Online</title>
+<script src="https://cdn.jsdelivr.net/npm/epubjs/dist/epub.min.js"></script>
 <style>
-  body { margin:0; background:#000; color:#fff; display:flex; flex-direction:column; height:100vh; }
-  #reader { flex:1; }
-  .controls { background:#111; padding:10px; text-align:center; }
-  .controls button { font-size:18px; margin:0 10px; padding:6px 12px; }
+body { margin:0; background:#000; color:#fff; display:flex; flex-direction:column; height:100vh; }
+#viewer { flex:1; }
+#controls { padding:10px; text-align:center; }
+button { font-size:18px; margin:5px; }
 </style>
 </head>
 <body>
-<div id="reader"></div>
-<div class="controls">
+<div id="viewer"></div>
+<div id="controls">
   <button id="prev">Anterior</button>
   <button id="next">Siguiente</button>
 </div>
-<script src="https://unpkg.com/epubjs/dist/epub.min.js"></script>
 <script>
-  const book = ePub("${epubUrl}");
-  const rendition = book.renderTo("reader", { width:"100%", height:"100%" });
-  rendition.display();
-
-  document.getElementById("prev").addEventListener("click", () => { rendition.prev(); });
-  document.getElementById("next").addEventListener("click", () => { rendition.next(); });
+const book = ePub("/proxy/${fileId}");
+const rendition = book.renderTo("viewer", { width:"100%", height:"100%" });
+rendition.display();
+document.getElementById("next").addEventListener("click", () => rendition.next());
+document.getElementById("prev").addEventListener("click", () => rendition.prev());
 </script>
 </body>
-</html>
-`;
+</html>`;
   res.send(html);
 });
 
+// -------------------- Servidor --------------------
 app.listen(PORT, ()=>console.log(`Servidor escuchando en puerto ${PORT}`));
