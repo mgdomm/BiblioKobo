@@ -164,35 +164,19 @@ function uniqueBooks(arr) {
 // Actualiza books.json automáticamente
 function actualizarBooksJSON(newFiles) {
   let updated = false;
-
   newFiles.forEach(f => {
-    // Primero buscamos en bookMetadata por ID
-    let existing = bookMetadata.find(b => b.id === f.id);
-
-    if (!existing) {
-      // Si no hay ID, extraemos título y autor desde nombre de archivo "Título - Autor.ext"
-      const base = f.name.replace(/\.[^/.]+$/, "");
+    const exists = bookMetadata.some(b => b.id === f.id);
+    if(!exists) {
+      // Extraer título y autor desde nombre de archivo "Título - Autor.ext"
+      const base = f.name.replace(/\.[^/.]+$/, ""); // elimina extensión
       const parts = base.split(' - ');
       const title = parts[0]?.trim() || f.name;
       const author = parts[1]?.trim() || 'Desconocido';
-
-      // Buscamos si ya existe un libro con el mismo título y autor
-      existing = bookMetadata.find(b => 
-        b.title.toLowerCase() === title.toLowerCase() &&
-        b.author.toLowerCase() === author.toLowerCase()
-      );
-
-      if (!existing) {
-        bookMetadata.push({ id: f.id, title, author });
-        updated = true;
-      } else {
-        existing.id = f.id;
-        updated = true;
-      }
+      bookMetadata.push({ id: f.id, title, author });
+      updated = true;
     }
   });
-
-  if (updated) {
+  if(updated) {
     bookMetadata = uniqueBooks(bookMetadata);
     fs.writeFileSync(BOOKS_FILE, JSON.stringify(bookMetadata, null, 2));
   }
