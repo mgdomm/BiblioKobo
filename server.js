@@ -6,10 +6,8 @@ const fs = require('fs');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Servir carpeta cover y archivos estáticos
+// Servir carpeta cover
 app.use('/cover', express.static(path.join(__dirname, 'cover')));
-app.use('/epubjs', express.static(path.join(__dirname, 'epubjs')));
-app.use(express.static(__dirname)); // Para read-online.html
 
 // Service Account
 const SERVICE_ACCOUNT_FILE = path.join(__dirname, 'service-account.json');
@@ -60,11 +58,13 @@ input, select { padding:4px 6px; margin:0 2px; font-size:12px; border-radius:6px
 .meta a { font-size:11px; font-weight:bold; text-decoration:none; color:#fff; background: #b5884e; padding:3px 6px; border-radius:5px; display:inline-block; margin-top:3px; box-shadow: inset 0 -2px 2px rgba(0,0,0,0.4), 1px 2px 3px rgba(0,0,0,0.5); transition: all 0.2s ease; }
 .meta a:hover { background:#8b5f2c; box-shadow: inset 0 -2px 2px rgba(0,0,0,0.5), 1px 3px 5px rgba(0,0,0,0.6); transform: translateY(-1px); }
 .meta a:visited { color:#fff; }
+.meta-online a { font-size:11px; font-weight:bold; text-decoration:none !important; color:#f5e6c4; background:none; padding:0; margin-top:2px; display:inline-block; cursor:pointer; }
+.meta-online a:hover { text-decoration:none !important; color:#f5e6c4; }
 a.button { display:inline-block; margin:10px; text-decoration:none; padding:12px 24px; background:#b5884e; color:#fff; border-radius:10px; font-size:24px; font-weight:bold; box-shadow: inset 0 -3px 5px rgba(0,0,0,0.4), 3px 5px 8px rgba(0,0,0,0.5); }
 a.button:hover { background:#8b5f2c; }
 `;
 
-// -------------------- Funciones auxiliares --------------------
+// --- Funciones auxiliares ---
 async function listAllFiles(folderId) {
   let files = [], pageToken = null;
   do {
@@ -130,7 +130,7 @@ function ordenarBooks(books, criterio, tipo=null) {
   return sorted;
 }
 
-// -------------------- Renderizado de páginas --------------------
+// --- Función genérica de renderizado de libros ---
 function renderBookPage({ libros, titlePage, tipo, nombre, req }) {
   const orden = req.query.ordenar || 'alfabetico';
   libros = ordenarBooks(libros, orden, tipo);
@@ -146,8 +146,9 @@ function renderBookPage({ libros, titlePage, tipo, nombre, req }) {
   ${book.saga?.number ? `<div class="number-span">#${book.saga.number}</div>` : ''}
   <div class="meta">
     <a href="https://drive.google.com/uc?export=download&id=${book.id}" target="_blank">Descargar</a>
-    <br/>
-    <a href="/read-online.html?id=${book.id}" target="_blank" style="color:inherit; text-decoration:underline;">Leer Online</a>
+  </div>
+  <div class="meta-online">
+    <a href="/read-online.html?id=${book.id}" target="_blank">Leer Online</a>
   </div>
 </div>`;
   }).join('');
@@ -177,9 +178,7 @@ function renderBookPage({ libros, titlePage, tipo, nombre, req }) {
   return html;
 }
 
-// -------------------- Rutas --------------------
-
-// Página de inicio
+// --- Rutas principales ---
 app.get('/', async (req, res) => {
   try {
     const query = (req.query.buscar || '').toLowerCase();
@@ -210,8 +209,9 @@ app.get('/', async (req, res) => {
   ${author ? `<div class="author"><a href="/autor?name=${encodeURIComponent(author)}">${author}</a></div>` : ''}
   <div class="meta">
     <a href="https://drive.google.com/uc?export=download&id=${file.id}" target="_blank">Descargar</a>
-    <br/>
-    <a href="/read-online.html?id=${book.id}" target="_blank" style="color:inherit; text-decoration:none;">Leer Online</a>
+  </div>
+  <div class="meta-online">
+    <a href="/read-online.html?id=${file.id}" target="_blank">Leer Online</a>
   </div>
 </div>`;
     }).join('');
@@ -244,7 +244,7 @@ app.get('/', async (req, res) => {
   }
 });
 
-// Página de autores
+// --- Rutas de autores, saga ---
 app.get('/autores', (req, res) => {
   const autores = [...new Set(bookMetadata.map(b => b.author).filter(a => a))].sort();
   const authorsHtml = autores.map(a => `<div class="book" style="min-height:100px"><div class="title">${a}</div><div class="meta"><a href="/autor?name=${encodeURIComponent(a)}">Ver libros</a></div></div>`).join('');
@@ -265,7 +265,6 @@ app.get('/autores', (req, res) => {
   res.send(html);
 });
 
-// Página de libros por autor
 app.get('/autor', (req, res) => {
   const nombreAutor = req.query.name;
   if(!nombreAutor) return res.redirect('/autores');
@@ -273,7 +272,6 @@ app.get('/autor', (req, res) => {
   res.send(renderBookPage({ libros, titlePage: `Libros de ${nombreAutor}`, tipo: 'autor', nombre: nombreAutor, req }));
 });
 
-// Página de sagas
 app.get('/sagas', (req, res) => {
   const sagas = [...new Set(bookMetadata.map(b => b.saga?.name).filter(a => a))].sort();
   const sagasHtml = sagas.map(s => `<div class="book" style="min-height:100px"><div class="title">${s}</div><div class="meta"><a href="/saga?name=${encodeURIComponent(s)}">Ver libros</a></div></div>`).join('');
@@ -294,7 +292,6 @@ app.get('/sagas', (req, res) => {
   res.send(html);
 });
 
-// Página de libros por saga
 app.get('/saga', (req, res) => {
   const nombreSaga = req.query.name;
   if(!nombreSaga) return res.redirect('/sagas');
@@ -302,5 +299,4 @@ app.get('/saga', (req, res) => {
   res.send(renderBookPage({ libros, titlePage: `Libros de ${nombreSaga}`, tipo: 'saga', nombre: nombreSaga, req }));
 });
 
-// Iniciar servidor
 app.listen(PORT, ()=>console.log(`Servidor escuchando en puerto ${PORT}`));
