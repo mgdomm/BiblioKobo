@@ -10,7 +10,8 @@ body { margin:0; padding:0; background:#1c1a13; color:#f5e6c4; font-family: 'Gar
 button { padding: 8px 12px; margin: 0 4px; font-size:14px; border-radius:6px; border:none; background:#b5884e; color:#fff; cursor:pointer; }
 button:hover { background:#8b5f2c; }
 </style>
-<script src="/epubjs/epub.min.js"></script>
+<!-- Usamos CDN de epub.js -->
+<script src="https://cdn.jsdelivr.net/npm/epubjs/dist/epub.min.js"></script>
 </head>
 <body>
 <div id="viewer"></div>
@@ -22,7 +23,41 @@ button:hover { background:#8b5f2c; }
 <script>
 const params = new URLSearchParams(window.location.search);
 const bookId = params.get('id');
-if(!bookId){ alert('No se encontró el libro'); }
+if(!bookId){ 
+    alert('No se encontró el libro'); 
+    throw new Error('No se proporcionó id de libro');
+}
 
+// URL del libro en Google Drive
 const bookUrl = `https://drive.google.com/uc?export=download&id=${bookId}`;
-const bookKey = `readPos_${bookId
+const bookKey = `readPos_${bookId}`;
+
+// Inicializamos el libro
+const book = ePub(bookUrl);
+const rendition = book.renderTo("viewer", { width:"100%", height:"100%" });
+
+// Restaurar última página
+let storedLocation = localStorage.getItem(bookKey);
+if(storedLocation) {
+    rendition.display(storedLocation);
+} else {
+    rendition.display();
+}
+
+// Guardar progreso al cambiar de ubicación
+rendition.on('relocated', function(location){
+    localStorage.setItem(bookKey, location.start.cfi);
+});
+
+// Controles
+document.getElementById('prev').addEventListener('click', () => rendition.prev());
+document.getElementById('next').addEventListener('click', () => rendition.next());
+
+// Navegación con teclado
+document.addEventListener('keydown', (e) => {
+    if(e.key === 'ArrowLeft') rendition.prev();
+    if(e.key === 'ArrowRight') rendition.next();
+});
+</script>
+</body>
+</html>
