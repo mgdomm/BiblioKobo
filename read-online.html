@@ -25,32 +25,4 @@ const bookId = params.get('id');
 if(!bookId){ alert('No se encontró el libro'); }
 
 const bookUrl = `https://drive.google.com/uc?export=download&id=${bookId}`;
-const bookKey = `readPos_${bookId}`;
-
-const book = ePub(bookUrl);
-const rendition = book.renderTo("viewer", { width:"100%", height:"100%" });
-
-let storedLocation = localStorage.getItem(bookKey);
-if(storedLocation) {
-    rendition.display(storedLocation);
-} else {
-    rendition.display();
-}
-
-rendition.on('relocated', function(location){
-    localStorage.setItem(bookKey, location.start.cfi);
-});
-
-// Controles
-document.getElementById('prev').addEventListener('click', () => rendition.prev());
-document.getElementById('next').addEventListener('click', () => rendition.next());
-
-// Navegación con teclado
-document.addEventListener('keydown', (e) => {
-    if(e.key === 'ArrowLeft') rendition.prev();
-    if(e.key === 'ArrowRight') rendition.next();
-});
-</script>
-</body>
-</html>
-
+const bookKey = `readPos_${bookId
