@@ -2,65 +2,125 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Leer Online</title>
+<title>Lector EPUB</title>
+
+<!-- EPUB.js desde CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/epub.js/0.3.88/epub.min.js"></script>
+
 <style>
-body { margin:0; padding:0; background:#1c1a13; color:#f5e6c4; font-family: 'Garamond', serif; }
-#viewer { width: 100%; height: 100vh; background:#1c1a13; }
-#controls { position: fixed; bottom: 10px; left: 50%; transform: translateX(-50%); z-index: 100; }
-button { padding: 8px 12px; margin: 0 4px; font-size:14px; border-radius:6px; border:none; background:#b5884e; color:#fff; cursor:pointer; }
-button:hover { background:#8b5f2c; }
+    body {
+        margin: 0;
+        padding: 0;
+        background: #121212;
+        color: #e0d6c2;
+        font-family: "Garamond", serif;
+        overflow: hidden;
+    }
+
+    a { 
+        text-decoration: none !important;
+        color: inherit !important;
+    }
+
+    #viewer {
+        height: calc(100vh - 70px);
+        width: 100%;
+        background: #1d1b16;
+        box-sizing: border-box;
+    }
+
+    #controls {
+        height: 70px;
+        background: #1a1814;
+        border-top: 1px solid #3a352d;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 25px;
+    }
+
+    button {
+        background: #3a352d;
+        border: none;
+        color: #f5e6c4;
+        padding: 12px 22px;
+        font-size: 16px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+    button:hover {
+        background: #5a5244;
+    }
 </style>
-<!-- CDN de epub.js -->
-<script src="https://cdn.jsdelivr.net/npm/epubjs/dist/epub.min.js"></script>
+
 </head>
 <body>
+
 <div id="viewer"></div>
+
 <div id="controls">
-  <button id="prev">⬅ Anterior</button>
-  <button id="next">Siguiente ➡</button>
+    <button id="prev">← Anterior</button>
+    <button id="next">Siguiente →</button>
 </div>
 
-<script>
-const params = new URLSearchParams(window.location.search);
-const bookId = params.get('id');
 
-if(!bookId){ 
-    alert('No se encontró el libro'); 
-    throw new Error('No se proporcionó id de libro');
+<script>
+
+// Obtener ID del libro desde la URL
+const params = new URLSearchParams(window.location.search);
+const bookId = params.get("id");
+
+if (!bookId) {
+    document.body.innerHTML = "<h1 style='padding:20px;color:white;'>❌ Falta el parámetro id en la URL</h1>";
+    throw new Error("Falta ?id= en read-online.html");
 }
 
-// URL de Google Drive
-const bookUrl = `https://drive.google.com/uc?export=download&id=${bookId}`;
-const bookKey = `readPos_${bookId}`;
+// Construir URL del servidor
+const bookUrl = `/book/${bookId}`;
+const bookKey = `pos_${bookId}`;
 
-// Inicializamos el libro
+// Crear libro con EPUB.js
 const book = ePub(bookUrl);
-const rendition = book.renderTo("viewer", { width:"100%", height:"100%" });
 
-// Esperamos a que el libro esté listo
-book.ready.then(() => {
-    let storedLocation = localStorage.getItem(bookKey);
-    if(storedLocation) {
-        rendition.display(storedLocation);
-    } else {
-        rendition.display();
-    }
+// Renderizado
+const rendition = book.renderTo("viewer", {
+    width: "100%",
+    height: "100%",
+    spread: "auto",
+    flow: "paginated"
 });
 
-// Guardar progreso al cambiar de ubicación
-rendition.on('relocated', function(location){
+// Cargar última posición
+const savedLocation = localStorage.getItem(bookKey);
+
+if (savedLocation) {
+    rendition.display(savedLocation);
+} else {
+    rendition.display();
+}
+
+// Guardar progreso
+rendition.on("relocated", (location) => {
     localStorage.setItem(bookKey, location.start.cfi);
 });
 
-// Controles
-document.getElementById('prev').addEventListener('click', () => rendition.prev());
-document.getElementById('next').addEventListener('click', () => rendition.next());
-
-// Navegación con teclado
-document.addEventListener('keydown', (e) => {
-    if(e.key === 'ArrowLeft') rendition.prev();
-    if(e.key === 'ArrowRight') rendition.next();
+// Controles botones
+document.getElementById("prev").addEventListener("click", () => {
+    rendition.prev();
 });
+document.getElementById("next").addEventListener("click", () => {
+    rendition.next();
+});
+
+// Controles teclado
+document.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowLeft") rendition.prev();
+    if (e.key === "ArrowRight") rendition.next();
+});
+
 </script>
+
 </body>
 </html>
