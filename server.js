@@ -114,41 +114,66 @@ function actualizarBooksJSON(newFiles) {
   }
 }
 
-function ordenarFiles(files, criterio, tipo=null) {
-  let sorted = [...files];
+function ordenarBooks(books, criterio, tipo=null) {
+  let sorted = [...books];
   if(tipo==='autor' || tipo==='saga') {
-    // Orden específico para libros de autor o saga
-    if(criterio==='alfabetico') sorted.sort((a,b)=> {
-      const ta = a.title.toLowerCase();
-      const tb = b.title.toLowerCase();
-      return ta.localeCompare(tb);
-    });
-    else if(criterio==='alfabetico-desc') sorted.sort((a,b)=> {
-      const ta = a.title.toLowerCase();
-      const tb = b.title.toLowerCase();
-      return tb.localeCompare(ta);
-    });
+    if(criterio==='alfabetico') sorted.sort((a,b)=> a.title.toLowerCase().localeCompare(b.title.toLowerCase()));
+    else if(criterio==='alfabetico-desc') sorted.sort((a,b)=> b.title.toLowerCase().localeCompare(a.title.toLowerCase()));
     else if(criterio==='numero') sorted.sort((a,b)=> (a.saga?.number||0) - (b.saga?.number||0));
   } else {
-    // Página de inicio
-    if(criterio==='alfabetico') sorted.sort((a,b)=> {
-      const ta = bookMetadata.find(x=>x.id===a.id)?.title || a.name;
-      const tb = bookMetadata.find(x=>x.id===b.id)?.title || b.name;
-      return ta.localeCompare(tb);
-    });
-    else if(criterio==='alfabetico-desc') sorted.sort((a,b)=> {
-      const ta = bookMetadata.find(x=>x.id===a.id)?.title || a.name;
-      const tb = bookMetadata.find(x=>x.id===b.id)?.title || b.name;
-      return tb.localeCompare(ta);
-    });
+    if(criterio==='alfabetico') sorted.sort((a,b)=> (bookMetadata.find(x=>x.id===a.id)?.title||a.name).localeCompare(bookMetadata.find(x=>x.id===b.id)?.title||b.name));
+    else if(criterio==='alfabetico-desc') sorted.sort((a,b)=> (bookMetadata.find(x=>x.id===b.id)?.title||b.name).localeCompare(bookMetadata.find(x=>x.id===a.id)?.title||a.name));
     else if(criterio==='recientes') sorted.sort((a,b)=> new Date(b.createdTime)-new Date(a.createdTime));
   }
   return sorted;
 }
 
-// -------------------- Páginas --------------------
+// Función genérica para renderizar páginas de libros (autor o saga)
+function renderBookPage({ libros, titlePage, tipo, nombre, req }) {
+  const orden = req.query.ordenar || 'alfabetico';
+  libros = ordenarBooks(libros, orden, tipo);
+  const maxHeight = 180;
+  const booksHtml = libros.map(book => {
+    const cover = coverImages.length ? coverImages[Math.floor(Math.random()*coverImages.length)] : null;
+    const imgHtml = cover ? `<img src="${cover}" />` : `<div style="width:80px;height:120px;background:#8b735e;border-radius:5px;">📖</div>`;
+    return `
+<div class="book" style="min-height:${maxHeight}px">
+  ${imgHtml}
+  <div class="title">${book.title}</div>
+  <div class="author-span">${book.author}</div>
+  ${book.saga?.number ? `<div class="number-span">#${book.saga.number}</div>` : ''}
+  <div class="meta"><a href="https://drive.google.com/uc?export=download&id=${book.id}" target="_blank">Descargar</a></div>
+</div>`;
+  }).join('');
 
-// Página principal
+  const html = `
+<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"><title>${titlePage}</title><style>${css}</style></head>
+<body>
+<h1>${titlePage}</h1>
+<p>
+  <a href="/" class="button">🪄 Libros</a>
+  ${tipo==='autor'?'<a href="/sagas" class="button">Sagas</a>':'<a href="/autores" class="button">Autores</a>'}
+</p>
+<form method="get" action="/${tipo}">
+<select name="ordenar" onchange="this.form.submit()">
+  <option value="alfabetico" ${orden==='alfabetico'?'selected':''}>A→Z</option>
+  <option value="alfabetico-desc" ${orden==='alfabetico-desc'?'selected':''}>Z→A</option>
+  ${tipo==='saga'?'<option value="numero" '+(orden==='numero'?'selected':'')+'>#Número</option>':''}
+</select>
+<input type="hidden" name="name" value="${nombre}" />
+</form>
+<div id="grid">${booksHtml}</div>
+<p><a href="/${tipo==='autor'?'autores':'sagas'}" class="button">← Volver</a></p>
+</body>
+</html>`;
+  return html;
+}
+
+// -------------------- Rutas --------------------
+
+// Página de inicio
 app.get('/', async (req, res) => {
   try {
     const query = (req.query.buscar || '').toLowerCase();
@@ -162,7 +187,7 @@ app.get('/', async (req, res) => {
       const title = metadata ? metadata.title.toLowerCase() : f.name.toLowerCase();
       return title.includes(query);
     });
-    files = ordenarFiles(files, orden);
+    files = ordenarBooks(files, orden);
 
     const maxHeight = 180;
     const booksHtml = files.map(file => {
@@ -211,14 +236,8 @@ app.get('/', async (req, res) => {
 
 // Página de autores
 app.get('/autores', (req, res) => {
-  const orden = req.query.ordenar || 'alfabetico';
   const autores = [...new Set(bookMetadata.map(b => b.author).filter(a => a))].sort();
-  const authorsHtml = autores.map(a => `
-<div class="book" style="min-height:100px">
-  <div class="title">${a}</div>
-  <div class="meta"><a href="/autor?name=${encodeURIComponent(a)}">Ver libros</a></div>
-</div>`).join('');
-
+  const authorsHtml = autores.map(a => `<div class="book" style="min-height:100px"><div class="title">${a}</div><div class="meta"><a href="/autor?name=${encodeURIComponent(a)}">Ver libros</a></div></div>`).join('');
   const html = `
 <!DOCTYPE html>
 <html lang="es">
@@ -229,12 +248,6 @@ app.get('/autores', (req, res) => {
   <a href="/" class="button">🪄 Libros</a>
   <a href="/sagas" class="button">Sagas</a>
 </p>
-<form method="get" action="/autores">
-<select name="ordenar" onchange="this.form.submit()">
-  <option value="alfabetico" ${orden==='alfabetico'?'selected':''}>A→Z</option>
-  <option value="alfabetico-desc" ${orden==='alfabetico-desc'?'selected':''}>Z→A</option>
-</select>
-</form>
 <div id="grid">${authorsHtml}</div>
 <p><a href="/" class="button">← Volver a libros</a></p>
 </body>
@@ -246,61 +259,14 @@ app.get('/autores', (req, res) => {
 app.get('/autor', (req, res) => {
   const nombreAutor = req.query.name;
   if(!nombreAutor) return res.redirect('/autores');
-
-  const orden = req.query.ordenar || 'alfabetico';
-  let libros = bookMetadata.filter(b => b.author === nombreAutor);
-  libros = ordenarFiles(libros, orden, 'autor');
-
-  const maxHeight = 180;
-  const booksHtml = libros.map(book => {
-    const cover = coverImages.length ? coverImages[Math.floor(Math.random()*coverImages.length)] : null;
-    const imgHtml = cover ? `<img src="${cover}" />` : `<div style="width:80px;height:120px;background:#8b735e;border-radius:5px;">📖</div>`;
-    return `
-<div class="book" style="min-height:${maxHeight}px">
-  ${imgHtml}
-  <div class="title">${book.title}</div>
-  <div class="author-span">${book.author}</div>
-  ${book.saga?.number ? `<div class="number-span">#${book.saga.number}</div>` : ''}
-  <div class="meta"><a href="https://drive.google.com/uc?export=download&id=${book.id}" target="_blank">Descargar</a></div>
-</div>`;
-  }).join('');
-
-  const html = `
-<!DOCTYPE html>
-<html lang="es">
-<head><meta charset="UTF-8"><title>${nombreAutor}</title><style>${css}</style></head>
-<body>
-<h1>Libros de ${nombreAutor}</h1>
-<p>
-  <a href="/autores" class="button">← Volver a autores</a> 
-  | 
-  <a href="/" class="button">🪄 Libros</a> 
-  | 
-  <a href="/sagas" class="button">Sagas</a>
-</p>
-<form method="get" action="/autor">
-<select name="ordenar" onchange="this.form.submit()">
-  <option value="alfabetico" ${orden==='alfabetico'?'selected':''}>A→Z</option>
-  <option value="alfabetico-desc" ${orden==='alfabetico-desc'?'selected':''}>Z→A</option>
-  <option value="numero" ${orden==='numero'?'selected':''}>#Número</option>
-</select>
-<input type="hidden" name="name" value="${nombreAutor}" />
-</form>
-<div id="grid">${booksHtml}</div>
-</body>
-</html>`;
-  res.send(html);
+  const libros = bookMetadata.filter(b => b.author === nombreAutor);
+  res.send(renderBookPage({ libros, titlePage: `Libros de ${nombreAutor}`, tipo: 'autor', nombre: nombreAutor, req }));
 });
 
 // Página de sagas
 app.get('/sagas', (req, res) => {
   const sagas = [...new Set(bookMetadata.map(b => b.saga?.name).filter(a => a))].sort();
-  const sagasHtml = sagas.map(s => `
-<div class="book" style="min-height:100px">
-  <div class="title">${s}</div>
-  <div class="meta"><a href="/saga?name=${encodeURIComponent(s)}">Ver libros</a></div>
-</div>`).join('');
-
+  const sagasHtml = sagas.map(s => `<div class="book" style="min-height:100px"><div class="title">${s}</div><div class="meta"><a href="/saga?name=${encodeURIComponent(s)}">Ver libros</a></div></div>`).join('');
   const html = `
 <!DOCTYPE html>
 <html lang="es">
@@ -322,46 +288,8 @@ app.get('/sagas', (req, res) => {
 app.get('/saga', (req, res) => {
   const nombreSaga = req.query.name;
   if(!nombreSaga) return res.redirect('/sagas');
-
-  const orden = req.query.ordenar || 'alfabetico';
-  let libros = bookMetadata
-    .filter(b => b.saga?.name === nombreSaga);
-  libros = ordenarFiles(libros, orden, 'saga');
-
-  const maxHeight = 180;
-  const booksHtml = libros.map(book => `
-<div class="book" style="min-height:${maxHeight}px">
-  <div class="title">${book.title}</div>
-  <div class="author-span">${book.author}</div>
-  ${book.saga?.number ? `<div class="number-span">#${book.saga.number}</div>` : ''}
-  <div class="meta"><a href="https://drive.google.com/uc?export=download&id=${book.id}" target="_blank">Descargar</a></div>
-</div>`).join('');
-
-  const html = `
-<!DOCTYPE html>
-<html lang="es">
-<head><meta charset="UTF-8"><title>${nombreSaga}</title><style>${css}</style></head>
-<body>
-<h1>${nombreSaga}</h1>
-<p>
-  <a href="/sagas" class="button">← Volver a sagas</a> 
-  | 
-  <a href="/" class="button">🪄 Libros</a> 
-  | 
-  <a href="/autores" class="button">Autores</a>
-</p>
-<form method="get" action="/saga">
-<select name="ordenar" onchange="this.form.submit()">
-  <option value="alfabetico" ${orden==='alfabetico'?'selected':''}>A→Z</option>
-  <option value="alfabetico-desc" ${orden==='alfabetico-desc'?'selected':''}>Z→A</option>
-  <option value="numero" ${orden==='numero'?'selected':''}>#Número</option>
-</select>
-<input type="hidden" name="name" value="${nombreSaga}" />
-</form>
-<div id="grid">${booksHtml}</div>
-</body>
-</html>`;
-  res.send(html);
+  const libros = bookMetadata.filter(b => b.saga?.name === nombreSaga);
+  res.send(renderBookPage({ libros, titlePage: `Libros de ${nombreSaga}`, tipo: 'saga', nombre: nombreSaga, req }));
 });
 
 app.listen(PORT, ()=>console.log(`Servidor escuchando en puerto ${PORT}`));
