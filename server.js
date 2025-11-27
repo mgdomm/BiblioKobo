@@ -98,6 +98,11 @@ input, select {
   margin-bottom:2px;
   text-shadow: 1px 1px 0 #fff, -1px -1px 0 #000;
 }
+.author a {
+  color:#3e2f1c;
+  text-decoration:none;
+  font-size:11px;
+}
 .meta a {
   font-size:11px;
   font-weight:bold;
@@ -167,8 +172,7 @@ function actualizarBooksJSON(newFiles) {
   newFiles.forEach(f => {
     const exists = bookMetadata.some(b => b.id === f.id);
     if(!exists) {
-      // Extraer título y autor desde nombre de archivo "Título - Autor.ext"
-      const base = f.name.replace(/\.[^/.]+$/, ""); // elimina extensión
+      const base = f.name.replace(/\.[^/.]+$/, "");
       const parts = base.split(' - ');
       const title = parts[0]?.trim() || f.name;
       const author = parts[1]?.trim() || 'Desconocido';
@@ -218,7 +222,7 @@ app.get('/', async (req, res) => {
 <div class="book" style="min-height:${maxHeight}px">
   ${imgHtml}
   <div class="title">${title}</div>
-  ${author ? `<div class="author">${author}</div>` : ''}
+  ${author ? `<div class="author"><a href="/autor?name=${encodeURIComponent(author)}">${author}</a></div>` : ''}
   <div class="meta"><a href="https://drive.google.com/uc?export=download&id=${file.id}" target="_blank">Descargar</a></div>
 </div>`;
     }).join('');
