@@ -981,7 +981,7 @@
     "id": "1-K_1raa6_b-M-mirI3gSfe6oCblTfS1h",
     "title": "Un destino teñido de sangre",
     "author": "Danielle L. Jensen",
-    "saga": {
+    "Saga": {
       "name": "Un destino teñido de sangre",
       "number": 1
     }
@@ -990,7 +990,7 @@
     "id": "1-c0bKEOROywNqkpPqGGv6HrxpDvS5Cgp",
     "title": "Imperio de Fuego Azul",
     "author": "Lucia Cerezo",
-    "saga": {
+    "Saga": {
       "name": "Imperio de Fuego Azul",
       "number": 1
     }
@@ -999,7 +999,7 @@
     "id": "1-GXmS7AjYU73RFHzPdgV7O1gae8_4t9k",
     "title": "El País de Oz",
     "author": "Lyman Frank Baum",
-    "saga": {
+    "Saga": {
       "name": "El Mago de Oz",
       "number": 1
     }
@@ -1008,11 +1008,9 @@
     "id": "1-DUWQXet4dTAeOXs18rRS8F2_VFrPMpp",
     "title": "The Wonderful Wizard of Oz",
     "author": "Lyman Frank Baum",
-    "saga": {
+    "Saga": {
       "name": "El Mago de Oz",
       "number": 1
     }
   }
 ]
-
-
