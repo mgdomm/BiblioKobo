@@ -4,13 +4,10 @@ const path = require('path');
 const fs = require('fs');
 
 const app = express();
-const PORT = process.env.PORT || 10000;
+const PORT = process.env.PORT || 3000;
 
 // Servir carpeta cover
 app.use('/cover', express.static(path.join(__dirname, 'cover')));
-
-// Servir epub.js desde CDN
-app.use('/epubjs', express.static(path.join(__dirname, 'node_modules', 'epubjs', 'dist')));
 
 // Service Account
 const SERVICE_ACCOUNT_FILE = path.join(__dirname, 'service-account.json');
@@ -147,7 +144,7 @@ function renderBookPage({ libros, titlePage, tipo, nombre, req }) {
   ${book.saga?.number ? `<div class="number-span">#${book.saga.number}</div>` : ''}
   <div class="meta">
     <a href="https://drive.google.com/uc?export=download&id=${book.id}" target="_blank">Descargar</a>
-    <a href="/read/${book.id}" style="margin-left:5px;">Leer Online</a>
+    <a href="/read-online?id=${book.id}" target="_blank">Leer Online</a>
   </div>
 </div>`;
   }).join('');
@@ -179,51 +176,63 @@ function renderBookPage({ libros, titlePage, tipo, nombre, req }) {
 
 // -------------------- Rutas --------------------
 
-// Proxy para leer EPUB (evita CORS)
-app.get('/proxy/:id', async (req,res)=>{
-  const fileId = req.params.id;
+// Proxy para EPUB (leer online)
+app.get('/epub-proxy', async (req, res) => {
+  const fileId = req.query.id;
+  if (!fileId) return res.status(400).send('ID de libro no proporcionado');
   try {
-    const file = await drive.files.get({ fileId, alt:'media' }, { responseType:'stream' });
-    res.setHeader('Content-Type','application/epub+zip');
-    file.data.pipe(res);
-  } catch(e) {
-    res.status(500).send('Error cargando libro.');
+    const response = await drive.files.get(
+      { fileId, alt: 'media' },
+      { responseType: 'stream' }
+    );
+    res.setHeader('Content-Type', 'application/epub+zip');
+    response.data.pipe(res);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error al obtener el libro desde Drive');
   }
 });
 
-// Leer Online
-app.get('/read/:id', (req,res)=>{
-  const fileId = req.params.id;
+// Leer online
+app.get('/read-online', (req, res) => {
+  const fileId = req.query.id;
+  if(!fileId) return res.send('<p>ID de libro no proporcionado</p>');
+
   const html = `
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<title>Leer Libro</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/epub.js/0.3.88/epub.min.js"></script>
-<style>
-body{margin:0;background:#000;color:#fff;text-align:center;}
-#viewer{width:100%;height:100vh;}
-button{position:fixed;top:10px;background:#333;color:#fff;border:none;padding:10px;font-size:16px;cursor:pointer;}
-#prev{left:10px;}
-#next{right:10px;}
-</style>
+  <meta charset="UTF-8">
+  <title>Leer Online</title>
+  <style>
+    body { margin:0; padding:0; background:#1c1a13; color:#f5e6c4; text-align:center; }
+    #reader { width: 100%; height: 90vh; margin:0 auto; }
+    button { padding:10px 20px; margin:5px; font-size:16px; border-radius:6px; background:#b5884e; color:#fff; border:none; cursor:pointer; }
+    button:hover { background:#8b5f2c; }
+  </style>
 </head>
 <body>
-<div id="viewer"></div>
-<button id="prev">Anterior</button>
-<button id="next">Siguiente</button>
-<script>
-const book = ePub("/proxy/${fileId}");
-const rendition = book.renderTo("viewer", { width:"100%", height:"100%" });
-rendition.display();
-document.getElementById("prev").addEventListener("click", ()=>rendition.prev());
-document.getElementById("next").addEventListener("click", ()=>rendition.next());
-</script>
+  <div id="reader"></div>
+  <div>
+    <button id="prev">Anterior</button>
+    <button id="next">Siguiente</button>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/epubjs/dist/epub.min.js"></script>
+  <script>
+    const url = "/epub-proxy?id=${fileId}";
+    const book = ePub(url);
+    const rendition = book.renderTo("reader", { width:"100%", height:"90vh" });
+    rendition.display();
+    document.getElementById("prev").addEventListener("click", () => rendition.prev());
+    document.getElementById("next").addEventListener("click", () => rendition.next());
+  </script>
 </body>
-</html>`;
+</html>
+  `;
   res.send(html);
 });
+
+// -------------------- Rutas originales (inicio, autores, sagas, etc.) --------------------
 
 // Página de inicio
 app.get('/', async (req, res) => {
@@ -256,7 +265,7 @@ app.get('/', async (req, res) => {
   ${author ? `<div class="author"><a href="/autor?name=${encodeURIComponent(author)}">${author}</a></div>` : ''}
   <div class="meta">
     <a href="https://drive.google.com/uc?export=download&id=${file.id}" target="_blank">Descargar</a>
-    <a href="/read/${file.id}" style="margin-left:5px;">Leer Online</a>
+    <a href="/read-online?id=${file.id}" target="_blank">Leer Online</a>
   </div>
 </div>`;
     }).join('');
