@@ -4,78 +4,41 @@
 <meta charset="UTF-8">
 <title>Leer Online</title>
 <style>
-  body {
-    margin: 0;
-    padding: 0;
-    background: #000;
-    color: #fff;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
-    font-family: sans-serif;
-  }
-  #viewer {
-    width: 80%;
-    height: 80%;
-    border: 1px solid #fff;
-    background: #111;
-    overflow: hidden;
-  }
-  .controls {
-    margin: 10px;
-  }
-  .controls button {
-    padding: 10px 20px;
-    font-size: 16px;
-    margin: 0 10px;
-    border-radius: 6px;
-    border: none;
-    background: #b5884e;
-    color: #fff;
-    cursor: pointer;
-  }
-  .controls button:hover {
-    background: #8b5f2c;
-  }
+  body { margin:0; background:#000; color:#fff; display:flex; flex-direction:column; height:100vh; }
+  #viewer { flex:1; overflow:hidden; }
+  #controls { padding:10px; text-align:center; background:#111; }
+  button { margin:0 10px; padding:8px 16px; font-size:16px; }
 </style>
 </head>
 <body>
 
-<div class="controls">
+<div id="viewer"></div>
+
+<div id="controls">
   <button id="prev">Anterior</button>
   <button id="next">Siguiente</button>
 </div>
 
-<div id="viewer"></div>
-
 <script src="https://cdn.jsdelivr.net/npm/epubjs/dist/epub.min.js"></script>
 <script>
-  // Obtener ID del libro desde query string
   const params = new URLSearchParams(window.location.search);
   const bookId = params.get('id');
+  if(!bookId){ alert("No se indicó libro"); }
 
-  if(!bookId){
-    document.body.innerHTML = '<p style="color:red;">No se proporcionó ID del libro</p>';
-    throw new Error('No book ID');
-  }
-
-  // URL del proxy que sirve el EPUB
-  const bookUrl = `/epub-proxy?id=${bookId}`;
-
-  // Inicializar epub.js
-  const book = ePub(bookUrl);
+  const book = ePub(`/epub-proxy?id=${bookId}`);
   const rendition = book.renderTo("viewer", {
     width: "100%",
-    height: "100%",
+    height: "100%"
   });
 
   rendition.display();
 
-  // Botones
-  document.getElementById('prev').addEventListener('click', () => rendition.prev());
-  document.getElementById('next').addEventListener('click', () => rendition.next());
+  document.getElementById('prev').addEventListener('click', () => {
+    rendition.prev();
+  });
+  document.getElementById('next').addEventListener('click', () => {
+    rendition.next();
+  });
 </script>
 
 </body>
