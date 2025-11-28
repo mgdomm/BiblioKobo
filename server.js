@@ -2,12 +2,14 @@ const express = require('express');
 const { google } = require('googleapis');
 const path = require('path');
 const fs = require('fs');
+const axios = require('axios');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Servir carpeta cover
+// Servir carpeta cover y libros
 app.use('/cover', express.static(path.join(__dirname, 'cover')));
+app.use('/books', express.static(path.join(__dirname, 'books')));
 
 // Service Account
 const SERVICE_ACCOUNT_FILE = path.join(__dirname, 'service-account.json');
@@ -19,6 +21,9 @@ const drive = google.drive({ version: 'v3', auth });
 
 // ID de la carpeta de Google Drive
 const folderId = '1-4G6gGNtt6KVS90AbWbtH3JlpetHrPEi';
+
+// Crear carpeta books si no existe
+if (!fs.existsSync(path.join(__dirname, 'books'))) fs.mkdirSync(path.join(__dirname, 'books'));
 
 // Leer imágenes cover locales
 let coverImages = [];
@@ -87,9 +92,27 @@ function uniqueBooks(arr) {
   });
 }
 
-function actualizarBooksJSON(newFiles) {
+// Función para descargar libro automáticamente
+async function downloadBook(file) {
+  const destPath = path.join(__dirname, 'books', file.name);
+  if (fs.existsSync(destPath)) return; // ya descargado
+  const dest = fs.createWriteStream(destPath);
+  const res = await drive.files.get(
+    { fileId: file.id, alt: 'media' },
+    { responseType: 'stream' }
+  );
+  await new Promise((resolve, reject) => {
+    res.data
+      .on('end', resolve)
+      .on('error', reject)
+      .pipe(dest);
+  });
+  console.log(`Libro descargado: ${file.name}`);
+}
+
+async function actualizarBooksJSON(newFiles) {
   let updated = false;
-  newFiles.forEach(f => {
+  for(const f of newFiles){
     const exists = bookMetadata.some(b => b.id === f.id);
     if(!exists){
       const base = f.name.replace(/\.[^/.]+$/, "");
@@ -104,10 +127,11 @@ function actualizarBooksJSON(newFiles) {
           if(sagaMatch[2]) saga.number = parseInt(sagaMatch[2],10);
         }
       }
-      bookMetadata.push({ id: f.id, title, author, saga });
+      bookMetadata.push({ id: f.id, title, author, saga, filename: f.name });
       updated = true;
+      await downloadBook(f); // Descargar automáticamente
     }
-  });
+  }
   if(updated){
     bookMetadata = uniqueBooks(bookMetadata);
     fs.writeFileSync(BOOKS_FILE, JSON.stringify(bookMetadata, null, 2));
@@ -121,14 +145,14 @@ function ordenarBooks(books, criterio, tipo=null) {
     else if(criterio==='alfabetico-desc') sorted.sort((a,b)=> b.title.toLowerCase().localeCompare(a.title.toLowerCase()));
     else if(criterio==='numero') sorted.sort((a,b)=> (a.saga?.number||0) - (b.saga?.number||0));
   } else {
-    if(criterio==='alfabetico') sorted.sort((a,b)=> (bookMetadata.find(x=>x.id===a.id)?.title||a.name).localeCompare(bookMetadata.find(x=>x.id===b.id)?.title||b.name));
-    else if(criterio==='alfabetico-desc') sorted.sort((a,b)=> (bookMetadata.find(x=>x.id===b.id)?.title||b.name).localeCompare(bookMetadata.find(x=>x.id===a.id)?.title||a.name));
+    if(criterio==='alfabetico') sorted.sort((a,b)=> a.title.localeCompare(b.title));
+    else if(criterio==='alfabetico-desc') sorted.sort((a,b)=> b.title.localeCompare(a.title));
     else if(criterio==='recientes') sorted.sort((a,b)=> new Date(b.createdTime)-new Date(a.createdTime));
   }
   return sorted;
 }
 
-// Función genérica para renderizar páginas de libros (autor o saga)
+// Función para renderizar página de libros
 function renderBookPage({ libros, titlePage, tipo, nombre, req }) {
   const orden = req.query.ordenar || 'alfabetico';
   libros = ordenarBooks(libros, orden, tipo);
@@ -143,8 +167,8 @@ function renderBookPage({ libros, titlePage, tipo, nombre, req }) {
   <div class="author-span">${book.author}</div>
   ${book.saga?.number ? `<div class="number-span">#${book.saga.number}</div>` : ''}
   <div class="meta">
-    <a href="https://drive.google.com/uc?export=download&id=${book.id}" target="_blank">Descargar</a>
-    <a href="/read-online?id=${book.id}" target="_blank">Leer Online</a>
+    <a href="/books/${encodeURIComponent(book.filename)}" target="_blank">Descargar</a>
+    <a href="/read-online?file=${encodeURIComponent(book.filename)}" target="_blank">Leer Online</a>
   </div>
 </div>`;
   }).join('');
@@ -176,72 +200,13 @@ function renderBookPage({ libros, titlePage, tipo, nombre, req }) {
 
 // -------------------- Rutas --------------------
 
-// Proxy para EPUB (leer online)
-app.get('/epub-proxy', async (req, res) => {
-  const fileId = req.query.id;
-  if (!fileId) return res.status(400).send('ID de libro no proporcionado');
-  try {
-    const response = await drive.files.get(
-      { fileId, alt: 'media' },
-      { responseType: 'stream' }
-    );
-    res.setHeader('Content-Type', 'application/epub+zip');
-    response.data.pipe(res);
-  } catch (err) {
-    console.error(err);
-    res.status(500).send('Error al obtener el libro desde Drive');
-  }
-});
-
-// Leer online
-app.get('/read-online', (req, res) => {
-  const fileId = req.query.id;
-  if(!fileId) return res.send('<p>ID de libro no proporcionado</p>');
-
-  const html = `
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <title>Leer Online</title>
-  <style>
-    body { margin:0; padding:0; background:#1c1a13; color:#f5e6c4; text-align:center; }
-    #reader { width: 100%; height: 90vh; margin:0 auto; }
-    button { padding:10px 20px; margin:5px; font-size:16px; border-radius:6px; background:#b5884e; color:#fff; border:none; cursor:pointer; }
-    button:hover { background:#8b5f2c; }
-  </style>
-</head>
-<body>
-  <div id="reader"></div>
-  <div>
-    <button id="prev">Anterior</button>
-    <button id="next">Siguiente</button>
-  </div>
-  <script src="https://cdn.jsdelivr.net/npm/epubjs/dist/epub.min.js"></script>
-  <script>
-    const url = "/epub-proxy?id=${fileId}";
-    const book = ePub(url);
-    const rendition = book.renderTo("reader", { width:"100%", height:"90vh" });
-    rendition.display();
-    document.getElementById("prev").addEventListener("click", () => rendition.prev());
-    document.getElementById("next").addEventListener("click", () => rendition.next());
-  </script>
-</body>
-</html>
-  `;
-  res.send(html);
-});
-
-// -------------------- Rutas originales (inicio, autores, sagas, etc.) --------------------
-
 // Página de inicio
 app.get('/', async (req, res) => {
   try {
     const query = (req.query.buscar || '').toLowerCase();
     const orden = req.query.ordenar || 'alfabetico';
     let files = await listAllFiles(folderId);
-
-    actualizarBooksJSON(files);
+    await actualizarBooksJSON(files);
 
     if(query) files = files.filter(f => {
       const metadata = bookMetadata.find(b => b.id === f.id);
@@ -264,8 +229,8 @@ app.get('/', async (req, res) => {
   <div class="title">${title}</div>
   ${author ? `<div class="author"><a href="/autor?name=${encodeURIComponent(author)}">${author}</a></div>` : ''}
   <div class="meta">
-    <a href="https://drive.google.com/uc?export=download&id=${file.id}" target="_blank">Descargar</a>
-    <a href="/read-online?id=${file.id}" target="_blank">Leer Online</a>
+    <a href="/books/${encodeURIComponent(metadata.filename)}" target="_blank">Descargar</a>
+    <a href="/read-online?file=${encodeURIComponent(metadata.filename)}" target="_blank">Leer Online</a>
   </div>
 </div>`;
     }).join('');
@@ -296,6 +261,44 @@ app.get('/', async (req, res) => {
     console.error(err);
     res.send('<p>Error al cargar los libros. Revisa permisos del Service Account.</p>');
   }
+});
+
+// RUTA LEER ONLINE
+app.get('/read-online', (req, res) => {
+  const file = req.query.file;
+  if(!file) return res.send('Archivo no especificado');
+
+  const filePath = `/books/${file}`;
+  const html = `
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Leer Online - ${file}</title>
+<style>
+body { margin:0; background:#000; }
+#viewer { width:100vw; height:100vh; }
+button { position:absolute; top:10px; padding:10px; background:#b5884e; color:#fff; border:none; font-size:16px; cursor:pointer; z-index:999; }
+#prev { left:10px; }
+#next { right:10px; }
+</style>
+</head>
+<body>
+<div id="viewer"></div>
+<button id="prev">Anterior</button>
+<button id="next">Siguiente</button>
+<script src="https://cdn.jsdelivr.net/npm/epubjs/dist/epub.min.js"></script>
+<script>
+const book = ePub("${filePath}");
+const rendition = book.renderTo("viewer", { width:"100%", height:"100%" });
+rendition.display();
+
+document.getElementById("prev").addEventListener("click", ()=> rendition.prev());
+document.getElementById("next").addEventListener("click", ()=> rendition.next());
+</script>
+</body>
+</html>`;
+  res.send(html);
 });
 
 // Página de autores
