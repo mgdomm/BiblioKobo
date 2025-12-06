@@ -23,10 +23,10 @@ const folderId = '1-4G6gGNtt6KVS90AbWbtH3JlpetHrPEi';
 // Leer imágenes cover locales (solo .png)
 let coverImages = [];
 try {
-  coverImages = fs.readdirSync(path.join(__dirname,'cover'))
+  coverImages = fs.readdirSync(path.join(__dirname, 'cover'))
     .filter(f => f.endsWith('.png'))
     .map(f => `/cover/${f}`);
-} catch(err) {
+} catch (err) {
   console.warn('No se encontró la carpeta cover. Se usarán placeholders.');
 }
 
@@ -39,12 +39,12 @@ try {
   } else {
     fs.writeFileSync(BOOKS_FILE, JSON.stringify([], null, 2));
   }
-} catch(err) {
+} catch (err) {
   console.warn('Error leyendo books.json. Se usará un arreglo vacío.');
   bookMetadata = [];
 }
 
-// CSS global y grid centrado
+// CSS global y grid centrado (ESTABLE)
 const css = `
 @import url('https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap');
 
@@ -114,28 +114,23 @@ input[type="search"], select {
 }
 
 #grid {
-  /* FIX: Cambiado de text-align: center a flexbox para centrado real y márgenes */
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 8px;
-  max-width: 1300px; /* Ancho máximo para centrar */
-  margin: 20px auto; /* Centrado horizontal */
-  padding: 0 10px;
+  text-align: center;
+  /* Revertido a la versión original para mantener el formato */
 }
 
 .book {
-  /* REMOVIDO: display: inline-block; vertical-align: top; */
+  display: inline-block;
+  vertical-align: top;
   width: 110px;
   min-height: 160px;
   background: #111;
   padding: 6px;
   border-radius: 8px;
   border: 1px solid #555;
-  /* margin: 4px; */ /* El gap en #grid lo maneja */
+  margin: 4px;
   text-align: center;
   word-wrap: break-word;
-  flex: 0 1 auto; /* Permite que la grilla funcione */
+  /* Revertido a la versión original para mantener el formato */
 }
 
 .book img {
@@ -201,14 +196,14 @@ async function listAllFiles(folderId) {
     });
     files = files.concat(res.data.files);
     pageToken = res.data.nextPageToken;
-  } while(pageToken);
+  } while (pageToken);
   return files;
 }
 
 function uniqueBooks(arr) {
   const seenIds = new Set();
   return arr.filter(b => {
-    if(seenIds.has(b.id)) return false;
+    if (seenIds.has(b.id)) return false;
     seenIds.add(b.id);
     return true;
   });
@@ -218,56 +213,56 @@ function actualizarBooksJSON(newFiles) {
   let updated = false;
   newFiles.forEach(f => {
     const exists = bookMetadata.some(b => b.id === f.id);
-    if(!exists){
+    if (!exists) {
       const base = f.name.replace(/\.[^/.]+$/, "");
       const parts = base.split(' - ');
       const title = parts[0]?.trim() || f.name;
       const author = parts[1]?.trim() || 'Desconocido';
       let saga = null;
-      if(parts[2]){
+      if (parts[2]) {
         const sagaMatch = parts[2].match(/^(.*?)(?:\s*#(\d+))?$/);
-        if(sagaMatch){
+        if (sagaMatch) {
           saga = { name: sagaMatch[1].trim() };
-          if(sagaMatch[2]) saga.number = parseInt(sagaMatch[2],10);
+          if (sagaMatch[2]) saga.number = parseInt(sagaMatch[2], 10);
         }
       }
       bookMetadata.push({ id: f.id, title, author, saga });
       updated = true;
     }
   });
-  if(updated){
+  if (updated) {
     bookMetadata = uniqueBooks(bookMetadata);
     fs.writeFileSync(BOOKS_FILE, JSON.stringify(bookMetadata, null, 2));
   }
 }
 
 function getCoverForBook(bookId) {
-  if(coverImages.length === 0) return null;
+  if (coverImages.length === 0) return null;
   const index = bookId.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0) % coverImages.length;
   return coverImages[index];
 }
 
-// FUNCION CORREGIDA
-function ordenarBooks(files, criterio, tipo=null) {
+// FUNCION ORDENAR ESTABLE (usada por las rutas / y /autor/saga)
+function ordenarBooks(files, criterio, tipo = null) {
   let sorted = [...files];
-  
-  const getMetadata = (fileId) => bookMetadata.find(x=>x.id===fileId) || {};
-  
-  if(tipo==='autor' || tipo==='saga') {
-    // Usa metadata (ya filtrada por autor/saga)
-    if(criterio==='alfabetico') sorted.sort((a,b)=> a.title.toLowerCase().localeCompare(b.title.toLowerCase()));
-    else if(criterio==='alfabetico-desc') sorted.sort((a,b)=> b.title.toLowerCase().localeCompare(a.title.toLowerCase()));
-    else if(criterio==='numero') sorted.sort((a,b)=> (a.saga?.number||0) - (b.saga?.number||0));
+
+  const getMetadata = (fileId) => bookMetadata.find(x => x.id === fileId) || {};
+
+  if (tipo === 'autor' || tipo === 'saga') {
+    // Para rutas de Autor/Saga (donde 'files' ya contiene metadata)
+    if (criterio === 'alfabetico') sorted.sort((a, b) => a.title.toLowerCase().localeCompare(b.title.toLowerCase()));
+    else if (criterio === 'alfabetico-desc') sorted.sort((a, b) => b.title.toLowerCase().localeCompare(a.title.toLowerCase()));
+    else if (criterio === 'numero') sorted.sort((a, b) => (a.saga?.number || 0) - (b.saga?.number || 0));
   } else {
-    // Usa archivo de drive + metadata
-    if(criterio==='alfabetico') {
-      sorted.sort((a,b)=> (getMetadata(a.id)?.title||a.name).toLowerCase().localeCompare((getMetadata(b.id)?.title||b.name).toLowerCase()));
+    // Para ruta principal (usando metadata para ordenar por título o fecha)
+    if (criterio === 'alfabetico') {
+      sorted.sort((a, b) => (getMetadata(a.id)?.title || a.name).toLowerCase().localeCompare((getMetadata(b.id)?.title || b.name).toLowerCase()));
     }
-    else if(criterio==='alfabetico-desc') {
-      sorted.sort((a,b)=> (getMetadata(b.id)?.title||b.name).toLowerCase().localeCompare((getMetadata(a.id)?.title||a.name).toLowerCase()));
+    else if (criterio === 'alfabetico-desc') {
+      sorted.sort((a, b) => (getMetadata(b.id)?.title || b.name).toLowerCase().localeCompare((getMetadata(a.id)?.title || a.name).toLowerCase()));
     }
-    else if(criterio==='recientes') {
-      sorted.sort((a,b)=> new Date(b.createdTime)-new Date(a.createdTime));
+    else if (criterio === 'recientes') {
+      sorted.sort((a, b) => new Date(b.createdTime) - new Date(a.createdTime));
     }
   }
   return sorted;
@@ -305,21 +300,21 @@ function renderBookPage({ libros, titlePage, tipo, nombre, req }) {
 
 <div class="top-buttons">
   <a href="/" class="button">🪄 Libros</a>
-  ${tipo==='autor'?'<a href="/sagas" class="button">Sagas</a>':'<a href="/autores" class="button">Autores</a>'}
+  ${tipo === 'autor' ? '<a href="/sagas" class="button">Sagas</a>' : '<a href="/autores" class="button">Autores</a>'}
 </div>
 
 <form method="get" action="/${tipo}">
 <select name="ordenar" onchange="this.form.submit()">
-  <option value="alfabetico" ${orden==='alfabetico'?'selected':''}>A→Z</option>
-  <option value="alfabetico-desc" ${orden==='alfabetico-desc'?'selected':''}>Z→A</option>
-  ${tipo==='saga'?'<option value="numero" '+(orden==='numero'?'selected':'')+'>#Número</option>':''}
+  <option value="alfabetico" ${orden === 'alfabetico' ? 'selected' : ''}>Título (A→Z)</option>
+  <option value="alfabetico-desc" ${orden === 'alfabetico-desc' ? 'selected' : ''}>Título (Z→A)</option>
+  ${tipo === 'saga' ? '<option value="numero" ' + (orden === 'numero' ? 'selected' : '') + '>#Número</option>' : ''}
 </select>
 <input type="hidden" name="name" value="${nombre}" />
 </form>
 
 <div id="grid">${booksHtml}</div>
 
-<p><a href="/${tipo==='autor'?'autores':'sagas'}" class="button">← Volver</a></p>
+<p><a href="/${tipo === 'autor' ? 'autores' : 'sagas'}" class="button">← Volver</a></p>
 
 </body>
 </html>`;
@@ -335,19 +330,15 @@ app.get('/', async (req, res) => {
 
     actualizarBooksJSON(files);
 
-    // ********************************************
-    // *** LÓGICA DE BÚSQUEDA Y MENSAJE ARREGLADA ***
-    // ********************************************
-    
-    if(query) {
+    // --- FILTRADO AVANZADO (Título O Autor - Case Insensitive) ---
+    if (query) {
       files = files.filter(f => {
         const metadata = bookMetadata.find(b => b.id === f.id);
-        if(!metadata) return false;
-        
-        // Buscar en Título O Autor (sin distinguir mayúsculas/minúsculas)
+        if (!metadata) return false;
+
         const title = metadata.title.toLowerCase();
         const author = metadata.author.toLowerCase();
-        
+
         return title.includes(query) || author.includes(query);
       });
     }
@@ -355,7 +346,7 @@ app.get('/', async (req, res) => {
     files = ordenarBooks(files, orden);
 
     let contentHtml;
-    
+
     if (query && files.length === 0) {
       // Mensaje de Azkaban
       contentHtml = `
@@ -373,7 +364,7 @@ app.get('/', async (req, res) => {
       const maxHeight = 180;
       const booksHtml = files.map(file => {
         const metadata = bookMetadata.find(b => b.id === file.id);
-        if(!metadata) return '';
+        if (!metadata) return '';
         const title = metadata.title;
         const author = metadata.author;
         const cover = getCoverForBook(file.id);
@@ -407,9 +398,9 @@ app.get('/', async (req, res) => {
 <form method="get" action="/">
 <input type="search" name="buscar" value="${req.query.buscar || ''}" placeholder="Buscar título o autor..." />
 <select name="ordenar" onchange="this.form.submit()">
-  <option value="alfabetico" ${orden==='alfabetico'?'selected':''}>Título (A→Z)</option>
-  <option value="alfabetico-desc" ${orden==='alfabetico-desc'?'selected':''}>Título (Z→A)</option>
-  <option value="recientes" ${orden==='recientes'?'selected':''}>Recientes</option>
+  <option value="alfabetico" ${orden === 'alfabetico' ? 'selected' : ''}>Título (A→Z)</option>
+  <option value="alfabetico-desc" ${orden === 'alfabetico-desc' ? 'selected' : ''}>Título (Z→A)</option>
+  <option value="recientes" ${orden === 'recientes' ? 'selected' : ''}>Recientes</option>
 </select>
 </form>
 
@@ -417,7 +408,7 @@ ${contentHtml}
 
 </body>
 </html>`);
-  } catch(err) {
+  } catch (err) {
     console.error(err);
     res.send('<p>Error al cargar libros.</p>');
   }
@@ -457,7 +448,7 @@ app.get('/autores', (req, res) => {
 
 app.get('/autor', (req, res) => {
   const nombreAutor = req.query.name;
-  if(!nombreAutor) return res.redirect('/autores');
+  if (!nombreAutor) return res.redirect('/autores');
   const libros = bookMetadata.filter(b => b.author === nombreAutor);
   res.send(renderBookPage({
     libros,
@@ -502,7 +493,7 @@ app.get('/sagas', (req, res) => {
 
 app.get('/saga', (req, res) => {
   const nombreSaga = req.query.name;
-  if(!nombreSaga) return res.redirect('/sagas');
+  if (!nombreSaga) return res.redirect('/sagas');
   const libros = bookMetadata.filter(b => b.saga?.name === nombreSaga);
   res.send(renderBookPage({
     libros,
