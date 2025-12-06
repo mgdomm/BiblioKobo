@@ -44,7 +44,7 @@ try {
   bookMetadata = [];
 }
 
-// CSS global y grid centrado
+// CSS global (Kobo-friendly)
 const css = `
 @import url('https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap');
 
@@ -234,6 +234,7 @@ function actualizarBooksJSON(newFiles) {
   }
 }
 
+// Deterministic lightweight portada selection
 function getCoverForBook(bookId) {
   if(coverImages.length === 0) return null;
   const index = bookId.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0) % coverImages.length;
@@ -248,7 +249,7 @@ function ordenarBooks(books, criterio, tipo=null) {
     else if(criterio==='numero') sorted.sort((a,b)=> (a.saga?.number||0) - (b.saga?.number||0));
   } else {
     if(criterio==='alfabetico') sorted.sort((a,b)=> (bookMetadata.find(x=>x.id===a.id)?.title||a.name).localeCompare(bookMetadata.find(x=>x.id===b.id)?.title||b.name));
-    else if(criterio==='alfabetico-desc') sorted.sort((a,b)=> (bookMetadata.find(x=>x.id===b.id)?.title||b.name).localeCompare(bookMetadata.find(x=>x.id===a.id)?.title||b.name));
+    else if(criterio==='alfabetico-desc') sorted.sort((a,b)=> (bookMetadata.find(x=>x.id===b.id)?.title||b.name).localeCompare(bookMetadata.find(x=>x.id===a.id)?.title||a.name));
     else if(criterio==='recientes') sorted.sort((a,b)=> new Date(b.createdTime)-new Date(a.createdTime));
   }
   return sorted;
