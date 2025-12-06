@@ -118,7 +118,7 @@ input[type="search"], select {
   flex-wrap: wrap;
   justify-content: center;
   gap: 8px;
-  /* --- MEJORA 1: Márgenes y Centrado --- */
+  /* --- MEJORA ESTÉTICA: Márgenes y Centrado --- */
   max-width: 1300px;
   margin: 20px auto;
   padding: 0 10px;
@@ -246,11 +246,11 @@ function getCoverForBook(bookId) {
   return coverImages[index];
 }
 
-function ordenarBooks(files, criterio, tipo=null) { // Cambio a 'files' para ser consistente
+function ordenarBooks(files, criterio, tipo=null) {
   let sorted = [...files];
-  
+  
   const getMetadata = (fileId) => bookMetadata.find(x=>x.id===fileId) || {};
-  
+  
   if(tipo==='autor' || tipo==='saga') {
     if(criterio==='alfabetico') sorted.sort((a,b)=> a.title.toLowerCase().localeCompare(b.title.toLowerCase()));
     else if(criterio==='alfabetico-desc') sorted.sort((a,b)=> b.title.toLowerCase().localeCompare(a.title.toLowerCase()));
@@ -306,8 +306,8 @@ function renderBookPage({ libros, titlePage, tipo, nombre, req }) {
 
 <form method="get" action="/${tipo}">
 <select name="ordenar" onchange="this.form.submit()">
-  <option value="alfabetico" ${orden==='alfabetico'?'selected':''}>A→Z (Título)</option>
-  <option value="alfabetico-desc" ${orden==='alfabetico-desc'?'selected':''}>Z→A (Título)</option>
+  <option value="alfabetico" ${orden==='alfabetico'?'selected':''}>Título (A→Z)</option>
+  <option value="alfabetico-desc" ${orden==='alfabetico-desc'?'selected':''}>Título (Z→A)</option>
   ${tipo==='saga'?'<option value="numero" '+(orden==='numero'?'selected':'')+'>#Número</option>':''}
 </select>
 <input type="hidden" name="name" value="${nombre}" />
@@ -331,7 +331,7 @@ app.get('/', async (req, res) => {
 
     actualizarBooksJSON(files);
 
-    // --- MEJORA 2: Filtrado por Título O Autor (Case-Insensitive) ---
+    // --- FILTRADO AVANZADO (Título O Autor) ---
     if(query) {
       files = files.filter(f => {
         const metadata = bookMetadata.find(b => b.id === f.id);
@@ -344,12 +344,12 @@ app.get('/', async (req, res) => {
       });
     }
 
-    // --- MEJORA 3: Ordenar Recientes / Alfabético ---
+    // --- ORDENACIÓN ---
     files = ordenarBooks(files, orden);
 
     let contentHtml;
 
-    // --- MEJORA 2: Mensaje Sarcástico de Azkaban ---
+    // --- MENSAJE SARCÁSTICO DE AZKABAN ---
     if (query && files.length === 0) {
       contentHtml = `
         <div class="azkaban-message" style="margin: 50px auto; max-width: 600px; text-align: center;">
