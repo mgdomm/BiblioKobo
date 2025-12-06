@@ -51,8 +51,8 @@ body {
   font-family: 'Garamond', serif;
   margin: 0;
   padding: 0;
-  background: #000000;
-  color:#f5e6c4;
+  background: #000;
+  color:#eee;
   text-align:center;
 }
 
@@ -61,23 +61,24 @@ body {
   position: sticky;
   top: 0;
   width: 100%;
-  height: 230px;
+  height: 460px; /* altura duplicada */
   background-image: url('/cover/portada11.png');
   background-size: cover;
   background-position: center;
   z-index: 9999;
 
-  /* degradado inferior para fusionar con negro */
-  -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 60%, rgba(0,0,0,0));
-  mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 60%, rgba(0,0,0,0));
+  /* degradado inferior que comienza a la mitad */
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 50%, rgba(0,0,0,0));
+  mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 50%, rgba(0,0,0,0));
+  transition: all 0.3s ease;
 }
 
 /* Botones sobre la franja negra */
 .top-buttons {
   display: flex;
   justify-content: center;
-  gap: 20px;
-  margin-top: 5px;
+  gap: 15px;
+  margin-top: 10px;
 }
 
 .top-buttons a {
@@ -87,15 +88,21 @@ body {
   font-size: 18px;
   padding: 6px 12px;
   background: transparent;
+  border: 1px solid #fff;
+  border-radius: 5px;
+  transition: all 0.2s ease;
+}
+
+.top-buttons a:hover {
+  background: #222;
 }
 
 /* Ajustes generales */
 h1 {
   font-size:56px;
   font-family: 'MedievalSharp', cursive;
-  color:#d4af7f;
+  color:#fff;
   margin:10px 0;
-  text-shadow: 1px 1px 2px #000;
 }
 
 form { margin-bottom:10px; }
@@ -105,22 +112,23 @@ input, select {
   margin:0 2px;
   font-size:12px;
   border-radius:6px;
-  border:1px solid #a67c4e;
-  background:#f5e6c4;
-  color:#3e2f1c;
+  border:1px solid #555;
+  background:#111;
+  color:#fff;
 }
 
 #grid { text-align:center; }
 
+/* Estilo libros y sagas sobrio */
 .book {
   display:inline-block;
   vertical-align: top;
   width:110px;
   min-height:160px;
-  background: #e8d7aa;
+  background: #111;
   padding:6px;
-  border-radius:10px;
-  border: 2px solid #d4af7f;
+  border-radius:8px;
+  border: 1px solid #555;
   margin:4px;
   text-align:center;
   word-wrap: break-word;
@@ -137,33 +145,29 @@ input, select {
 .title {
   font-size:12px;
   font-weight:700;
-  color:#3e2f1c;
+  color:#eee;
   font-family: 'MedievalSharp', cursive;
   margin-bottom:2px;
-  text-shadow: 1px 1px 0 #fff, -1px -1px 0 #000;
 }
 
-.author a, .author-span { color:#8b7b5f; font-size:11px; text-decoration:none; }
-.number-span { color:#8b7b5f; font-size:11px; }
+.author a, .author-span { color:#ccc; font-size:11px; text-decoration:none; }
+.number-span { color:#ccc; font-size:11px; }
 
 .meta a {
   font-size:11px;
   font-weight:bold;
   text-decoration:none;
   color:#fff;
-  background: #b5884e;
+  background: #222;
   padding:3px 6px;
-  border-radius:5px;
+  border-radius:4px;
   display:inline-block;
   margin-top:3px;
-  box-shadow: inset 0 -2px 2px rgba(0,0,0,0.4), 1px 2px 3px rgba(0,0,0,0.5);
   transition: all 0.2s ease;
 }
 
 .meta a:hover {
-  background:#8b5f2c;
-  box-shadow: inset 0 -2px 2px rgba(0,0,0,0.5), 1px 3px 5px rgba(0,0,0,0.6);
-  transform: translateY(-1px);
+  background:#444;
 }
 
 a.button {
@@ -171,15 +175,15 @@ a.button {
   margin:10px;
   text-decoration:none;
   padding:12px 24px;
-  background:#b5884e;
+  background:#222;
   color:#fff;
-  border-radius:10px;
-  font-size:24px;
+  border-radius:8px;
+  font-size:18px;
   font-weight:bold;
-  box-shadow: inset 0 -3px 5px rgba(0,0,0,0.4), 3px 5px 8px rgba(0,0,0,0.5);
+  transition: all 0.2s ease;
 }
 
-a.button:hover { background:#8b5f2c; }
+a.button:hover { background:#444; }
 `;
 
 // ------------------ FUNCIONES ------------------
@@ -258,7 +262,7 @@ function renderBookPage({ libros, titlePage, tipo, nombre, req }) {
   const maxHeight = 180;
   const booksHtml = libros.map(book => {
     const cover = coverImages.length ? coverImages[Math.floor(Math.random()*coverImages.length)] : null;
-    const imgHtml = cover ? `<img src="${cover}" />` : `<div style="width:80px;height:120px;background:#8b735e;border-radius:5px;">📖</div>`;
+    const imgHtml = cover ? `<img src="${cover}" />` : `<div style="width:80px;height:120px;background:#333;border-radius:5px;">📖</div>`;
     return `
 <div class="book" style="min-height:${maxHeight}px">
   ${imgHtml}
@@ -301,7 +305,7 @@ function renderBookPage({ libros, titlePage, tipo, nombre, req }) {
 </html>`;
 }
 
-/* ------------------ RUTAS ------------------ */
+// ------------------ RUTAS ------------------
 
 // Página de inicio (Libros)
 app.get('/', async (req, res) => {
@@ -329,12 +333,12 @@ app.get('/', async (req, res) => {
       const title = metadata.title;
       const author = metadata.author;
       const cover = coverImages.length ? coverImages[Math.floor(Math.random()*coverImages.length)] : null;
-      const imgHtml = cover ? `<img src="${cover}" />` : `<div style="width:80px;height:120px;background:#8b735e;border-radius:5px;">📖</div>`;
+      const imgHtml = cover ? `<img src="${cover}" />` : `<div style="width:80px;height:120px;background:#333;border-radius:5px;">📖</div>`;
       return `
 <div class="book" style="min-height:${maxHeight}px">
   ${imgHtml}
   <div class="title">${title}</div>
-  ${author ? `<div class="author"><a href="/autor?name=${encodeURIComponent(author)}">${author}</a></div>` : ''}
+  ${author ? `<div class="author"><span class="author-span">${author}</span></div>` : ''}
   <div class="meta"><a href="https://drive.google.com/uc?export=download&id=${file.id}" target="_blank">Descargar</a></div>
 </div>`;
     }).join('');
