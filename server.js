@@ -44,7 +44,7 @@ try {
   bookMetadata = [];
 }
 
-// CSS global
+// CSS global (compatible Kobo)
 const css = `
 @import url('https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap');
 
@@ -62,7 +62,7 @@ body {
   top: 0;
   width: 100%;
   height: 460px;
-  background-image: url('/cover/portada11.png');
+  background-image: url('/cover/inicio/portada11.png');
   background-size: cover;
   background-position: center;
   z-index: 9999;
@@ -72,13 +72,12 @@ body {
 }
 
 .top-buttons {
-  display: flex;
-  justify-content: center;
-  gap: 15px;
+  text-align: center;
   margin-top: 10px;
 }
 
 .top-buttons a {
+  display: inline-block;
   color: #fff;
   text-decoration: none;
   font-weight: bold;
@@ -87,6 +86,7 @@ body {
   background: transparent;
   border: 1px solid #fff;
   border-radius: 5px;
+  margin: 2px;
   transition: all 0.2s ease;
 }
 
@@ -113,28 +113,30 @@ input, select {
   color:#fff;
 }
 
-#grid { text-align:center; }
+#grid {
+  text-align: center;
+}
 
 .book {
-  display:inline-block;
+  display: inline-block;
   vertical-align: top;
-  width:110px;
-  min-height:160px;
+  width: 110px;
+  min-height: 160px;
   background: #111;
-  padding:6px;
-  border-radius:8px;
+  padding: 6px;
+  border-radius: 8px;
   border: 1px solid #555;
-  margin:4px;
-  text-align:center;
+  margin: 4px;
+  text-align: center;
   word-wrap: break-word;
 }
 
 .book img {
-  width:80px;
-  height:120px;
-  border-radius:5px;
-  object-fit:cover;
-  margin-bottom:4px;
+  width: 80px;
+  height: 120px;
+  border-radius: 5px;
+  object-fit: cover;
+  margin-bottom: 4px;
 }
 
 .title {
@@ -232,6 +234,13 @@ function actualizarBooksJSON(newFiles) {
   }
 }
 
+// Deterministic lightweight portada selection
+function getCoverForBook(bookId) {
+  if(coverImages.length === 0) return null;
+  const index = bookId.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0) % coverImages.length;
+  return coverImages[index];
+}
+
 function ordenarBooks(books, criterio, tipo=null) {
   let sorted = [...books];
   if(tipo==='autor' || tipo==='saga') {
@@ -254,7 +263,7 @@ function renderBookPage({ libros, titlePage, tipo, nombre, req }) {
 
   const maxHeight = 180;
   const booksHtml = libros.map(book => {
-    const cover = coverImages.length ? coverImages[Math.floor(Math.random()*coverImages.length)] : null;
+    const cover = getCoverForBook(book.id);
     const imgHtml = cover ? `<img src="${cover}" />` : `<div style="width:80px;height:120px;background:#333;border-radius:5px;">📖</div>`;
     return `
 <div class="book" style="min-height:${maxHeight}px">
@@ -265,7 +274,7 @@ function renderBookPage({ libros, titlePage, tipo, nombre, req }) {
   <div class="meta"><a href="https://drive.google.com/uc?export=download&id=${book.id}" target="_blank">Descargar</a></div>
 </div>`;
   }).join('');
-  
+
   return `
 <!DOCTYPE html>
 <html lang="es">
@@ -300,7 +309,6 @@ function renderBookPage({ libros, titlePage, tipo, nombre, req }) {
 
 // ------------------ RUTAS ------------------
 
-// Página principal
 app.get('/', async (req, res) => {
   try {
     const query = (req.query.buscar || '').toLowerCase();
@@ -325,7 +333,7 @@ app.get('/', async (req, res) => {
       if(!metadata) return '';
       const title = metadata.title;
       const author = metadata.author;
-      const cover = coverImages.length ? coverImages[Math.floor(Math.random()*coverImages.length)] : null;
+      const cover = getCoverForBook(file.id);
       const imgHtml = cover ? `<img src="${cover}" />` : `<div style="width:80px;height:120px;background:#333;border-radius:5px;">📖</div>`;
       return `
 <div class="book" style="min-height:${maxHeight}px">
@@ -370,7 +378,6 @@ app.get('/', async (req, res) => {
   }
 });
 
-// Autores
 app.get('/autores', (req, res) => {
   const autores = [...new Set(bookMetadata.map(b => b.author).filter(a => a))].sort();
   const authorsHtml = autores.map(a => `
@@ -403,7 +410,6 @@ app.get('/autores', (req, res) => {
 </html>`);
 });
 
-// Libros por autor
 app.get('/autor', (req, res) => {
   const nombreAutor = req.query.name;
   if(!nombreAutor) return res.redirect('/autores');
@@ -417,7 +423,6 @@ app.get('/autor', (req, res) => {
   }));
 });
 
-// Sagas
 app.get('/sagas', (req, res) => {
   const sagas = [...new Set(bookMetadata.map(b => b.saga?.name).filter(a => a))].sort();
   const sagasHtml = sagas.map(s => `
@@ -450,7 +455,6 @@ app.get('/sagas', (req, res) => {
 </html>`);
 });
 
-// Libros por saga
 app.get('/saga', (req, res) => {
   const nombreSaga = req.query.name;
   if(!nombreSaga) return res.redirect('/sagas');
