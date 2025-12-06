@@ -20,10 +20,9 @@ const drive = google.drive({ version: 'v3', auth });
 // ID de la carpeta de Google Drive
 const folderId = '1-4G6gGNtt6KVS90AbWbtH3JlpetHrPEi';
 
-// Leer imágenes cover locales
+// Leer imágenes cover locales (solo .png)
 let coverImages = [];
 try {
-  // Solo tomamos archivos PNG para portadas
   coverImages = fs.readdirSync(path.join(__dirname,'cover'))
     .filter(f => f.endsWith('.png'))
     .map(f => `/cover/${f}`);
@@ -47,7 +46,137 @@ try {
 
 // CSS global
 const css = `
-// ... (aquí va tu CSS actualizado que ya pusiste)
+@import url('https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap');
+
+body {
+  font-family: 'Garamond', serif;
+  margin: 0;
+  padding: 0;
+  background: #000;
+  color:#eee;
+  text-align:center;
+}
+
+.header-banner {
+  position: sticky;
+  top: 0;
+  width: 100%;
+  height: 460px;
+  background-image: url('/cover/portada11.png');
+  background-size: cover;
+  background-position: center;
+  z-index: 9999;
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 50%, rgba(0,0,0,0));
+  mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 50%, rgba(0,0,0,0));
+  transition: all 0.3s ease;
+}
+
+.top-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 10px;
+}
+
+.top-buttons a {
+  color: #fff;
+  text-decoration: none;
+  font-weight: bold;
+  font-size: 18px;
+  padding: 6px 12px;
+  background: transparent;
+  border: 1px solid #fff;
+  border-radius: 5px;
+  transition: all 0.2s ease;
+}
+
+.top-buttons a:hover {
+  background: #222;
+}
+
+h1 {
+  font-size:56px;
+  font-family: 'MedievalSharp', cursive;
+  color:#fff;
+  margin:10px 0;
+}
+
+form { margin-bottom:10px; }
+
+input, select {
+  padding:4px 6px;
+  margin:0 2px;
+  font-size:12px;
+  border-radius:6px;
+  border:1px solid #555;
+  background:#111;
+  color:#fff;
+}
+
+#grid { text-align:center; }
+
+.book {
+  display:inline-block;
+  vertical-align: top;
+  width:110px;
+  min-height:160px;
+  background: #111;
+  padding:6px;
+  border-radius:8px;
+  border: 1px solid #555;
+  margin:4px;
+  text-align:center;
+  word-wrap: break-word;
+}
+
+.book img {
+  width:80px;
+  height:120px;
+  border-radius:5px;
+  object-fit:cover;
+  margin-bottom:4px;
+}
+
+.title {
+  font-size:12px;
+  font-weight:700;
+  color:#eee;
+  font-family: 'MedievalSharp', cursive;
+  margin-bottom:2px;
+}
+
+.author a, .author-span { color:#ccc; font-size:11px; text-decoration:none; }
+.number-span { color:#ccc; font-size:11px; }
+
+.meta a {
+  font-size:11px;
+  font-weight:bold;
+  text-decoration:none;
+  color:#fff;
+  background: #222;
+  padding:3px 6px;
+  border-radius:4px;
+  display:inline-block;
+  margin-top:3px;
+  transition: all 0.2s ease;
+}
+
+.meta a:hover { background:#444; }
+
+a.button {
+  display:inline-block;
+  margin:10px;
+  text-decoration:none;
+  padding:12px 24px;
+  background:#222;
+  color:#fff;
+  border-radius:8px;
+  font-size:18px;
+  font-weight:bold;
+  transition: all 0.2s ease;
+}
+
+a.button:hover { background:#444; }
 `;
 
 // ------------------ FUNCIONES ------------------
@@ -117,7 +246,7 @@ function ordenarBooks(books, criterio, tipo=null) {
   return sorted;
 }
 
-// ------------------ renderBookPage ------------------
+// ------------------ RENDER ------------------
 
 function renderBookPage({ libros, titlePage, tipo, nombre, req }) {
   const orden = req.query.ordenar || 'alfabetico';
@@ -125,7 +254,6 @@ function renderBookPage({ libros, titlePage, tipo, nombre, req }) {
 
   const maxHeight = 180;
   const booksHtml = libros.map(book => {
-    // Selección aleatoria de portada
     const cover = coverImages.length ? coverImages[Math.floor(Math.random()*coverImages.length)] : null;
     const imgHtml = cover ? `<img src="${cover}" />` : `<div style="width:80px;height:120px;background:#333;border-radius:5px;">📖</div>`;
     return `
@@ -172,7 +300,7 @@ function renderBookPage({ libros, titlePage, tipo, nombre, req }) {
 
 // ------------------ RUTAS ------------------
 
-// Página de inicio (Libros)
+// Página principal
 app.get('/', async (req, res) => {
   try {
     const query = (req.query.buscar || '').toLowerCase();
@@ -197,14 +325,13 @@ app.get('/', async (req, res) => {
       if(!metadata) return '';
       const title = metadata.title;
       const author = metadata.author;
-      // Selección aleatoria de portada
       const cover = coverImages.length ? coverImages[Math.floor(Math.random()*coverImages.length)] : null;
       const imgHtml = cover ? `<img src="${cover}" />` : `<div style="width:80px;height:120px;background:#333;border-radius:5px;">📖</div>`;
       return `
 <div class="book" style="min-height:${maxHeight}px">
   ${imgHtml}
   <div class="title">${title}</div>
-  <div class="author"><span class="author-span">${author}</span></div>
+  <div class="author-span">${author}</div>
   <div class="meta"><a href="https://drive.google.com/uc?export=download&id=${file.id}" target="_blank">Descargar</a></div>
 </div>`;
     }).join('');
@@ -243,8 +370,99 @@ app.get('/', async (req, res) => {
   }
 });
 
-// Las rutas de autores, sagas, autor y saga se mantienen igual
-// Solo cambia la asignación aleatoria de coverImages como ya hicimos en renderBookPage
+// Autores
+app.get('/autores', (req, res) => {
+  const autores = [...new Set(bookMetadata.map(b => b.author).filter(a => a))].sort();
+  const authorsHtml = autores.map(a => `
+    <div class="book" style="min-height:100px">
+      <div class="title">${a}</div>
+      <div class="meta"><a href="/autor?name=${encodeURIComponent(a)}">Ver libros</a></div>
+    </div>
+  `).join('');
+
+  res.send(`
+<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"><title>Autores</title><style>${css}</style></head>
+<body>
+
+<div class="header-banner"></div>
+
+<h1>Autores</h1>
+
+<div class="top-buttons">
+  <a href="/" class="button">🪄 Libros</a>
+  <a href="/sagas" class="button">Sagas</a>
+</div>
+
+<div id="grid">${authorsHtml}</div>
+
+<p><a href="/" class="button">← Volver</a></p>
+
+</body>
+</html>`);
+});
+
+// Libros por autor
+app.get('/autor', (req, res) => {
+  const nombreAutor = req.query.name;
+  if(!nombreAutor) return res.redirect('/autores');
+  const libros = bookMetadata.filter(b => b.author === nombreAutor);
+  res.send(renderBookPage({
+    libros,
+    titlePage: `Libros de ${nombreAutor}`,
+    tipo: 'autor',
+    nombre: nombreAutor,
+    req
+  }));
+});
+
+// Sagas
+app.get('/sagas', (req, res) => {
+  const sagas = [...new Set(bookMetadata.map(b => b.saga?.name).filter(a => a))].sort();
+  const sagasHtml = sagas.map(s => `
+    <div class="book" style="min-height:100px">
+      <div class="title">${s}</div>
+      <div class="meta"><a href="/saga?name=${encodeURIComponent(s)}">Ver libros</a></div>
+    </div>
+  `).join('');
+
+  res.send(`
+<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"><title>Sagas</title><style>${css}</style></head>
+<body>
+
+<div class="header-banner"></div>
+
+<h1>Sagas</h1>
+
+<div class="top-buttons">
+  <a href="/" class="button">🪄 Libros</a>
+  <a href="/autores" class="button">Autores</a>
+</div>
+
+<div id="grid">${sagasHtml}</div>
+
+<p><a href="/" class="button">← Volver</a></p>
+
+</body>
+</html>`);
+});
+
+// Libros por saga
+app.get('/saga', (req, res) => {
+  const nombreSaga = req.query.name;
+  if(!nombreSaga) return res.redirect('/sagas');
+  const libros = bookMetadata.filter(b => b.saga?.name === nombreSaga);
+  res.send(renderBookPage({
+    libros,
+    titlePage: `Libros de ${nombreSaga}`,
+    tipo: 'saga',
+    nombre: nombreSaga,
+    req
+  }));
+});
 
 // Iniciar servidor
 app.listen(PORT, () => console.log(`Servidor escuchando en puerto ${PORT}`));
