@@ -45,24 +45,145 @@ try {
 // CSS global
 const css = `
 @import url('https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap');
-body { font-family: 'Garamond', serif; margin:5px; padding:0; background:#1c1a13; color:#f5e6c4; text-align:center; }
-h1 { font-size:56px; font-family: 'MedievalSharp', cursive; color:#d4af7f; margin:10px 0; text-shadow: 1px 1px 2px #000; }
+
+/* Fondo negro */
+body {
+  font-family: 'Garamond', serif;
+  margin: 0;
+  padding: 0;
+  background: #000000;
+  color:#f5e6c4;
+  text-align:center;
+}
+
+/* ⭐ FRANJA SUPERIOR STICKY CON PORTADA Y DEGRADADO ⭐ */
+.header-banner {
+  position: sticky;
+  top: 0;
+  width: 100%;
+  height: 230px;
+  background-image: url('/cover/portada11.png');
+  background-size: cover;
+  background-position: center;
+  z-index: 9999;
+
+  /* degradado inferior para fusionar con negro */
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 60%, rgba(0,0,0,0));
+  mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 60%, rgba(0,0,0,0));
+}
+
+/* Botones sobre la franja negra */
+.top-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 5px;
+}
+
+.top-buttons a {
+  color: #fff;
+  text-decoration: none;
+  font-weight: bold;
+  font-size: 18px;
+  padding: 6px 12px;
+  background: transparent;
+}
+
+/* Ajustes generales */
+h1 {
+  font-size:56px;
+  font-family: 'MedievalSharp', cursive;
+  color:#d4af7f;
+  margin:10px 0;
+  text-shadow: 1px 1px 2px #000;
+}
+
 form { margin-bottom:10px; }
-input, select { padding:4px 6px; margin:0 2px; font-size:12px; border-radius:6px; border:1px solid #a67c4e; background:#f5e6c4; color:#3e2f1c; }
+
+input, select {
+  padding:4px 6px;
+  margin:0 2px;
+  font-size:12px;
+  border-radius:6px;
+  border:1px solid #a67c4e;
+  background:#f5e6c4;
+  color:#3e2f1c;
+}
+
 #grid { text-align:center; }
-.book { display:inline-block; vertical-align: top; width:110px; min-height:160px; background: #e8d7aa; padding:6px; border-radius:10px; border: 2px solid #d4af7f; margin:4px; text-align:center; word-wrap: break-word; }
-.book img { width:80px; height:120px; border-radius:5px; object-fit:cover; margin-bottom:4px; }
-.title { font-size:12px; font-weight:700; color:#3e2f1c; font-family: 'MedievalSharp', cursive; margin-bottom:2px; text-shadow: 1px 1px 0 #fff, -1px -1px 0 #000; }
+
+.book {
+  display:inline-block;
+  vertical-align: top;
+  width:110px;
+  min-height:160px;
+  background: #e8d7aa;
+  padding:6px;
+  border-radius:10px;
+  border: 2px solid #d4af7f;
+  margin:4px;
+  text-align:center;
+  word-wrap: break-word;
+}
+
+.book img {
+  width:80px;
+  height:120px;
+  border-radius:5px;
+  object-fit:cover;
+  margin-bottom:4px;
+}
+
+.title {
+  font-size:12px;
+  font-weight:700;
+  color:#3e2f1c;
+  font-family: 'MedievalSharp', cursive;
+  margin-bottom:2px;
+  text-shadow: 1px 1px 0 #fff, -1px -1px 0 #000;
+}
+
 .author a, .author-span { color:#8b7b5f; font-size:11px; text-decoration:none; }
 .number-span { color:#8b7b5f; font-size:11px; }
-.meta a { font-size:11px; font-weight:bold; text-decoration:none; color:#fff; background: #b5884e; padding:3px 6px; border-radius:5px; display:inline-block; margin-top:3px; box-shadow: inset 0 -2px 2px rgba(0,0,0,0.4), 1px 2px 3px rgba(0,0,0,0.5); transition: all 0.2s ease; }
-.meta a:hover { background:#8b5f2c; box-shadow: inset 0 -2px 2px rgba(0,0,0,0.5), 1px 3px 5px rgba(0,0,0,0.6); transform: translateY(-1px); }
-.meta a:visited { color:#fff; }
-a.button { display:inline-block; margin:10px; text-decoration:none; padding:12px 24px; background:#b5884e; color:#fff; border-radius:10px; font-size:24px; font-weight:bold; box-shadow: inset 0 -3px 5px rgba(0,0,0,0.4), 3px 5px 8px rgba(0,0,0,0.5); }
+
+.meta a {
+  font-size:11px;
+  font-weight:bold;
+  text-decoration:none;
+  color:#fff;
+  background: #b5884e;
+  padding:3px 6px;
+  border-radius:5px;
+  display:inline-block;
+  margin-top:3px;
+  box-shadow: inset 0 -2px 2px rgba(0,0,0,0.4), 1px 2px 3px rgba(0,0,0,0.5);
+  transition: all 0.2s ease;
+}
+
+.meta a:hover {
+  background:#8b5f2c;
+  box-shadow: inset 0 -2px 2px rgba(0,0,0,0.5), 1px 3px 5px rgba(0,0,0,0.6);
+  transform: translateY(-1px);
+}
+
+a.button {
+  display:inline-block;
+  margin:10px;
+  text-decoration:none;
+  padding:12px 24px;
+  background:#b5884e;
+  color:#fff;
+  border-radius:10px;
+  font-size:24px;
+  font-weight:bold;
+  box-shadow: inset 0 -3px 5px rgba(0,0,0,0.4), 3px 5px 8px rgba(0,0,0,0.5);
+}
+
 a.button:hover { background:#8b5f2c; }
 `;
 
-// Funciones auxiliares
+// ------------------ FUNCIONES ------------------
+
 async function listAllFiles(folderId) {
   let files = [], pageToken = null;
   do {
@@ -128,10 +249,12 @@ function ordenarBooks(books, criterio, tipo=null) {
   return sorted;
 }
 
-// Función genérica para renderizar páginas de libros (autor o saga)
+// ------------------ renderBookPage ------------------
+
 function renderBookPage({ libros, titlePage, tipo, nombre, req }) {
   const orden = req.query.ordenar || 'alfabetico';
   libros = ordenarBooks(libros, orden, tipo);
+
   const maxHeight = 180;
   const booksHtml = libros.map(book => {
     const cover = coverImages.length ? coverImages[Math.floor(Math.random()*coverImages.length)] : null;
@@ -145,17 +268,22 @@ function renderBookPage({ libros, titlePage, tipo, nombre, req }) {
   <div class="meta"><a href="https://drive.google.com/uc?export=download&id=${book.id}" target="_blank">Descargar</a></div>
 </div>`;
   }).join('');
-
-  const html = `
+  
+  return `
 <!DOCTYPE html>
 <html lang="es">
 <head><meta charset="UTF-8"><title>${titlePage}</title><style>${css}</style></head>
 <body>
+
+<div class="header-banner"></div>
+
 <h1>${titlePage}</h1>
-<p>
+
+<div class="top-buttons">
   <a href="/" class="button">🪄 Libros</a>
   ${tipo==='autor'?'<a href="/sagas" class="button">Sagas</a>':'<a href="/autores" class="button">Autores</a>'}
-</p>
+</div>
+
 <form method="get" action="/${tipo}">
 <select name="ordenar" onchange="this.form.submit()">
   <option value="alfabetico" ${orden==='alfabetico'?'selected':''}>A→Z</option>
@@ -164,16 +292,18 @@ function renderBookPage({ libros, titlePage, tipo, nombre, req }) {
 </select>
 <input type="hidden" name="name" value="${nombre}" />
 </form>
+
 <div id="grid">${booksHtml}</div>
+
 <p><a href="/${tipo==='autor'?'autores':'sagas'}" class="button">← Volver</a></p>
+
 </body>
 </html>`;
-  return html;
 }
 
-// -------------------- Rutas --------------------
+/* ------------------ RUTAS ------------------ */
 
-// Página de inicio
+// Página de inicio (Libros)
 app.get('/', async (req, res) => {
   try {
     const query = (req.query.buscar || '').toLowerCase();
@@ -182,11 +312,14 @@ app.get('/', async (req, res) => {
 
     actualizarBooksJSON(files);
 
-    if(query) files = files.filter(f => {
-      const metadata = bookMetadata.find(b => b.id === f.id);
-      const title = metadata ? metadata.title.toLowerCase() : f.name.toLowerCase();
-      return title.includes(query);
-    });
+    if(query) {
+      files = files.filter(f => {
+        const metadata = bookMetadata.find(b => b.id === f.id);
+        const title = metadata ? metadata.title.toLowerCase() : f.name.toLowerCase();
+        return title.includes(query);
+      });
+    }
+
     files = ordenarBooks(files, orden);
 
     const maxHeight = 180;
@@ -206,53 +339,71 @@ app.get('/', async (req, res) => {
 </div>`;
     }).join('');
 
-    const html = `
+    res.send(`
 <!DOCTYPE html>
 <html lang="es">
 <head><meta charset="UTF-8"><title>Azkaban Reads</title><style>${css}</style></head>
 <body>
+
+<div class="header-banner"></div>
+
 <h1>🪄 Azkaban Reads</h1>
-<p>
+
+<div class="top-buttons">
   <a href="/autores" class="button">Autores</a>
   <a href="/sagas" class="button">Sagas</a>
-</p>
+</div>
+
 <form method="get" action="/">
 <input type="search" name="buscar" value="${req.query.buscar || ''}" placeholder="Buscar título..." />
 <select name="ordenar" onchange="this.form.submit()">
-  <option value="alfabetico" ${orden==='alfabetico'?'selected':''}>Alfabético A→Z</option>
-  <option value="alfabetico-desc" ${orden==='alfabetico-desc'?'selected':''}>Alfabético Z→A</option>
-  <option value="recientes" ${orden==='recientes'?'selected':''}>Más recientes</option>
+  <option value="alfabetico" ${orden==='alfabetico'?'selected':''}>A→Z</option>
+  <option value="alfabetico-desc" ${orden==='alfabetico-desc'?'selected':''}>Z→A</option>
+  <option value="recientes" ${orden==='recientes'?'selected':''}>Recientes</option>
 </select>
 </form>
+
 <div id="grid">${booksHtml}</div>
+
 </body>
-</html>`;
-    res.send(html);
+</html>`);
   } catch(err) {
     console.error(err);
-    res.send('<p>Error al cargar los libros. Revisa permisos del Service Account.</p>');
+    res.send('<p>Error al cargar libros.</p>');
   }
 });
 
 // Página de autores
 app.get('/autores', (req, res) => {
   const autores = [...new Set(bookMetadata.map(b => b.author).filter(a => a))].sort();
-  const authorsHtml = autores.map(a => `<div class="book" style="min-height:100px"><div class="title">${a}</div><div class="meta"><a href="/autor?name=${encodeURIComponent(a)}">Ver libros</a></div></div>`).join('');
-  const html = `
+  const authorsHtml = autores.map(a => `
+    <div class="book" style="min-height:100px">
+      <div class="title">${a}</div>
+      <div class="meta"><a href="/autor?name=${encodeURIComponent(a)}">Ver libros</a></div>
+    </div>
+  `).join('');
+
+  res.send(`
 <!DOCTYPE html>
 <html lang="es">
-<head><meta charset="UTF-8"><title>Autores - Azkaban Reads</title><style>${css}</style></head>
+<head><meta charset="UTF-8"><title>Autores</title><style>${css}</style></head>
 <body>
+
+<div class="header-banner"></div>
+
 <h1>Autores</h1>
-<p>
+
+<div class="top-buttons">
   <a href="/" class="button">🪄 Libros</a>
   <a href="/sagas" class="button">Sagas</a>
-</p>
+</div>
+
 <div id="grid">${authorsHtml}</div>
-<p><a href="/" class="button">← Volver a libros</a></p>
+
+<p><a href="/" class="button">← Volver</a></p>
+
 </body>
-</html>`;
-  res.send(html);
+</html>`);
 });
 
 // Página de libros por autor
@@ -260,28 +411,46 @@ app.get('/autor', (req, res) => {
   const nombreAutor = req.query.name;
   if(!nombreAutor) return res.redirect('/autores');
   const libros = bookMetadata.filter(b => b.author === nombreAutor);
-  res.send(renderBookPage({ libros, titlePage: `Libros de ${nombreAutor}`, tipo: 'autor', nombre: nombreAutor, req }));
+  res.send(renderBookPage({
+    libros,
+    titlePage: `Libros de ${nombreAutor}`,
+    tipo: 'autor',
+    nombre: nombreAutor,
+    req
+  }));
 });
 
 // Página de sagas
 app.get('/sagas', (req, res) => {
   const sagas = [...new Set(bookMetadata.map(b => b.saga?.name).filter(a => a))].sort();
-  const sagasHtml = sagas.map(s => `<div class="book" style="min-height:100px"><div class="title">${s}</div><div class="meta"><a href="/saga?name=${encodeURIComponent(s)}">Ver libros</a></div></div>`).join('');
-  const html = `
+  const sagasHtml = sagas.map(s => `
+    <div class="book" style="min-height:100px">
+      <div class="title">${s}</div>
+      <div class="meta"><a href="/saga?name=${encodeURIComponent(s)}">Ver libros</a></div>
+    </div>
+  `).join('');
+
+  res.send(`
 <!DOCTYPE html>
 <html lang="es">
-<head><meta charset="UTF-8"><title>Sagas - Azkaban Reads</title><style>${css}</style></head>
+<head><meta charset="UTF-8"><title>Sagas</title><style>${css}</style></head>
 <body>
+
+<div class="header-banner"></div>
+
 <h1>Sagas</h1>
-<p>
+
+<div class="top-buttons">
   <a href="/" class="button">🪄 Libros</a>
   <a href="/autores" class="button">Autores</a>
-</p>
+</div>
+
 <div id="grid">${sagasHtml}</div>
-<p><a href="/" class="button">← Volver a libros</a></p>
+
+<p><a href="/" class="button">← Volver</a></p>
+
 </body>
-</html>`;
-  res.send(html);
+</html>`);
 });
 
 // Página de libros por saga
@@ -289,7 +458,14 @@ app.get('/saga', (req, res) => {
   const nombreSaga = req.query.name;
   if(!nombreSaga) return res.redirect('/sagas');
   const libros = bookMetadata.filter(b => b.saga?.name === nombreSaga);
-  res.send(renderBookPage({ libros, titlePage: `Libros de ${nombreSaga}`, tipo: 'saga', nombre: nombreSaga, req }));
+  res.send(renderBookPage({
+    libros,
+    titlePage: `Libros de ${nombreSaga}`,
+    tipo: 'saga',
+    nombre: nombreSaga,
+    req
+  }));
 });
 
-app.listen(PORT, ()=>console.log(`Servidor escuchando en puerto ${PORT}`));
+// Iniciar servidor
+app.listen(PORT, () => console.log(`Servidor escuchando en puerto ${PORT}`));
