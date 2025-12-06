@@ -242,6 +242,7 @@ function getCoverForBook(bookId) {
 
 function ordenarBooks(files, criterio, tipo=null) {
   let sorted = [...files];
+  
   const getMetadata = (fileId) => bookMetadata.find(x=>x.id===fileId) || {};
   
   if(tipo==='autor' || tipo==='saga') {
@@ -264,10 +265,12 @@ function ordenarBooks(files, criterio, tipo=null) {
   return sorted;
 }
 
+
 // ------------------ RENDER ------------------
 
 function renderBookPage({ libros, titlePage, tipo, nombre, req }) {
   const orden = req.query.ordenar || 'alfabetico';
+  // Usamos ordenarBooks con la lógica estabilizada
   libros = ordenarBooks(libros, orden, tipo);
 
   const maxHeight = 180;
@@ -326,16 +329,14 @@ app.get('/', async (req, res) => {
 
     actualizarBooksJSON(files);
 
-    // ********************************************
-    // *** LÓGICA DE BÚSQUEDA Y MENSAJE APLICADA ***
-    // ********************************************
+    let filteredFiles = files; // Usaremos esta variable para el filtrado
 
     if(query) {
-      files = files.filter(f => {
+      filteredFiles = files.filter(f => {
         const metadata = bookMetadata.find(b => b.id === f.id);
         if(!metadata) return false;
         
-        // Buscar en Título O Autor (Case-Insensitive)
+        // Búsqueda Case-Insensitive en Título O Autor
         const title = metadata.title.toLowerCase();
         const author = metadata.author.toLowerCase();
         
@@ -343,48 +344,13 @@ app.get('/', async (req, res) => {
       });
     }
 
-    files = ordenarBooks(files, orden);
-
+    let contentFiles = ordenarBooks(filteredFiles, orden);
+    
     let contentHtml;
 
-    if (query && files.length === 0) {
-      // Mensaje de Azkaban si no hay resultados
+    if (query && contentFiles.length === 0) {
+      // Mensaje de Azkaban
       contentHtml = `
         <div class="azkaban-message" style="margin: 50px auto; max-width: 600px; text-align: center;">
           <h2>🚫 ¡Oh, qué desastre!</h2>
-          <p style="font-size: 1.2em; line-height: 1.5;">
-            <strong>Un prisionero de Azkaban murmura:</strong>
-            "Claramente, el libro que buscas ha sido confiscado por el Ministerio por 'contenido altamente peligroso'... O tal vez, simplemente no existe. Vuelve cuando tu búsqueda sea menos patética."
-          </p>
-          <p><a href="/" class="button" style="margin-top: 20px;">Intentar de nuevo</a></p>
-        </div>
-      `;
-    } else {
-      // Generación normal de la grilla
-      const maxHeight = 180;
-      const booksHtml = files.map(file => {
-        const metadata = bookMetadata.find(b => b.id === file.id);
-        if(!metadata) return '';
-        const title = metadata.title;
-        const author = metadata.author;
-        const cover = getCoverForBook(file.id);
-        const imgHtml = cover ? `<img src="${cover}" />` : `<div style="width:80px;height:120px;background:#333;border-radius:5px;">📖</div>`;
-        return `
-<div class="book" style="min-height:${maxHeight}px">
-  ${imgHtml}
-  <div class="title">${title}</div>
-  <div class="author-span">${author}</div>
-  <div class="meta"><a href="https://drive.google.com/uc?export=download&id=${file.id}" target="_blank">Descargar</a></div>
-</div>`;
-      }).join('');
-      contentHtml = `<div id="grid">${booksHtml}</div>`;
-    }
-
-    // Renderizado final
-    res.send(`
-<!DOCTYPE html>
-<html lang="es">
-<head><meta charset="UTF-8"><title>Azkaban Reads</title><style>${css}</style></head>
-<body>
-
-<div
+          <p style="font-size: 1.2em; line-height
