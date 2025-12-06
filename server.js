@@ -246,27 +246,23 @@ function getCoverForBook(bookId) {
   return coverImages[index];
 }
 
-function ordenarBooks(files, criterio, tipo=null) {
+function ordenarBooks(files, criterio, tipo=null) { // Cambio a 'files' para ser consistente
   let sorted = [...files];
   
-  // Función auxiliar para obtener el metadato del libro (título, autor, saga)
   const getMetadata = (fileId) => bookMetadata.find(x=>x.id===fileId) || {};
   
   if(tipo==='autor' || tipo==='saga') {
-    // En rutas de autor/saga, 'files' ya son los metadatos de los libros, no los archivos de Drive.
     if(criterio==='alfabetico') sorted.sort((a,b)=> a.title.toLowerCase().localeCompare(b.title.toLowerCase()));
     else if(criterio==='alfabetico-desc') sorted.sort((a,b)=> b.title.toLowerCase().localeCompare(a.title.toLowerCase()));
     else if(criterio==='numero') sorted.sort((a,b)=> (a.saga?.number||0) - (b.saga?.number||0));
   } else {
-    // En la ruta principal, 'files' son los archivos de Drive.
     if(criterio==='alfabetico') {
-      sorted.sort((a,b)=> (getMetadata(a.id).title||a.name).toLowerCase().localeCompare((getMetadata(b.id).title||b.name).toLowerCase()));
+      sorted.sort((a,b)=> (getMetadata(a.id)?.title||a.name).toLowerCase().localeCompare((getMetadata(b.id)?.title||b.name).toLowerCase()));
     }
     else if(criterio==='alfabetico-desc') {
-      sorted.sort((a,b)=> (getMetadata(b.id).title||b.name).toLowerCase().localeCompare((getMetadata(a.id).title||a.name).toLowerCase()));
+      sorted.sort((a,b)=> (getMetadata(b.id)?.title||b.name).toLowerCase().localeCompare((getMetadata(a.id)?.title||a.name).toLowerCase()));
     }
     else if(criterio==='recientes') {
-      // Se ordena usando la propiedad createdTime del archivo de Drive
       sorted.sort((a,b)=> new Date(b.createdTime)-new Date(a.createdTime));
     }
   }
@@ -310,8 +306,8 @@ function renderBookPage({ libros, titlePage, tipo, nombre, req }) {
 
 <form method="get" action="/${tipo}">
 <select name="ordenar" onchange="this.form.submit()">
-  <option value="alfabetico" ${orden==='alfabetico'?'selected':''}>Título (A→Z)</option>
-  <option value="alfabetico-desc" ${orden==='alfabetico-desc'?'selected':''}>Título (Z→A)</option>
+  <option value="alfabetico" ${orden==='alfabetico'?'selected':''}>A→Z (Título)</option>
+  <option value="alfabetico-desc" ${orden==='alfabetico-desc'?'selected':''}>Z→A (Título)</option>
   ${tipo==='saga'?'<option value="numero" '+(orden==='numero'?'selected':'')+'>#Número</option>':''}
 </select>
 <input type="hidden" name="name" value="${nombre}" />
@@ -331,12 +327,11 @@ app.get('/', async (req, res) => {
   try {
     const query = (req.query.buscar || '').toLowerCase();
     const orden = req.query.ordenar || 'alfabetico';
-    
-    // 1. Listar y actualizar metadatos
     let files = await listAllFiles(folderId);
+
     actualizarBooksJSON(files);
 
-    // 2. --- MEJORA 2: Filtrado del Buscador por Título O Autor ---
+    // --- MEJORA 2: Filtrado por Título O Autor (Case-Insensitive) ---
     if(query) {
       files = files.filter(f => {
         const metadata = bookMetadata.find(b => b.id === f.id);
@@ -349,15 +344,15 @@ app.get('/', async (req, res) => {
       });
     }
 
-    // 3. Ordenar los resultados (MEJORA 3: Ordenar Recientes y Alfabético ya soportado)
+    // --- MEJORA 3: Ordenar Recientes / Alfabético ---
     files = ordenarBooks(files, orden);
 
     let contentHtml;
 
-    // 4. --- MEJORA 2: Mensaje Sarcástico de Azkaban ---
+    // --- MEJORA 2: Mensaje Sarcástico de Azkaban ---
     if (query && files.length === 0) {
       contentHtml = `
-        <div class="azkaban-message" style="margin: 50px auto; max-width: 600px;">
+        <div class="azkaban-message" style="margin: 50px auto; max-width: 600px; text-align: center;">
           <h2>🚫 ¡Oh, qué desastre!</h2>
           <p style="font-size: 1.2em; line-height: 1.5;">
             <strong>Un prisionero de Azkaban murmura:</strong>
@@ -367,7 +362,7 @@ app.get('/', async (req, res) => {
         </div>
       `;
     } else {
-      // Generar el HTML de la grilla de libros
+      // Generación normal de la grilla
       const maxHeight = 180;
       const booksHtml = files.map(file => {
         const metadata = bookMetadata.find(b => b.id === file.id);
@@ -386,7 +381,6 @@ app.get('/', async (req, res) => {
       }).join('');
       contentHtml = `<div id="grid">${booksHtml}</div>`;
     }
-
 
     res.send(`
 <!DOCTYPE html>
@@ -473,7 +467,7 @@ app.get('/sagas', (req, res) => {
     <div class="book" style="min-height:100px">
       <div class="title">${s}</div>
       <div class="meta"><a href="/saga?name=${encodeURIComponent(s)}">Ver libros</a></div>
-      </div>
+    </div>
   `).join('');
 
   res.send(`
