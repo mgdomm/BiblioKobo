@@ -7,10 +7,13 @@
     "start": "node server.js"
   },
   "dependencies": {
+    "axios": "^1.6.0",
     "express": "^4.18.2",
-    "googleapis": "^126.0.0",
-    "axios": "^1.6.0"
+    "googleapis": "^126.0.0"
   },
   "author": "MG",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "nodemon": "^3.1.11"
+  }
 }
