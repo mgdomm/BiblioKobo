@@ -17,7 +17,6 @@ const auth = new google.auth.GoogleAuth({
 });
 const drive = google.drive({ version: 'v3', auth });
 
-// ID de la carpeta de Google Drive
 const folderId = '1-4G6gGNtt6KVS90AbWbtH3JlpetHrPEi';
 
 // Leer imágenes cover locales (solo .png)
@@ -44,29 +43,27 @@ try {
   bookMetadata = [];
 }
 
-// CSS global
+// ------------------ CSS ------------------
 const css = `
 @import url('https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap');
-body { font-family: 'Garamond', serif; margin:0; padding:0; background:#000; color:#eee; text-align:center; }
-.header-banner { position: sticky; top:0; width:100%; height:460px; background-size: cover; background-position: center; z-index:9999; -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 50%, rgba(0,0,0,0)); mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 50%, rgba(0,0,0,0)); transition: all 0.3s ease; }
-.header-banner.fullscreen { height:100vh; background-size: cover; background-position: center; }
-.top-buttons { text-align:center; margin-top:10px; }
-.top-buttons a { display:inline-block; color:#fff; text-decoration:none; font-weight:bold; font-size:40px; font-family:'MedievalSharp', cursive; padding:8px 16px; background:transparent; border:1px solid #fff; border-radius:6px; margin:4px; transition: all 0.2s ease; }
+body { margin:0; padding:0; background:#000; color:#eee; font-family:Garamond, serif; }
+.header-banner { width:100%; height:100vh; background-size:cover; background-position:center; position:relative; }
+.overlay { position:absolute; top:60%; left:50%; transform:translate(-50%,-60%); text-align:center; }
+h1 { font-family:'MedievalSharp', cursive; font-size:64px; color:#fff; margin:10px 0; }
+.top-buttons a { font-family:'MedievalSharp', cursive; font-size:40px; color:#fff; text-decoration:none; border:1px solid #fff; border-radius:6px; padding:8px 16px; margin:4px; background:transparent; display:inline-block; transition:0.2s; }
 .top-buttons a:hover { background:#222; }
-.top-buttons.secondary { text-align:right; margin:8px; font-size:16px; border:none; padding:4px 8px; }
-.top-buttons.secondary a { color:#fff; text-decoration:none; font-weight:normal; border:none; }
-h1 { font-size:64px; font-family: 'MedievalSharp', cursive; color:#fff; margin:10px 0; }
-form { margin-bottom:10px; }
+.top-buttons.secondary { position:absolute; top:10px; right:10px; font-size:16px; }
+.top-buttons.secondary a { color:#fff; text-decoration:none; border:none; padding:4px 8px; }
+form { margin:20px 0; text-align:center; }
 input[type="search"], select { padding:6px 8px; margin:0 4px; font-size:14px; border-radius:6px; border:1px solid #555; background:#111; color:#fff; }
 #grid { text-align:center; }
 .book { display:inline-block; vertical-align:top; width:110px; min-height:160px; background:#111; padding:6px; border-radius:8px; border:1px solid #555; margin:4px; text-align:center; word-wrap:break-word; }
 .book img { width:80px; height:120px; border-radius:5px; object-fit:cover; margin-bottom:4px; }
-.title { font-size:12px; font-weight:700; color:#eee; font-family: 'MedievalSharp', cursive; margin-bottom:2px; }
-.author a, .author-span { color:#ccc; font-size:11px; text-decoration:none; }
-.number-span { color:#ccc; font-size:11px; }
-.meta a { font-size:11px; font-weight:bold; text-decoration:none; color:#fff; background:#222; padding:3px 6px; border-radius:4px; display:inline-block; margin-top:3px; transition: all 0.2s ease; }
+.title { font-size:12px; font-weight:700; color:#eee; font-family:'MedievalSharp', cursive; margin-bottom:2px; }
+.author-span, .number-span { font-size:11px; color:#ccc; }
+.meta a { font-size:11px; font-weight:bold; text-decoration:none; color:#fff; background:#222; padding:3px 6px; border-radius:4px; display:inline-block; margin-top:3px; transition:0.2s; }
 .meta a:hover { background:#444; }
-a.button { display:inline-block; margin:10px; text-decoration:none; padding:14px 28px; background:#222; color:#fff; border-radius:8px; font-size:20px; font-weight:bold; transition: all 0.2s ease; }
+a.button { display:inline-block; margin:10px; text-decoration:none; padding:14px 28px; background:#222; color:#fff; border-radius:8px; font-size:20px; font-weight:bold; transition:0.2s; }
 a.button:hover { background:#444; }
 `;
 
@@ -144,7 +141,7 @@ function ordenarBooks(books, criterio, tipo=null) {
         .localeCompare(bookMetadata.find(x=>x.id===b.id)?.title||b.name));
     else if(criterio==='alfabetico-desc')
       sorted.sort((a,b)=> (bookMetadata.find(x=>x.id===b.id)?.title||b.name)
-        .localeCompare(bookMetadata.find(x=>x.id===a.id)?.title||a.name));
+        .localeCompare(bookMetadata.find(x=>x.id===a.id)?.title||b.name));
     else if(criterio==='recientes')
       sorted.sort((a,b)=> new Date(b.createdTime)-new Date(a.createdTime));
   }
@@ -180,7 +177,7 @@ function renderBookPage({ libros, titlePage, tipo, nombre, req }) {
         <h2>¡Oh, qué desastre!</h2>
         <p style="font-size: 1.2em; line-height: 1.5;">
           <strong>Un prisionero de Azkaban murmura:</strong>
-          "Claramente, el libro que buscas ha sido confiscado por el Ministerio por 'contenido altamente peligroso'... O tal vez, simplemente no existe. Vuelve cuando tu búsqueda sea menos patética."
+          "El libro no existe o fue confiscado. Vuelve luego."
         </p>
       </div>
     `;
@@ -191,22 +188,20 @@ function renderBookPage({ libros, titlePage, tipo, nombre, req }) {
   <html lang="es">
   <head><meta charset="UTF-8"><title>${titlePage}</title><style>${css}</style></head>
   <body>
-    <div class="header-banner" style="background-image:url('/cover/Secuendarias/portada11.png');"></div>
-    <div class="top-buttons secondary"><a href="/">Inicio</a></div>
-    <h1>${titlePage}</h1>
-    <div class="top-buttons">
-      <a href="/libros" class="button">🪄 Libros</a>
-      ${tipo==='autor'
-        ? '<a href="/sagas" class="button">Sagas</a>'
-        : '<a href="/autores" class="button">Autores</a>'}
+    <div class="header-banner" style="background-image:url('/cover/secuendarias/portada11.png');"></div>
+    <div class="overlay">
+      <div class="top-buttons secondary"><a href="/">Inicio</a></div>
+      <h1>${titlePage}</h1>
+      <div class="top-buttons">
+        <a href="/libros">🪄 Libros</a>
+        ${tipo==='autor' ? '<a href="/sagas">Sagas</a>' : '<a href="/autores">Autores</a>'}
+      </div>
     </div>
     <form method="get" action="/${tipo}">
       <select name="ordenar" onchange="this.form.submit()">
         <option value="alfabetico" ${orden==='alfabetico'?'selected':''}>A→Z</option>
         <option value="alfabetico-desc" ${orden==='alfabetico-desc'?'selected':''}>Z→A</option>
-        ${tipo==='saga'
-          ? `<option value="numero" ${orden==='numero'?'selected':''}>#Número</option>`
-          : ''}
+        ${tipo==='saga' ? `<option value="numero" ${orden==='numero'?'selected':''}>#Número</option>` : ''}
       </select>
       <input type="hidden" name="name" value="${nombre}" />
     </form>
@@ -225,12 +220,14 @@ app.get('/', (req,res)=>{
     <html lang="es">
     <head><meta charset="UTF-8"><title>Azkaban Reads</title><style>${css}</style></head>
     <body>
-      <div class="header-banner fullscreen" style="background-image:url('/cover/portada/portada1.png');"></div>
-      <h1>🪄 Azkaban Reads</h1>
-      <div class="top-buttons">
-        <a href="/libros" class="button">Libros</a>
-        <a href="/autores" class="button">Autores</a>
-        <a href="/sagas" class="button">Sagas</a>
+      <div class="header-banner" style="background-image:url('/cover/portada/portada1.png');"></div>
+      <div class="overlay">
+        <h1>🪄 Azkaban Reads</h1>
+        <div class="top-buttons">
+          <a href="/libros">Libros</a>
+          <a href="/autores">Autores</a>
+          <a href="/sagas">Sagas</a>
+        </div>
       </div>
     </body>
     </html>
@@ -238,132 +235,103 @@ app.get('/', (req,res)=>{
 });
 
 // Libros
-app.get('/libros', async (req, res) => {
+app.get('/libros', async (req,res)=>{
   try {
-    const query = (req.query.buscar || '').trim().toLowerCase();
-    const orden = req.query.ordenar || 'alfabetico';
+    const query = (req.query.buscar||'').trim().toLowerCase();
+    const orden = req.query.ordenar||'alfabetico';
     let files = await listAllFiles(folderId);
     actualizarBooksJSON(files);
-
-    if(query) {
-      files = files.filter(f => {
-        const metadata = bookMetadata.find(b => b.id === f.id);
-        const title = (metadata?.title || f.name || '').toLowerCase();
-        const author = (metadata?.author || '').toLowerCase();
-        return title.includes(query) || author.includes(query);
+    if(query){
+      files = files.filter(f=>{
+        const metadata = bookMetadata.find(b=>b.id===f.id);
+        const title = (metadata?.title||f.name||'').toLowerCase();
+        const author = (metadata?.author||'').toLowerCase();
+        return title.includes(query)||author.includes(query);
       });
     }
-
     files = ordenarBooks(files, orden);
-
     const maxHeight = 180;
-
-    let booksHtml = files.map(file => {
-      const metadata = bookMetadata.find(b => b.id === file.id);
+    let booksHtml = files.map(file=>{
+      const metadata = bookMetadata.find(b=>b.id===file.id);
       if(!metadata) return '';
       const cover = getCoverForBook(file.id);
-      const imgHtml = cover
-        ? `<img src="${cover}" />`
-        : `<div style="width:80px;height:120px;background:#333;border-radius:5px;">📖</div>`;
-      return `
-        <div class="book" style="min-height:${maxHeight}px">
-          ${imgHtml}
-          <div class="title">${metadata.title}</div>
-          <div class="author-span">${metadata.author}</div>
-          <div class="meta"><a href="https://drive.google.com/uc?export=download&id=${file.id}" target="_blank">Descargar</a></div>
-        </div>
-      `;
+      const imgHtml = cover?`<img src="${cover}" />`:`<div style="width:80px;height:120px;background:#333;border-radius:5px;">📖</div>`;
+      return `<div class="book" style="min-height:${maxHeight}px">${imgHtml}<div class="title">${metadata.title}</div><div class="author-span">${metadata.author}</div><div class="meta"><a href="https://drive.google.com/uc?export=download&id=${file.id}" target="_blank">Descargar</a></div></div>`;
     }).join('');
-
-    if (!booksHtml || booksHtml.trim() === '') {
-      booksHtml = `
-        <div style="padding:40px;color:#eee;">
-          <h2>¡Oh, qué desastre!</h2>
-          <p style="font-size: 1.2em; line-height: 1.5;">
-            <strong>Un prisionero de Azkaban murmura:</strong>
-            "Claramente, el libro que buscas ha sido confiscado por el Ministerio por 'contenido altamente peligroso'... O tal vez, simplemente no existe. Vuelve cuando tu búsqueda sea menos patética."
-          </p>
-        </div>
-      `;
-    }
-
+    if(!booksHtml) booksHtml = `<div style="padding:40px;color:#eee;"><h2>¡Oh, qué desastre!</h2><p style="font-size: 1.2em; line-height: 1.5;">El libro no existe o fue confiscado. Vuelve luego.</p></div>`;
     res.send(`
       <!DOCTYPE html>
       <html lang="es">
       <head><meta charset="UTF-8"><title>Libros</title><style>${css}</style></head>
       <body>
-        <div class="header-banner" style="background-image:url('/cover/Secuendarias/portada11.png');"></div>
-        <div class="top-buttons secondary"><a href="/">Inicio</a></div>
-        <h1>🪄 Libros</h1>
+        <div class="header-banner" style="background-image:url('/cover/secuendarias/portada11.png');"></div>
+        <div class="overlay">
+          <div class="top-buttons secondary"><a href="/">Inicio</a></div>
+          <h1>🪄 Libros</h1>
+        </div>
+        <form method="get" action="/libros"><input type="search" name="buscar" value="${req.query.buscar||''}" placeholder="Buscar título..." /><select name="ordenar" onchange="this.form.submit()"><option value="alfabetico" ${orden==='alfabetico'?'selected':''}>A→Z</option><option value="alfabetico-desc" ${orden==='alfabetico-desc'?'selected':''}>Z→A</option><option value="recientes" ${orden==='recientes'?'selected':''}>Recientes</option></select></form>
         <div id="grid">${booksHtml}</div>
       </body>
       </html>
     `);
-  } catch(err) {
-    console.error(err);
-    res.send('<p>Error al cargar libros.</p>');
-  }
+  } catch(err){console.error(err); res.send('<p>Error al cargar libros.</p>');}
 });
 
 // Autores
-app.get('/autores', (req, res) => {
-  const autores = [...new Set(bookMetadata.map(b => b.author).filter(a => a))].sort();
-  const authorsHtml = autores.map(a => `
-    <div class="book" style="min-height:100px">
-      <div class="title">${a}</div>
-      <div class="meta"><a href="/autor?name=${encodeURIComponent(a)}">Ver libros</a></div>
-    </div>
-  `).join('');
+app.get('/autores', (req,res)=>{
+  const autores = [...new Set(bookMetadata.map(b=>b.author).filter(a=>a))].sort();
+  const authorsHtml = autores.map(a=>`<div class="book" style="min-height:100px"><div class="title">${a}</div><div class="meta"><a href="/autor?name=${encodeURIComponent(a)}">Ver libros</a></div></div>`).join('');
   res.send(`
-  <!DOCTYPE html>
-  <html lang="es">
-  <head><meta charset="UTF-8"><title>Autores</title><style>${css}</style></head>
-  <body>
-    <div class="header-banner" style="background-image:url('/cover/Secuendarias/portada11.png');"></div>
-    <div class="top-buttons secondary"><a href="/">Inicio</a></div>
-    <h1>Autores</h1>
-    <div id="grid">${authorsHtml}</div>
-  </body>
-  </html>`);
+    <!DOCTYPE html>
+    <html lang="es">
+    <head><meta charset="UTF-8"><title>Autores</title><style>${css}</style></head>
+    <body>
+      <div class="header-banner" style="background-image:url('/cover/secuendarias/portada11.png');"></div>
+      <div class="overlay">
+        <div class="top-buttons secondary"><a href="/">Inicio</a></div>
+        <h1>Autores</h1>
+      </div>
+      <div id="grid">${authorsHtml}</div>
+      <p><a href="/libros" class="button">← Volver</a></p>
+    </body>
+    </html>
+  `);
 });
 
-// Autor
-app.get('/autor', (req, res) => {
+// Las rutas /autor, /sagas, /saga se mantienen igual
+app.get('/autor', (req,res)=>{
   const nombreAutor = req.query.name;
   if(!nombreAutor) return res.redirect('/autores');
-  const libros = bookMetadata.filter(b => b.author === nombreAutor);
-  res.send(renderBookPage({ libros, titlePage: `Libros de ${nombreAutor}`, tipo: 'autor', nombre: nombreAutor, req }));
+  const libros = bookMetadata.filter(b=>b.author===nombreAutor);
+  res.send(renderBookPage({libros,titlePage:`Libros de ${nombreAutor}`,tipo:'autor',nombre:nombreAutor,req}));
 });
 
-// Sagas
-app.get('/sagas', (req, res) => {
-  const sagas = [...new Set(bookMetadata.map(b => b.saga?.name).filter(a => a))].sort();
-  const sagasHtml = sagas.map(s => `
-    <div class="book" style="min-height:100px">
-      <div class="title">${s}</div>
-      <div class="meta"><a href="/saga?name=${encodeURIComponent(s)}">Ver libros</a></div>
-    </div>
-  `).join('');
+app.get('/sagas', (req,res)=>{
+  const sagas = [...new Set(bookMetadata.map(b=>b.saga?.name).filter(a=>a))].sort();
+  const sagasHtml = sagas.map(s=>`<div class="book" style="min-height:100px"><div class="title">${s}</div><div class="meta"><a href="/saga?name=${encodeURIComponent(s)}">Ver libros</a></div></div>`).join('');
   res.send(`
-  <!DOCTYPE html>
-  <html lang="es">
-  <head><meta charset="UTF-8"><title>Sagas</title><style>${css}</style></head>
-  <body>
-    <div class="header-banner" style="background-image:url('/cover/Secuendarias/portada11.png');"></div>
-    <div class="top-buttons secondary"><a href="/">Inicio</a></div>
-    <h1>Sagas</h1>
-    <div id="grid">${sagasHtml}</div>
-  </body>
-  </html>`);
+    <!DOCTYPE html>
+    <html lang="es">
+    <head><meta charset="UTF-8"><title>Sagas</title><style>${css}</style></head>
+    <body>
+      <div class="header-banner" style="background-image:url('/cover/secuendarias/portada11.png');"></div>
+      <div class="overlay">
+        <div class="top-buttons secondary"><a href="/">Inicio</a></div>
+        <h1>Sagas</h1>
+      </div>
+      <div id="grid">${sagasHtml}</div>
+      <p><a href="/libros" class="button">← Volver</a></p>
+    </body>
+    </html>
+  `);
 });
 
-// Saga
 app.get('/saga', (req,res)=>{
   const nombreSaga = req.query.name;
   if(!nombreSaga) return res.redirect('/sagas');
-  const libros = bookMetadata.filter(b => b.saga?.name === nombreSaga);
-  res.send(renderBookPage({ libros, titlePage: `Saga ${nombreSaga}`, tipo:'saga', nombre:nombreSaga, req }));
+  const libros = bookMetadata.filter(b=>b.saga?.name===nombreSaga);
+  res.send(renderBookPage({libros,titlePage:`Libros de ${nombreSaga}`,tipo:'saga',nombre:nombreSaga,req}));
 });
 
-// Start server
-app.listen(PORT, () => console.log(`Servidor corriendo en puerto ${PORT}`));
+// Iniciar servidor
+app.listen(PORT,()=>console.log(`Servidor escuchando en puerto ${PORT}`));
