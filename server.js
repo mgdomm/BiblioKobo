@@ -74,7 +74,6 @@ a.button:hover { background:#444; }
 `;
 
 // ------------------ FUNCIONES ------------------
-
 async function listAllFiles(folderId) {
   let files = [], pageToken = null;
   do {
@@ -155,7 +154,6 @@ function ordenarBooks(books, criterio, tipo=null) {
 }
 
 // ------------------ RENDER ------------------
-
 function renderBookPage({ libros, titlePage, tipo, nombre, req }) {
   const orden = req.query.ordenar || 'alfabetico';
   libros = ordenarBooks(libros, orden, tipo);
@@ -242,7 +240,156 @@ app.get('/', (req,res)=>{
   `);
 });
 
-// ... Rutas secundarias como /libros, /autores, /sagas, /autor, /saga permanecen iguales que antes ...
+// Página Libros
+app.get('/libros', async (req, res) => {
+  try {
+    const query = (req.query.buscar || '').trim().toLowerCase();
+    const orden = req.query.ordenar || 'alfabetico';
+    let files = await listAllFiles(folderId);
+    actualizarBooksJSON(files);
+
+    if(query) {
+      files = files.filter(f => {
+        const metadata = bookMetadata.find(b => b.id === f.id);
+        const title = (metadata?.title || f.name || '').toLowerCase();
+        const author = (metadata?.author || '').toLowerCase();
+        return title.includes(query) || author.includes(query);
+      });
+    }
+
+    files = ordenarBooks(files, orden);
+
+    const maxHeight = 180;
+
+    let booksHtml = files.map(file => {
+      const metadata = bookMetadata.find(b => b.id === file.id);
+      if(!metadata) return '';
+      const cover = getCoverForBook(file.id);
+      const imgHtml = cover
+        ? `<img src="${cover}" />`
+        : `<div style="width:80px;height:120px;background:#333;border-radius:5px;">📖</div>`;
+      return `
+        <div class="book" style="min-height:${maxHeight}px">
+          ${imgHtml}
+          <div class="title">${metadata.title}</div>
+          <div class="author-span">${metadata.author}</div>
+          <div class="meta"><a href="https://drive.google.com/uc?export=download&id=${file.id}" target="_blank">Descargar</a></div>
+        </div>
+      `;
+    }).join('');
+
+    if (!booksHtml || booksHtml.trim() === '') {
+      booksHtml = `
+        <div style="padding:40px;color:#eee;">
+          <h2>¡Oh, qué desastre!</h2>
+          <p style="font-size: 1.2em; line-height: 1.5;">
+            <strong>Un prisionero de Azkaban murmura:</strong>
+            "Claramente, el libro que buscas ha sido confiscado por el Ministerio por 'contenido altamente peligroso'... O tal vez, simplemente no existe. Vuelve cuando tu búsqueda sea menos patética."
+          </p>
+        </div>
+      `;
+    }
+
+    res.send(`
+      <!DOCTYPE html>
+      <html lang="es">
+      <head><meta charset="UTF-8"><title>Libros</title><style>${css}</style></head>
+      <body>
+        <div class="header-banner" style="background-image:url('/cover/Secuendarias/portada11.png');"></div>
+        <a href="/" class="secondary-top-right">Inicio</a>
+        <h1>Libros</h1>
+        <div class="top-buttons">
+          <a href="/autores" class="button">Autores</a>
+          <a href="/sagas" class="button">Sagas</a>
+        </div>
+
+        <form method="get" action="/libros">
+          <input type="search" name="buscar" value="${req.query.buscar || ''}" placeholder="Buscar título..." />
+          <select name="ordenar" onchange="this.form.submit()">
+            <option value="alfabetico" ${orden==='alfabetico'?'selected':''}>A→Z</option>
+            <option value="alfabetico-desc" ${orden==='alfabetico-desc'?'selected':''}>Z→A</option>
+            <option value="recientes" ${orden==='recientes'?'selected':''}>Recientes</option>
+          </select>
+        </form>
+
+        <div id="grid">${booksHtml}</div>
+      </body>
+      </html>
+    `);
+  } catch(err) {
+    console.error(err);
+    res.send('<p>Error al cargar libros.</p>');
+  }
+});
+
+// Página Autores
+app.get('/autores', (req,res)=>{
+  const autores = [...new Set(bookMetadata.map(b => b.author).filter(a => a))].sort();
+  const authorsHtml = autores.map(a=>`
+    <div class="book" style="min-height:100px">
+      <div class="title">${a}</div>
+      <div class="meta"><a href="/autor?name=${encodeURIComponent(a)}">Ver libros</a></div>
+    </div>
+  `).join('');
+
+  res.send(`
+    <!DOCTYPE html>
+    <html lang="es">
+    <head><meta charset="UTF-8"><title>Autores</title><style>${css}</style></head>
+    <body>
+      <div class="header-banner" style="background-image:url('/cover/Secuendarias/portada11.png');"></div>
+      <a href="/" class="secondary-top-right">Inicio</a>
+      <h1>Autores</h1>
+      <div class="top-buttons">
+        <a href="/libros" class="button">Libros</a>
+        <a href="/sagas" class="button">Sagas</a>
+      </div>
+      <div id="grid">${authorsHtml}</div>
+    </body>
+    </html>
+  `);
+});
+
+// Rutas individuales autor, saga, sagas permanecen iguales
+app.get('/autor', (req,res)=>{
+  const nombre = req.query.name;
+  if(!nombre) return res.redirect('/autores');
+  const libros = bookMetadata.filter(b=>b.author===nombre);
+  res.send(renderBookPage({ libros, titlePage:`Libros de ${nombre}`, tipo:'autor', nombre, req }));
+});
+
+app.get('/sagas', (req,res)=>{
+  const sagas = [...new Set(bookMetadata.map(b=>b.saga?.name).filter(a=>a))].sort();
+  const sagasHtml = sagas.map(s=>`
+    <div class="book" style="min-height:100px">
+      <div class="title">${s}</div>
+      <div class="meta"><a href="/saga?name=${encodeURIComponent(s)}">Ver libros</a></div>
+    </div>
+  `).join('');
+  res.send(`
+    <!DOCTYPE html>
+    <html lang="es">
+    <head><meta charset="UTF-8"><title>Sagas</title><style>${css}</style></head>
+    <body>
+      <div class="header-banner" style="background-image:url('/cover/Secuendarias/portada11.png');"></div>
+      <a href="/" class="secondary-top-right">Inicio</a>
+      <h1>Sagas</h1>
+      <div class="top-buttons">
+        <a href="/libros" class="button">Libros</a>
+        <a href="/autores" class="button">Autores</a>
+      </div>
+      <div id="grid">${sagasHtml}</div>
+    </body>
+    </html>
+  `);
+});
+
+app.get('/saga', (req,res)=>{
+  const nombre = req.query.name;
+  if(!nombre) return res.redirect('/sagas');
+  const libros = bookMetadata.filter(b=>b.saga?.name===nombre);
+  res.send(renderBookPage({ libros, titlePage:`Libros de ${nombre}`, tipo:'saga', nombre, req }));
+});
 
 // Iniciar servidor
-app.listen(PORT, () => console.log(`Servidor escuchando en puerto ${PORT}`));
+app.listen(PORT, ()=>console.log(`Servidor escuchando en puerto ${PORT}`));
