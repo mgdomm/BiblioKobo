@@ -48,7 +48,7 @@ try {
 const css = `
 @import url('https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap');
 body { font-family: 'Garamond', serif; margin:0; padding:0; background:#000; color:#eee; text-align:center; }
-.header-banner { position: sticky; top:0; width:100%; height:460px; background-image: url('/cover/inicio/portada11.png'); background-size: cover; background-position: center; z-index:9999; -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 50%, rgba(0,0,0,0)); mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 50%, rgba(0,0,0,0)); transition: all 0.3s ease; }
+.header-banner { position: sticky; top:0; width:100%; height:460px; background-size: cover; background-position: center; z-index:9999; -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 50%, rgba(0,0,0,0)); mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 50%, rgba(0,0,0,0)); transition: all 0.3s ease; }
 .top-buttons { text-align:center; margin-top:10px; }
 .top-buttons a { display:inline-block; color:#fff; text-decoration:none; font-weight:bold; font-size:20px; padding:8px 16px; background:transparent; border:1px solid #fff; border-radius:6px; margin:4px; transition: all 0.2s ease; }
 .top-buttons a:hover { background:#222; }
@@ -218,87 +218,29 @@ function renderBookPage({ libros, titlePage, tipo, nombre, req }) {
 
 // ------------------ RUTAS ------------------
 
-app.get('/', async (req, res) => {
-  try {
-    const query = (req.query.buscar || '').trim().toLowerCase();
-    const orden = req.query.ordenar || 'alfabetico';
-    let files = await listAllFiles(folderId);
-    actualizarBooksJSON(files);
-
-    if(query) {
-      files = files.filter(f => {
-        const metadata = bookMetadata.find(b => b.id === f.id);
-        const title = (metadata?.title || f.name || '').toLowerCase();
-        const author = (metadata?.author || '').toLowerCase();
-        return title.includes(query) || author.includes(query);
-      });
-    }
-
-    files = ordenarBooks(files, orden);
-
-    const maxHeight = 180;
-
-    let booksHtml = files.map(file => {
-      const metadata = bookMetadata.find(b => b.id === file.id);
-      if(!metadata) return '';
-      const cover = getCoverForBook(file.id);
-      const imgHtml = cover
-        ? `<img src="${cover}" />`
-        : `<div style="width:80px;height:120px;background:#333;border-radius:5px;">📖</div>`;
-      return `
-        <div class="book" style="min-height:${maxHeight}px">
-          ${imgHtml}
-          <div class="title">${metadata.title}</div>
-          <div class="author-span">${metadata.author}</div>
-          <div class="meta"><a href="https://drive.google.com/uc?export=download&id=${file.id}" target="_blank">Descargar</a></div>
-        </div>
-      `;
-    }).join('');
-
-    if (!booksHtml || booksHtml.trim() === '') {
-      booksHtml = `
-        <div style="padding:40px;color:#eee;">
-          <h2>¡Oh, qué desastre!</h2>
-          <p style="font-size: 1.2em; line-height: 1.5;">
-            <strong>Un prisionero de Azkaban murmura:</strong>
-            "Claramente, el libro que buscas ha sido confiscado por el Ministerio por 'contenido altamente peligroso'... O tal vez, simplemente no existe. Vuelve cuando tu búsqueda sea menos patética."
-          </p>
-        </div>
-      `;
-    }
-
-    res.send(`
-      <!DOCTYPE html>
-      <html lang="es">
-      <head><meta charset="UTF-8"><title>Azkaban Reads</title><style>${css}</style></head>
-      <body>
-        <div class="header-banner"></div>
-        <h1>🪄 Azkaban Reads</h1>
-
-        <div class="top-buttons">
-          <a href="/autores" class="button">Autores</a>
-          <a href="/sagas" class="button">Sagas</a>
-        </div>
-
-        <form method="get" action="/">
-          <input type="search" name="buscar" value="${req.query.buscar || ''}" placeholder="Buscar título..." />
-          <select name="ordenar" onchange="this.form.submit()">
-            <option value="alfabetico" ${orden==='alfabetico'?'selected':''}>A→Z</option>
-            <option value="alfabetico-desc" ${orden==='alfabetico-desc'?'selected':''}>Z→A</option>
-            <option value="recientes" ${orden==='recientes'?'selected':''}>Recientes</option>
-          </select>
-        </form>
-
-        <div id="grid">${booksHtml}</div>
-      </body>
-      </html>
-    `);
-  } catch(err) {
-    console.error(err);
-    res.send('<p>Error al cargar libros.</p>');
-  }
+// NUEVA PÁGINA DE INICIO
+app.get('/inicio', (req, res) => {
+  res.send(`
+  <!DOCTYPE html>
+  <html lang="es">
+  <head><meta charset="UTF-8"><title>Azkaban Reads</title><style>${css}</style></head>
+  <body>
+    <div class="header-banner" style="background-image: url('/cover/portada/portada1.png');"></div>
+    <h1>🪄 Azkaban Reads</h1>
+    <div class="top-buttons">
+      <a href="/" class="button">Libros</a>
+      <a href="/autores" class="button">Autores</a>
+      <a href="/sagas" class="button">Sagas</a>
+    </div>
+  </body>
+  </html>
+  `);
 });
 
+// Ruta principal ahora redirige a /inicio
+app.get('/', (req, res) => res.redirect('/inicio'));
+
+// Resto de rutas originales (Libros, Autores, Sagas)
 app.get('/autores', (req, res) => {
   const autores = [...new Set(bookMetadata.map(b => b.author).filter(a => a))].sort();
   const authorsHtml = autores.map(a => `
@@ -373,6 +315,88 @@ app.get('/saga', (req, res) => {
     nombre: nombreSaga,
     req
   }));
+});
+
+// Página de búsqueda de libros
+app.get('/libros', async (req, res) => {
+  try {
+    const query = (req.query.buscar || '').trim().toLowerCase();
+    const orden = req.query.ordenar || 'alfabetico';
+    let files = await listAllFiles(folderId);
+    actualizarBooksJSON(files);
+
+    if(query) {
+      files = files.filter(f => {
+        const metadata = bookMetadata.find(b => b.id === f.id);
+        const title = (metadata?.title || f.name || '').toLowerCase();
+        const author = (metadata?.author || '').toLowerCase();
+        return title.includes(query) || author.includes(query);
+      });
+    }
+
+    files = ordenarBooks(files, orden);
+
+    const maxHeight = 180;
+
+    let booksHtml = files.map(file => {
+      const metadata = bookMetadata.find(b => b.id === file.id);
+      if(!metadata) return '';
+      const cover = getCoverForBook(file.id);
+      const imgHtml = cover
+        ? `<img src="${cover}" />`
+        : `<div style="width:80px;height:120px;background:#333;border-radius:5px;">📖</div>`;
+      return `
+        <div class="book" style="min-height:${maxHeight}px">
+          ${imgHtml}
+          <div class="title">${metadata.title}</div>
+          <div class="author-span">${metadata.author}</div>
+          <div class="meta"><a href="https://drive.google.com/uc?export=download&id=${file.id}" target="_blank">Descargar</a></div>
+        </div>
+      `;
+    }).join('');
+
+    if (!booksHtml || booksHtml.trim() === '') {
+      booksHtml = `
+        <div style="padding:40px;color:#eee;">
+          <h2>¡Oh, qué desastre!</h2>
+          <p style="font-size: 1.2em; line-height: 1.5;">
+            <strong>Un prisionero de Azkaban murmura:</strong>
+            "Claramente, el libro que buscas ha sido confiscado por el Ministerio por 'contenido altamente peligroso'... O tal vez, simplemente no existe. Vuelve cuando tu búsqueda sea menos patética."
+          </p>
+        </div>
+      `;
+    }
+
+    res.send(`
+      <!DOCTYPE html>
+      <html lang="es">
+      <head><meta charset="UTF-8"><title>Azkaban Reads</title><style>${css}</style></head>
+      <body>
+        <div class="header-banner"></div>
+        <h1>🪄 Azkaban Reads</h1>
+
+        <div class="top-buttons">
+          <a href="/autores" class="button">Autores</a>
+          <a href="/sagas" class="button">Sagas</a>
+        </div>
+
+        <form method="get" action="/libros">
+          <input type="search" name="buscar" value="${req.query.buscar || ''}" placeholder="Buscar título..." />
+          <select name="ordenar" onchange="this.form.submit()">
+            <option value="alfabetico" ${orden==='alfabetico'?'selected':''}>A→Z</option>
+            <option value="alfabetico-desc" ${orden==='alfabetico-desc'?'selected':''}>Z→A</option>
+            <option value="recientes" ${orden==='recientes'?'selected':''}>Recientes</option>
+          </select>
+        </form>
+
+        <div id="grid">${booksHtml}</div>
+      </body>
+      </html>
+    `);
+  } catch(err) {
+    console.error(err);
+    res.send('<p>Error al cargar libros.</p>');
+  }
 });
 
 // Iniciar servidor
