@@ -48,16 +48,13 @@ try {
 const css = `
 @import url('https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap');
 body { font-family: 'Garamond', serif; margin:0; padding:0; background:#000; color:#eee; text-align:center; }
-.header-banner { width:100%; background-size: cover; background-position: center; z-index:0; position:relative; }
-.header-banner.fullscreen { height:100vh; }
-.start-buttons { position: absolute; top:50%; left:50%; transform: translate(-50%, -50%); z-index:1; text-align:center; }
-.start-buttons a { display:block; margin:8px 0; color:#fff; background:transparent; text-decoration:none; font-weight:bold; font-size:20px; transition: all 0.2s ease; }
-.start-buttons a:hover { color:#fff; text-decoration:underline; }
+.header-banner { position: sticky; top:0; width:100%; height:460px; background-size: cover; background-position: center; z-index:9999; -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 50%, rgba(0,0,0,0)); mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 50%, rgba(0,0,0,0)); transition: all 0.3s ease; }
+.header-banner.fullscreen { height:100vh; background-size: cover; background-position: center; }
 .top-buttons { text-align:center; margin-top:10px; }
-.top-buttons a { display:inline-block; color:#fff; text-decoration:none; font-weight:bold; font-size:20px; padding:8px 16px; background:transparent; border:1px solid #fff; border-radius:6px; margin:4px; transition: all 0.2s ease; }
+.top-buttons a { display:inline-block; color:#fff; text-decoration:none; font-weight:bold; font-size:40px; font-family:'MedievalSharp', cursive; padding:8px 16px; background:transparent; border:1px solid #fff; border-radius:6px; margin:4px; transition: all 0.2s ease; }
 .top-buttons a:hover { background:#222; }
-.secondary-top-right { position:absolute; top:10px; right:10px; font-size:16px; color:#fff; text-decoration:none; z-index:1; }
-.secondary-top-right:hover { text-decoration:underline; }
+.top-buttons.secondary { text-align:right; margin:8px; font-size:16px; border:none; padding:4px 8px; }
+.top-buttons.secondary a { color:#fff; text-decoration:none; font-weight:normal; border:none; }
 h1 { font-size:64px; font-family: 'MedievalSharp', cursive; color:#fff; margin:10px 0; }
 form { margin-bottom:10px; }
 input[type="search"], select { padding:6px 8px; margin:0 4px; font-size:14px; border-radius:6px; border:1px solid #555; background:#111; color:#fff; }
@@ -74,6 +71,7 @@ a.button:hover { background:#444; }
 `;
 
 // ------------------ FUNCIONES ------------------
+
 async function listAllFiles(folderId) {
   let files = [], pageToken = null;
   do {
@@ -154,6 +152,7 @@ function ordenarBooks(books, criterio, tipo=null) {
 }
 
 // ------------------ RENDER ------------------
+
 function renderBookPage({ libros, titlePage, tipo, nombre, req }) {
   const orden = req.query.ordenar || 'alfabetico';
   libros = ordenarBooks(libros, orden, tipo);
@@ -193,16 +192,14 @@ function renderBookPage({ libros, titlePage, tipo, nombre, req }) {
   <head><meta charset="UTF-8"><title>${titlePage}</title><style>${css}</style></head>
   <body>
     <div class="header-banner" style="background-image:url('/cover/Secuendarias/portada11.png');"></div>
-    <a href="/" class="secondary-top-right">Inicio</a>
+    <div class="top-buttons secondary"><a href="/">Inicio</a></div>
     <h1>${titlePage}</h1>
-
     <div class="top-buttons">
-      <a href="/libros" class="button">Libros</a>
+      <a href="/libros" class="button">🪄 Libros</a>
       ${tipo==='autor'
         ? '<a href="/sagas" class="button">Sagas</a>'
         : '<a href="/autores" class="button">Autores</a>'}
     </div>
-
     <form method="get" action="/${tipo}">
       <select name="ordenar" onchange="this.form.submit()">
         <option value="alfabetico" ${orden==='alfabetico'?'selected':''}>A→Z</option>
@@ -213,7 +210,6 @@ function renderBookPage({ libros, titlePage, tipo, nombre, req }) {
       </select>
       <input type="hidden" name="name" value="${nombre}" />
     </form>
-
     <div id="grid">${booksHtml}</div>
     <p><a href="/${tipo==='autor'?'autores':'sagas'}" class="button">← Volver</a></p>
   </body>
@@ -230,17 +226,18 @@ app.get('/', (req,res)=>{
     <head><meta charset="UTF-8"><title>Azkaban Reads</title><style>${css}</style></head>
     <body>
       <div class="header-banner fullscreen" style="background-image:url('/cover/portada/portada1.png');"></div>
-      <div class="start-buttons">
-        <a href="/libros">Libros</a>
-        <a href="/autores">Autores</a>
-        <a href="/sagas">Sagas</a>
+      <h1>🪄 Azkaban Reads</h1>
+      <div class="top-buttons">
+        <a href="/libros" class="button">Libros</a>
+        <a href="/autores" class="button">Autores</a>
+        <a href="/sagas" class="button">Sagas</a>
       </div>
     </body>
     </html>
   `);
 });
 
-// Página Libros
+// Libros
 app.get('/libros', async (req, res) => {
   try {
     const query = (req.query.buscar || '').trim().toLowerCase();
@@ -296,22 +293,8 @@ app.get('/libros', async (req, res) => {
       <head><meta charset="UTF-8"><title>Libros</title><style>${css}</style></head>
       <body>
         <div class="header-banner" style="background-image:url('/cover/Secuendarias/portada11.png');"></div>
-        <a href="/" class="secondary-top-right">Inicio</a>
-        <h1>Libros</h1>
-        <div class="top-buttons">
-          <a href="/autores" class="button">Autores</a>
-          <a href="/sagas" class="button">Sagas</a>
-        </div>
-
-        <form method="get" action="/libros">
-          <input type="search" name="buscar" value="${req.query.buscar || ''}" placeholder="Buscar título..." />
-          <select name="ordenar" onchange="this.form.submit()">
-            <option value="alfabetico" ${orden==='alfabetico'?'selected':''}>A→Z</option>
-            <option value="alfabetico-desc" ${orden==='alfabetico-desc'?'selected':''}>Z→A</option>
-            <option value="recientes" ${orden==='recientes'?'selected':''}>Recientes</option>
-          </select>
-        </form>
-
+        <div class="top-buttons secondary"><a href="/">Inicio</a></div>
+        <h1>🪄 Libros</h1>
         <div id="grid">${booksHtml}</div>
       </body>
       </html>
@@ -322,74 +305,65 @@ app.get('/libros', async (req, res) => {
   }
 });
 
-// Página Autores
-app.get('/autores', (req,res)=>{
+// Autores
+app.get('/autores', (req, res) => {
   const autores = [...new Set(bookMetadata.map(b => b.author).filter(a => a))].sort();
-  const authorsHtml = autores.map(a=>`
+  const authorsHtml = autores.map(a => `
     <div class="book" style="min-height:100px">
       <div class="title">${a}</div>
       <div class="meta"><a href="/autor?name=${encodeURIComponent(a)}">Ver libros</a></div>
     </div>
   `).join('');
-
   res.send(`
-    <!DOCTYPE html>
-    <html lang="es">
-    <head><meta charset="UTF-8"><title>Autores</title><style>${css}</style></head>
-    <body>
-      <div class="header-banner" style="background-image:url('/cover/Secuendarias/portada11.png');"></div>
-      <a href="/" class="secondary-top-right">Inicio</a>
-      <h1>Autores</h1>
-      <div class="top-buttons">
-        <a href="/libros" class="button">Libros</a>
-        <a href="/sagas" class="button">Sagas</a>
-      </div>
-      <div id="grid">${authorsHtml}</div>
-    </body>
-    </html>
-  `);
+  <!DOCTYPE html>
+  <html lang="es">
+  <head><meta charset="UTF-8"><title>Autores</title><style>${css}</style></head>
+  <body>
+    <div class="header-banner" style="background-image:url('/cover/Secuendarias/portada11.png');"></div>
+    <div class="top-buttons secondary"><a href="/">Inicio</a></div>
+    <h1>Autores</h1>
+    <div id="grid">${authorsHtml}</div>
+  </body>
+  </html>`);
 });
 
-// Rutas individuales autor, saga, sagas permanecen iguales
-app.get('/autor', (req,res)=>{
-  const nombre = req.query.name;
-  if(!nombre) return res.redirect('/autores');
-  const libros = bookMetadata.filter(b=>b.author===nombre);
-  res.send(renderBookPage({ libros, titlePage:`Libros de ${nombre}`, tipo:'autor', nombre, req }));
+// Autor
+app.get('/autor', (req, res) => {
+  const nombreAutor = req.query.name;
+  if(!nombreAutor) return res.redirect('/autores');
+  const libros = bookMetadata.filter(b => b.author === nombreAutor);
+  res.send(renderBookPage({ libros, titlePage: `Libros de ${nombreAutor}`, tipo: 'autor', nombre: nombreAutor, req }));
 });
 
-app.get('/sagas', (req,res)=>{
-  const sagas = [...new Set(bookMetadata.map(b=>b.saga?.name).filter(a=>a))].sort();
-  const sagasHtml = sagas.map(s=>`
+// Sagas
+app.get('/sagas', (req, res) => {
+  const sagas = [...new Set(bookMetadata.map(b => b.saga?.name).filter(a => a))].sort();
+  const sagasHtml = sagas.map(s => `
     <div class="book" style="min-height:100px">
       <div class="title">${s}</div>
       <div class="meta"><a href="/saga?name=${encodeURIComponent(s)}">Ver libros</a></div>
     </div>
   `).join('');
   res.send(`
-    <!DOCTYPE html>
-    <html lang="es">
-    <head><meta charset="UTF-8"><title>Sagas</title><style>${css}</style></head>
-    <body>
-      <div class="header-banner" style="background-image:url('/cover/Secuendarias/portada11.png');"></div>
-      <a href="/" class="secondary-top-right">Inicio</a>
-      <h1>Sagas</h1>
-      <div class="top-buttons">
-        <a href="/libros" class="button">Libros</a>
-        <a href="/autores" class="button">Autores</a>
-      </div>
-      <div id="grid">${sagasHtml}</div>
-    </body>
-    </html>
-  `);
+  <!DOCTYPE html>
+  <html lang="es">
+  <head><meta charset="UTF-8"><title>Sagas</title><style>${css}</style></head>
+  <body>
+    <div class="header-banner" style="background-image:url('/cover/Secuendarias/portada11.png');"></div>
+    <div class="top-buttons secondary"><a href="/">Inicio</a></div>
+    <h1>Sagas</h1>
+    <div id="grid">${sagasHtml}</div>
+  </body>
+  </html>`);
 });
 
+// Saga
 app.get('/saga', (req,res)=>{
-  const nombre = req.query.name;
-  if(!nombre) return res.redirect('/sagas');
-  const libros = bookMetadata.filter(b=>b.saga?.name===nombre);
-  res.send(renderBookPage({ libros, titlePage:`Libros de ${nombre}`, tipo:'saga', nombre, req }));
+  const nombreSaga = req.query.name;
+  if(!nombreSaga) return res.redirect('/sagas');
+  const libros = bookMetadata.filter(b => b.saga?.name === nombreSaga);
+  res.send(renderBookPage({ libros, titlePage: `Saga ${nombreSaga}`, tipo:'saga', nombre:nombreSaga, req }));
 });
 
-// Iniciar servidor
-app.listen(PORT, ()=>console.log(`Servidor escuchando en puerto ${PORT}`));
+// Start server
+app.listen(PORT, () => console.log(`Servidor corriendo en puerto ${PORT}`));
