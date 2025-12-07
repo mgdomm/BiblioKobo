@@ -49,10 +49,10 @@ const css = `
 @import url('https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap');
 body { font-family: 'Garamond', serif; margin:0; padding:0; background:#000; color:#eee; text-align:center; }
 .header-banner { position: sticky; top:0; width:100%; height:460px; background-size: cover; background-position: center; z-index:9999; -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 50%, rgba(0,0,0,0)); mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 50%, rgba(0,0,0,0)); transition: all 0.3s ease; }
-.header-banner.fullscreen { height:100vh; background-size: cover; background-position: center; }
-.top-buttons { text-align:center; margin-top:10px; }
-.top-buttons a { display:inline-block; color:#fff; text-decoration:none; font-weight:bold; font-size:20px; padding:8px 16px; background:transparent; border:1px solid #fff; border-radius:6px; margin:4px; transition: all 0.2s ease; }
-.top-buttons a:hover { background:#222; }
+.header-banner.fullscreen { height:100vh; background-size: cover; background-position: center; display:flex; align-items:center; justify-content:center; }
+.top-buttons { text-align:center; margin-top:0; }
+.top-buttons a { display:inline-block; color:#fff; text-decoration:none; font-weight:bold; font-size:20px; padding:8px 16px; background:transparent; border:none; border-radius:0; margin:4px; transition: all 0.2s ease; }
+.top-buttons a:hover { color:#ddd; }
 h1 { font-size:64px; font-family: 'MedievalSharp', cursive; color:#fff; margin:10px 0; }
 form { margin-bottom:10px; }
 input[type="search"], select { padding:6px 8px; margin:0 4px; font-size:14px; border-radius:6px; border:1px solid #555; background:#111; color:#fff; }
@@ -66,6 +66,8 @@ input[type="search"], select { padding:6px 8px; margin:0 4px; font-size:14px; bo
 .meta a:hover { background:#444; }
 a.button { display:inline-block; margin:10px; text-decoration:none; padding:14px 28px; background:#222; color:#fff; border-radius:8px; font-size:20px; font-weight:bold; transition: all 0.2s ease; }
 a.button:hover { background:#444; }
+a.small-button { font-size:14px; padding:4px 8px; margin:0; position:absolute; top:10px; right:10px; background:none; border:none; color:#fff; text-decoration:none; }
+a.small-button:hover { color:#ddd; }
 `;
 
 // ------------------ FUNCIONES ------------------
@@ -189,7 +191,8 @@ function renderBookPage({ libros, titlePage, tipo, nombre, req }) {
   <html lang="es">
   <head><meta charset="UTF-8"><title>${titlePage}</title><style>${css}</style></head>
   <body>
-    <div class="header-banner" style="background-image:url('/cover/secundarias/portada11.png');"></div>
+    <div class="header-banner" style="background-image:url('/cover/Secuendarias/portada11.png');"></div>
+    <a href="/" class="small-button">Inicio</a>
     <h1>${titlePage}</h1>
 
     <div class="top-buttons">
@@ -211,7 +214,6 @@ function renderBookPage({ libros, titlePage, tipo, nombre, req }) {
     </form>
 
     <div id="grid">${booksHtml}</div>
-    <p><a href="/${tipo==='autor'?'autores':'sagas'}" class="button">← Volver</a></p>
   </body>
   </html>`;
 }
@@ -226,12 +228,12 @@ app.get('/', (req,res)=>{
     <head><meta charset="UTF-8"><title>Azkaban Reads</title><style>${css}</style></head>
     <body>
       <div class="header-banner fullscreen" style="background-image:url('/cover/portada/portada1.png');"></div>
-      <h1>🪄 Azkaban Reads</h1>
-      <div class="top-buttons">
+      <div class="top-buttons" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); flex-direction:column;">
         <a href="/libros" class="button">Libros</a>
         <a href="/autores" class="button">Autores</a>
         <a href="/sagas" class="button">Sagas</a>
       </div>
+      <h1>🪄 Azkaban Reads</h1>
     </body>
     </html>
   `);
@@ -255,7 +257,6 @@ app.get('/libros', async (req, res) => {
     }
 
     files = ordenarBooks(files, orden);
-
     const maxHeight = 180;
 
     let booksHtml = files.map(file => {
@@ -292,10 +293,10 @@ app.get('/libros', async (req, res) => {
       <html lang="es">
       <head><meta charset="UTF-8"><title>Azkaban Reads</title><style>${css}</style></head>
       <body>
-        <div class="header-banner" style="background-image:url('/cover/secundarias/portada11.png');"></div>
+        <div class="header-banner" style="background-image:url('/cover/Secuendarias/portada11.png');"></div>
+        <a href="/" class="small-button">Inicio</a>
         <h1>🪄 Libros</h1>
         <div class="top-buttons">
-          <a href="/" class="button">Inicio</a>
           <a href="/autores" class="button">Autores</a>
           <a href="/sagas" class="button">Sagas</a>
         </div>
@@ -333,20 +334,19 @@ app.get('/autores', (req, res) => {
   <html lang="es">
   <head><meta charset="UTF-8"><title>Autores</title><style>${css}</style></head>
   <body>
-    <div class="header-banner" style="background-image:url('/cover/secundarias/portada11.png');"></div>
+    <div class="header-banner" style="background-image:url('/cover/Secuendarias/portada11.png');"></div>
+    <a href="/" class="small-button">Inicio</a>
     <h1>Autores</h1>
     <div class="top-buttons">
-      <a href="/" class="button">Inicio</a>
       <a href="/libros" class="button">Libros</a>
       <a href="/sagas" class="button">Sagas</a>
     </div>
     <div id="grid">${authorsHtml}</div>
-    <p><a href="/libros" class="button">← Volver</a></p>
   </body>
   </html>`);
 });
 
-// Las rutas /autor, /sagas y /saga se mantienen igual que antes
+// Las rutas /autor, /sagas y /saga se mantienen igual
 app.get('/autor', (req, res) => {
   const nombreAutor = req.query.name;
   if(!nombreAutor) return res.redirect('/autores');
@@ -367,15 +367,14 @@ app.get('/sagas', (req, res) => {
   <html lang="es">
   <head><meta charset="UTF-8"><title>Sagas</title><style>${css}</style></head>
   <body>
-    <div class="header-banner" style="background-image:url('/cover/secundarias/portada11.png');"></div>
+    <div class="header-banner" style="background-image:url('/cover/Secuendarias/portada11.png');"></div>
+    <a href="/" class="small-button">Inicio</a>
     <h1>Sagas</h1>
     <div class="top-buttons">
-      <a href="/" class="button">Inicio</a>
       <a href="/libros" class="button">Libros</a>
       <a href="/autores" class="button">Autores</a>
     </div>
     <div id="grid">${sagasHtml}</div>
-    <p><a href="/libros" class="button">← Volver</a></p>
   </body>
   </html>`);
 });
