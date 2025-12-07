@@ -31,7 +31,7 @@ try {
   console.warn('No se encontró la carpeta cover. Se usarán placeholders.');
 }
 
-// Leer o crear JSON con metadata de libros
+// Leer o crear JSON con metadata
 let bookMetadata = [];
 const BOOKS_FILE = path.join(__dirname, 'books.json');
 try {
@@ -45,18 +45,103 @@ try {
   bookMetadata = [];
 }
 
-// CSS global
+// ------------------ CSS ARREGLADO ------------------
+
 const css = `
+body {
+  background: #111;
+  color: white;
+  font-family: system-ui, sans-serif;
+  margin: 0;
+  padding: 0;
+  text-align: center;
+}
 
-/* ... (ESTILOS IGUALES A TU ARCHIVO — NO MODIFICADOS) ... */
+h1 {
+  margin: 20px 0;
+  font-weight: 700;
+}
 
+#grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 18px;
+  padding: 20px;
+  max-width: 1100px;
+  margin: auto;
+}
+
+.book {
+  background: #222;
+  padding: 10px;
+  border-radius: 10px;
+  transition: transform .15s;
+}
+
+.book:hover {
+  transform: scale(1.05);
+}
+
+.book img {
+  width: 120px;
+  height: 180px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+.title {
+  margin-top: 6px;
+  font-size: 15px;
+  font-weight: bold;
+}
+
+.author-span, .number-span {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.meta a {
+  display: inline-block;
+  margin-top: 5px;
+  padding: 5px 8px;
+  background: #444;
+  border-radius: 6px;
+  color: white;
+  text-decoration: none;
+}
+
+.meta a:hover {
+  background: #666;
+}
+
+.button {
+  padding: 10px 15px;
+  background: #333;
+  border-radius: 8px;
+  display: inline-block;
+  margin: 5px;
+  color: white;
+  text-decoration: none;
+}
+
+button, select, input[type="search"] {
+  padding: 8px;
+  margin: 10px;
+  border-radius: 6px;
+  border: none;
+}
+
+.header-banner {
+  width: 100%;
+  height: 8px;
+  background: linear-gradient(90deg,#953DFF,#4B9EFF);
+}
 `;
 
 // ------------------ FUNCIONES ------------------
 
 async function listAllFiles(folderId) {
-  let files = [],
-    pageToken = null;
+  let files = [], pageToken = null;
   do {
     const res = await drive.files.list({
       q: `'${folderId}' in parents and trashed=false`,
@@ -92,7 +177,7 @@ function actualizarBooksJSON(newFiles) {
 
       let saga = null;
       if (parts[2]) {
-        const sagaMatch = parts[2].match(/^(.*?)(?:\s*#(\d+))?$/);
+        const sagaMatch = parts[2].match(/^(.*?)(?:\\s*#(\\d+))?$/);
         if (sagaMatch) {
           saga = { name: sagaMatch[1].trim() };
           if (sagaMatch[2]) saga.number = parseInt(sagaMatch[2], 10);
@@ -114,7 +199,7 @@ function actualizarBooksJSON(newFiles) {
 function getCoverForBook(bookId) {
   if (coverImages.length === 0) return null;
   const index =
-    bookId.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0) %
+    bookId.split('').reduce((a, c) => a + c.charCodeAt(0), 0) %
     coverImages.length;
   return coverImages[index];
 }
@@ -124,32 +209,18 @@ function ordenarBooks(books, criterio, tipo = null) {
   let sorted = [...books];
   if (tipo === 'autor' || tipo === 'saga') {
     if (criterio === 'alfabetico')
-      sorted.sort((a, b) =>
-        a.title.toLowerCase().localeCompare(b.title.toLowerCase())
-      );
+      sorted.sort((a, b) => a.title.toLowerCase().localeCompare(b.title.toLowerCase()));
     else if (criterio === 'alfabetico-desc')
-      sorted.sort((a, b) =>
-        b.title.toLowerCase().localeCompare(a.title.toLowerCase())
-      );
+      sorted.sort((a, b) => b.title.toLowerCase().localeCompare(a.title.toLowerCase()));
     else if (criterio === 'numero')
       sorted.sort((a, b) => (a.saga?.number || 0) - (b.saga?.number || 0));
   } else {
     if (criterio === 'alfabetico')
-      sorted.sort((a, b) =>
-        (bookMetadata.find(x => x.id === a.id)?.title || a.name).localeCompare(
-          bookMetadata.find(x => x.id === b.id)?.title || b.name
-        )
-      );
+      sorted.sort((a, b) => a.title.localeCompare(b.title));
     else if (criterio === 'alfabetico-desc')
-      sorted.sort((a, b) =>
-        (bookMetadata.find(x => x.id === b.id)?.title || b.name).localeCompare(
-          bookMetadata.find(x => x.id === a.id)?.title || a.name
-        )
-      );
+      sorted.sort((a, b) => b.title.localeCompare(a.title));
     else if (criterio === 'recientes')
-      sorted.sort(
-        (a, b) => new Date(b.createdTime) - new Date(a.createdTime)
-      );
+      sorted.sort((a, b) => new Date(b.createdTime) - new Date(a.createdTime));
   }
   return sorted;
 }
@@ -160,16 +231,15 @@ function renderBookPage({ libros, titlePage, tipo, nombre, req }) {
   const orden = req.query.ordenar || 'alfabetico';
   libros = ordenarBooks(libros, orden, tipo);
 
-  const maxHeight = 180;
   const booksHtml = libros
     .map(book => {
       const cover = getCoverForBook(book.id);
-      const imgHtml = cover
+      const img = cover
         ? `<img src="${cover}" />`
-        : `<div style="width:80px;height:120px;background:#333;border-radius:5px;">📖</div>`;
+        : `<div style="width:120px;height:180px;background:#333;border-radius:6px">📖</div>`;
       return `
-<div class="book" style="min-height:${maxHeight}px">
-  ${imgHtml}
+<div class="book">
+  ${img}
   <div class="title">${book.title}</div>
   <div class="author-span">${book.author}</div>
   ${book.saga?.number ? `<div class="number-span">#${book.saga.number}</div>` : ''}
@@ -181,7 +251,7 @@ function renderBookPage({ libros, titlePage, tipo, nombre, req }) {
   return `
 <!DOCTYPE html>
 <html lang="es">
-<head><meta charset="UTF-8"><title>${titlePage}</title><style>${css}</style></head>
+<head><meta charset="UTF-8"><style>${css}</style><title>${titlePage}</title></head>
 <body>
 
 <div class="header-banner"></div>
@@ -206,8 +276,6 @@ function renderBookPage({ libros, titlePage, tipo, nombre, req }) {
 
 <div id="grid">${booksHtml}</div>
 
-<p><a href="/${tipo === 'autor' ? 'autores' : 'sagas'}" class="button">← Volver</a></p>
-
 </body>
 </html>`;
 }
@@ -223,52 +291,46 @@ app.get('/', async (req, res) => {
 
     actualizarBooksJSON(files);
 
-    // -------------------------------------------------------
-    // 🔥 BÚSQUEDA CORREGIDA — AHORA SÍ FUNCIONA DE VERDAD 🔥
-    // -------------------------------------------------------
     if (query) {
       const q = query.toLowerCase();
 
       files = files.filter(f => {
         const meta = bookMetadata.find(b => b.id === f.id);
+        if (!meta) return false;
 
-        const title = meta?.title?.toLowerCase() || "";
-        const author = meta?.author?.toLowerCase() || "";
-        const saga = meta?.saga?.name?.toLowerCase() || "";
-        const num = meta?.saga?.number ? meta.saga.number.toString() : "";
-        const fileName = f.name.toLowerCase();
+        const t = meta.title.toLowerCase();
+        const a = meta.author.toLowerCase();
+        const s = meta.saga?.name?.toLowerCase() || "";
+        const n = meta.saga?.number ? meta.saga.number.toString() : "";
+        const fn = f.name.toLowerCase();
 
         return (
-          title.includes(q) ||
-          author.includes(q) ||
-          saga.includes(q) ||
-          num === q ||
-          fileName.includes(q)
+          t.includes(q) ||
+          a.includes(q) ||
+          s.includes(q) ||
+          n === q ||
+          fn.includes(q)
         );
       });
     }
-    // -------------------------------------------------------
 
     files = ordenarBooks(files, orden);
 
-    const maxHeight = 180;
     const booksHtml = files
       .map(file => {
-        const metadata = bookMetadata.find(b => b.id === file.id);
-        if (!metadata) return '';
+        const meta = bookMetadata.find(b => b.id === file.id);
+        if (!meta) return '';
 
-        const title = metadata.title;
-        const author = metadata.author;
         const cover = getCoverForBook(file.id);
-        const imgHtml = cover
+        const img = cover
           ? `<img src="${cover}" />`
-          : `<div style="width:80px;height:120px;background:#333;border-radius:5px;">📖</div>`;
+          : `<div style="width:120px;height:180px;background:#333;border-radius:6px">📖</div>`;
 
         return `
-<div class="book" style="min-height:${maxHeight}px">
-  ${imgHtml}
-  <div class="title">${title}</div>
-  <div class="author-span">${author}</div>
+<div class="book">
+  ${img}
+  <div class="title">${meta.title}</div>
+  <div class="author-span">${meta.author}</div>
   <div class="meta"><a href="https://drive.google.com/uc?export=download&id=${file.id}" target="_blank">Descargar</a></div>
 </div>`;
       })
@@ -277,7 +339,7 @@ app.get('/', async (req, res) => {
     res.send(`
 <!DOCTYPE html>
 <html lang="es">
-<head><meta charset="UTF-8"><title>Azkaban Reads</title><style>${css}</style></head>
+<head><meta charset="UTF-8"><style>${css}</style><title>Azkaban Reads</title></head>
 <body>
 
 <div class="header-banner"></div>
@@ -290,7 +352,7 @@ app.get('/', async (req, res) => {
 </div>
 
 <form method="get" action="/">
-<input type="search" name="buscar" value="${req.query.buscar || ''}" placeholder="Buscar libro, autor, saga..." />
+<input type="search" name="buscar" value="${req.query.buscar || ''}" placeholder="Buscar..." />
 <select name="ordenar" onchange="this.form.submit()">
   <option value="alfabetico" ${orden === 'alfabetico' ? 'selected' : ''}>A→Z</option>
   <option value="alfabetico-desc" ${orden === 'alfabetico-desc' ? 'selected' : ''}>Z→A</option>
@@ -316,7 +378,7 @@ app.get('/autores', (req, res) => {
   const authorsHtml = autores
     .map(
       a => `
-    <div class="book" style="min-height:100px">
+    <div class="book">
       <div class="title">${a}</div>
       <div class="meta"><a href="/autor?name=${encodeURIComponent(a)}">Ver libros</a></div>
     </div>
@@ -327,7 +389,7 @@ app.get('/autores', (req, res) => {
   res.send(`
 <!DOCTYPE html>
 <html lang="es">
-<head><meta charset="UTF-8"><title>Autores</title><style>${css}</style></head>
+<head><meta charset="UTF-8"><style>${css}</style><title>Autores</title></head>
 <body>
 
 <div class="header-banner"></div>
@@ -341,27 +403,8 @@ app.get('/autores', (req, res) => {
 
 <div id="grid">${authorsHtml}</div>
 
-<p><a href="/" class="button">← Volver</a></p>
-
 </body>
 </html>`);
-});
-
-app.get('/autor', (req, res) => {
-  const nombreAutor = req.query.name;
-  if (!nombreAutor) return res.redirect('/autores');
-
-  const libros = bookMetadata.filter(b => b.author === nombreAutor);
-
-  res.send(
-    renderBookPage({
-      libros,
-      titlePage: `Libros de ${nombreAutor}`,
-      tipo: 'autor',
-      nombre: nombreAutor,
-      req,
-    })
-  );
 });
 
 // ------------------- SAGAS -------------------
@@ -372,7 +415,7 @@ app.get('/sagas', (req, res) => {
   const sagasHtml = sagas
     .map(
       s => `
-    <div class="book" style="min-height:100px">
+    <div class="book">
       <div class="title">${s}</div>
       <div class="meta"><a href="/saga?name=${encodeURIComponent(s)}">Ver libros</a></div>
     </div>
@@ -383,7 +426,7 @@ app.get('/sagas', (req, res) => {
   res.send(`
 <!DOCTYPE html>
 <html lang="es">
-<head><meta charset="UTF-8"><title>Sagas</title><style>${css}</style></head>
+<head><meta charset="UTF-8"><style>${css}</style><title>Sagas</title></head>
 <body>
 
 <div class="header-banner"></div>
@@ -396,8 +439,6 @@ app.get('/sagas', (req, res) => {
 </div>
 
 <div id="grid">${sagasHtml}</div>
-
-<p><a href="/" class="button">← Volver</a></p>
 
 </body>
 </html>`);
