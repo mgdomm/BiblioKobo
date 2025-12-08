@@ -285,6 +285,27 @@ a.button:hover { background:#444; }
 
 /* ensure content sits below fixed top banner */
 body { padding-top:300px; }
+
+/* Desktop: aumentar 20% altura de header-banner.top */
+@media (min-width: 1024px) {
+  .header-banner.top { height:360px; }
+  .overlay.top { height:360px; }
+  body { padding-top:360px; }
+}
+
+/* Tablet: mantener tamaño normal */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .header-banner.top { height:300px; }
+  .overlay.top { height:300px; }
+  body { padding-top:300px; }
+}
+
+/* Mobile: mantener tamaño normal */
+@media (max-width: 767px) {
+  .header-banner.top { height:300px; }
+  .overlay.top { height:300px; }
+  body { padding-top:300px; }
+}
 `;
 
 // ------------------ FUNCIONES ------------------
