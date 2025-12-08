@@ -6,6 +6,9 @@ const os = require('os');
 const axios = require('axios');
 const archiver = require('archiver');
 const compression = require('compression');
+const multer = require('multer');
+const FormData = require('form-data');
+const { Readable } = require('stream');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -17,19 +20,52 @@ app.use(compression());
 // Middleware para parsear JSON
 app.use(express.json());
 
+// Middleware para archivos multipart
+const upload = multer({
+  storage: multer.memoryStorage(),
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype === 'application/epub+zip' || file.originalname.endsWith('.epub')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Solo se permiten archivos EPUB'), false);
+    }
+  }
+});
+
 // Servir carpeta cover con caché agresivo
 app.use('/cover', express.static(path.join(__dirname, 'cover'), {
   maxAge: '1d',
   etag: false
 }));
 
-// Service Account
+// Auth: prioriza OAuth si existe, sino usa Service Account
+const OAUTH_CREDENTIALS = path.join(__dirname, 'oauth-credentials.json');
+const OAUTH_TOKEN = path.join(__dirname, 'oauth-token.json');
 const SERVICE_ACCOUNT_FILE = path.join(__dirname, 'service-account.json');
-const auth = new google.auth.GoogleAuth({
-  keyFile: SERVICE_ACCOUNT_FILE,
-  scopes: ['https://www.googleapis.com/auth/drive.readonly'],
-});
-const drive = google.drive({ version: 'v3', auth });
+
+let auth;
+let drive;
+
+if (fs.existsSync(OAUTH_TOKEN) && fs.existsSync(OAUTH_CREDENTIALS)) {
+  // Usar OAuth (cuenta personal)
+  const credentials = JSON.parse(fs.readFileSync(OAUTH_CREDENTIALS));
+  const token = JSON.parse(fs.readFileSync(OAUTH_TOKEN));
+  const { client_id, client_secret, redirect_uris } = credentials.installed || credentials.web;
+  
+  auth = new google.auth.OAuth2(client_id, client_secret, redirect_uris[0]);
+  auth.setCredentials(token);
+  drive = google.drive({ version: 'v3', auth });
+  console.log('✅ Usando OAuth (cuenta personal)');
+} else {
+  // Usar Service Account (solo lectura)
+  auth = new google.auth.GoogleAuth({
+    keyFile: SERVICE_ACCOUNT_FILE,
+    scopes: ['https://www.googleapis.com/auth/drive'],
+  });
+  drive = google.drive({ version: 'v3', auth });
+  console.log('⚠️  Usando Service Account (solo lectura)');
+}
+
 const folderId = '1-4G6gGNtt6KVS90AbWbtH3JlpetHrPEi';
 
 // Leer imágenes cover locales (solo .png directamente en /cover, sin subcarpetas)
@@ -50,6 +86,11 @@ try {
 function getRandomCoverImage() {
   if (coverImages.length === 0) return null;
   return coverImages[Math.floor(Math.random() * coverImages.length)];
+}
+
+// Convertir Buffer en stream legible (para Google Drive API)
+function bufferToStream(buffer) {
+  return Readable.from(buffer);
 }
 
 // Leer o crear JSON con metadata de libros
@@ -909,16 +950,25 @@ app.get('/', (req,res)=>{
   </div>
   
   <!-- Botón flotante de stats -->
-  <button id="stats-btn" style="position:fixed;bottom:20px;right:20px;width:48px;height:48px;border-radius:50%;background:transparent;border:2px solid #19E6D6;cursor:pointer;z-index:100;display:flex;align-items:center;justify-content:center;transition:0.25s;padding:0;color:#19E6D6;">
+  <button id="stats-btn" style="position:fixed;bottom:20px;right:80px;width:48px;height:48px;border-radius:50%;background:transparent;border:2px solid #19E6D6;cursor:pointer;z-index:100;display:flex;align-items:center;justify-content:center;transition:0.25s;padding:0;color:#19E6D6;">
     <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
       <path d="M13 2l-8 12h7l-7 8 12-14h-7l3-6z"></path>
     </svg>
   </button>
   
-  <!-- Modal de login para stats -->
+  <!-- Botón flotante de upload -->
+  <button id="upload-btn" style="position:fixed;bottom:20px;right:20px;width:48px;height:48px;border-radius:50%;background:transparent;border:2px solid #19E6D6;cursor:pointer;z-index:100;display:flex;align-items:center;justify-content:center;transition:0.25s;padding:0;color:#19E6D6;">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+      <polyline points="17 8 12 3 7 8"></polyline>
+      <line x1="12" y1="3" x2="12" y2="15"></line>
+    </svg>
+  </button>
+  
+  <!-- Modal de login para stats/upload -->
   <div id="login-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:9999;justify-content:center;align-items:center;">
     <div style="background:linear-gradient(135deg, rgba(18,18,18,0.95), rgba(12,12,12,0.9));border:2px solid rgba(25,230,214,0.5);border-radius:12px;padding:40px;text-align:center;max-width:400px;box-shadow:0 8px 32px rgba(0,0,0,0.8);">
-      <h2 style="font-family:'MedievalSharp', cursive;color:#19E6D6;font-size:24px;margin:0 0 20px 0;">🔒 Acceso a Stats</h2>
+      <h2 id="modal-title" style="font-family:'MedievalSharp', cursive;color:#19E6D6;font-size:24px;margin:0 0 20px 0;">🔒 Acceso a Stats</h2>
       <input type="password" id="pass-input" placeholder="Contraseña" style="width:100%;padding:12px;margin:10px 0;border:2px solid #19E6D6;background:rgba(25,25,25,0.8);color:#fff;border-radius:6px;font-size:14px;box-sizing:border-box;outline:none;transition:all 0.3s ease;" onkeypress="if(event.key==='Enter')document.getElementById('login-btn').click();">
       <div id="error-message" style="display:none;margin-top:10px;color:#ff6b6b;font-family:'MedievalSharp', cursive;font-size:13px;line-height:1.4;min-height:50px;"></div>
       <div style="margin-top:20px;">
@@ -956,13 +1006,28 @@ app.get('/', (req,res)=>{
     ];
     
     const statsBtn = document.getElementById('stats-btn');
+    const uploadBtn = document.getElementById('upload-btn');
     const loginModal = document.getElementById('login-modal');
     const loginBtn = document.getElementById('login-btn');
     const cancelBtn = document.getElementById('cancel-btn');
     const passInput = document.getElementById('pass-input');
     const errorMessage = document.getElementById('error-message');
+    const modalTitle = document.getElementById('modal-title');
+    
+    let currentAction = null;
     
     statsBtn.addEventListener('click', () => {
+      currentAction = 'stats';
+      modalTitle.textContent = '🔒 Acceso a Stats';
+      loginModal.style.display = 'flex';
+      passInput.focus();
+      errorMessage.style.display = 'none';
+      passInput.value = '';
+    });
+    
+    uploadBtn.addEventListener('click', () => {
+      currentAction = 'upload';
+      modalTitle.textContent = '📤 Subir Archivos EPUB';
       loginModal.style.display = 'flex';
       passInput.focus();
       errorMessage.style.display = 'none';
@@ -973,11 +1038,16 @@ app.get('/', (req,res)=>{
       loginModal.style.display = 'none';
       passInput.value = '';
       errorMessage.style.display = 'none';
+      currentAction = null;
     });
     
     loginBtn.addEventListener('click', () => {
       if (passInput.value === '252914') {
-        window.location.href = '/stats?pass=' + encodeURIComponent(passInput.value);
+        if (currentAction === 'stats') {
+          window.location.href = '/stats?pass=' + encodeURIComponent(passInput.value);
+        } else if (currentAction === 'upload') {
+          window.location.href = '/upload?pass=' + encodeURIComponent(passInput.value);
+        }
       } else {
         const randomMsg = errorMessages[Math.floor(Math.random() * errorMessages.length)];
         errorMessage.textContent = randomMsg;
@@ -999,6 +1069,16 @@ app.get('/', (req,res)=>{
     statsBtn.addEventListener('mouseleave', () => {
       statsBtn.style.boxShadow = 'none';
       statsBtn.style.transform = 'scale(1)';
+    });
+    
+    uploadBtn.addEventListener('mouseenter', () => {
+      uploadBtn.style.boxShadow = '0 0 15px rgba(25,230,214,0.5)';
+      uploadBtn.style.transform = 'scale(1.1)';
+    });
+    
+    uploadBtn.addEventListener('mouseleave', () => {
+      uploadBtn.style.boxShadow = 'none';
+      uploadBtn.style.transform = 'scale(1)';
     });
   </script>
 </body>
@@ -1475,7 +1555,83 @@ app.get('/stats', async (req, res) => {
   
   const promedioLibrosPorAutor = (totalLibros / totalAutores).toFixed(1);
 
-  // Top 5 libros (sin ratings externos - mostrar más recientes o aleatorios)
+  // Calcular más estadísticas avanzadas
+  const librosConCobertura = bookMetadata.filter(b => b.coverUrl).length;
+  const librosSinCobertura = totalLibros - librosConCobertura;
+  const porcentajeCob = ((librosConCobertura / totalLibros) * 100).toFixed(1);
+  
+  const librosConDescrip = bookMetadata.filter(b => b.description && b.description.length > 0).length;
+  const porcentajeDescrip = ((librosConDescrip / totalLibros) * 100).toFixed(1);
+  
+  // Categorías
+  const categoriesMap = {};
+  bookMetadata.forEach(b => {
+    if (b.categories && Array.isArray(b.categories)) {
+      b.categories.forEach(cat => {
+        categoriesMap[cat] = (categoriesMap[cat] || 0) + 1;
+      });
+    }
+  });
+  const topCategories = Object.entries(categoriesMap)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 8);
+  
+  // Idiomas
+  const languagesMap = {};
+  bookMetadata.forEach(b => {
+    const lang = b.language || 'Desconocido';
+    languagesMap[lang] = (languagesMap[lang] || 0) + 1;
+  });
+  const languageData = Object.entries(languagesMap)
+    .sort((a, b) => b[1] - a[1]);
+  
+  // Rango de páginas
+  const pageRanges = {
+    '0-100': 0,
+    '101-250': 0,
+    '251-400': 0,
+    '401-600': 0,
+    '600+': 0
+  };
+  bookMetadata.forEach(b => {
+    if (!b.pageCount) return;
+    const pages = b.pageCount;
+    if (pages <= 100) pageRanges['0-100']++;
+    else if (pages <= 250) pageRanges['101-250']++;
+    else if (pages <= 400) pageRanges['251-400']++;
+    else if (pages <= 600) pageRanges['401-600']++;
+    else pageRanges['600+']++;
+  });
+  
+  // Top 5 libros más largos
+  const longestBooks = bookMetadata
+    .filter(b => b.pageCount)
+    .sort((a, b) => b.pageCount - a.pageCount)
+    .slice(0, 5);
+
+  // Top 5 libros más recientes (por publishedDate)
+  const newestBooks = bookMetadata
+    .filter(b => b.publishedDate)
+    .sort((a, b) => new Date(b.publishedDate) - new Date(a.publishedDate))
+    .reverse()
+    .slice(0, 5);
+
+  // Top 5 libros con más libros en saga
+  const sagaStats = {};
+  bookMetadata.forEach(b => {
+    if (b.saga?.name) {
+      if (!sagaStats[b.saga.name]) {
+        sagaStats[b.saga.name] = { count: 0, lastBook: null };
+      }
+      sagaStats[b.saga.name].count++;
+      sagaStats[b.saga.name].lastBook = b.title;
+    }
+  });
+  const topSagasBySize = Object.entries(sagaStats)
+    .sort((a, b) => b[1].count - a[1].count)
+    .slice(0, 8);
+
+  // Top 5 libros más largos
   res.send(`<!DOCTYPE html>
 <html lang="es">
 <head><meta charset="UTF-8"><title>Dashboard - Azkaban Reads</title><link rel="preload" as="image" href="/cover/secuendarias/portada11.png"><style>${css}</style></head>
@@ -1491,9 +1647,9 @@ app.get('/stats', async (req, res) => {
     </div>
   </div>
   
-  <div style="padding:40px; max-width:1200px; margin:0 auto;">
-    <!-- Estadísticas principales - más pequeñas -->
-    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:12px; margin-top:20px; margin-bottom:30px;">
+  <div style="padding:40px; max-width:1400px; margin:0 auto;">
+    <!-- Estadísticas principales -->
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:12px; margin-top:20px; margin-bottom:30px;">
       <div style="background:linear-gradient(135deg, rgba(25,230,214,0.1), rgba(25,230,214,0.05)); border:2px solid rgba(25,230,214,0.3); border-radius:12px; padding:15px; text-align:center;">
         <div style="width:32px; height:32px; border:2px solid #19E6D6; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 6px;">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#19E6D6" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
@@ -1533,6 +1689,14 @@ app.get('/stats', async (req, res) => {
         <div style="font-size:11px; color:#aaa; margin-bottom:6px;">Promedio</div>
         <div style="font-size:24px; color:#19E6D6; font-weight:bold; font-family:'MedievalSharp', cursive;">${promedioLibrosPorAutor}</div>
       </div>
+      
+      <div style="background:linear-gradient(135deg, rgba(25,230,214,0.1), rgba(25,230,214,0.05)); border:2px solid rgba(25,230,214,0.3); border-radius:12px; padding:15px; text-align:center;">
+        <div style="width:32px; height:32px; border:2px solid #19E6D6; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 6px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#19E6D6" stroke-width="2"><image width="18" height="18" x="3" y="3"/></svg>
+        </div>
+        <div style="font-size:11px; color:#aaa; margin-bottom:6px;">Cobertura</div>
+        <div style="font-size:24px; color:#19E6D6; font-weight:bold; font-family:'MedievalSharp', cursive;">${porcentajeCob}%</div>
+      </div>
     </div>
 
     <!-- Top Autores -->
@@ -1566,15 +1730,168 @@ app.get('/stats', async (req, res) => {
         `).join('')}
       </div>
     </div>
+
+    <!-- Row 1: Categorías + Idiomas -->
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-top:30px;">
+      <!-- Top Categorías -->
+      <div style="padding:30px; background:linear-gradient(135deg, rgba(25,25,25,0.95), rgba(18,18,18,0.9)); border:1px solid rgba(25,230,214,0.2); border-radius:12px;">
+        <h3 style="font-family:'MedievalSharp', cursive; color:#19E6D6; margin:0 0 20px 0; font-size:18px;">📚 Top Categorías</h3>
+        <div style="display:grid; gap:8px;">
+          ${topCategories.map((c, i) => `
+            <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 12px; background:rgba(25,230,214,0.05); border-radius:6px;">
+              <span style="color:#fff; font-size:13px;">${c[0]}</span>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <div style="width:120px; height:6px; background:rgba(25,230,214,0.2); border-radius:3px; overflow:hidden;">
+                  <div style="height:100%; background:#19E6D6; width:${(c[1] / totalLibros) * 100}%;"></div>
+                </div>
+                <span style="color:#19E6D6; font-weight:bold; font-size:12px; min-width:25px;">${c[1]}</span>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+
+      <!-- Idiomas -->
+      <div style="padding:30px; background:linear-gradient(135deg, rgba(25,25,25,0.95), rgba(18,18,18,0.9)); border:1px solid rgba(25,230,214,0.2); border-radius:12px;">
+        <h3 style="font-family:'MedievalSharp', cursive; color:#19E6D6; margin:0 0 20px 0; font-size:18px;">🌍 Distribución de Idiomas</h3>
+        <div style="display:grid; gap:8px;">
+          ${languageData.slice(0, 8).map((l, i) => `
+            <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 12px; background:rgba(25,230,214,0.05); border-radius:6px;">
+              <span style="color:#fff; font-size:13px;">${l[0] === 'en' ? 'English' : l[0] === 'es' ? 'Español' : l[0] === 'fr' ? 'Français' : l[0] === 'de' ? 'Deutsch' : l[0] || 'Desconocido'}</span>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <div style="width:100px; height:6px; background:rgba(25,230,214,0.2); border-radius:3px; overflow:hidden;">
+                  <div style="height:100%; background:#19E6D6; width:${(l[1] / totalLibros) * 100}%;"></div>
+                </div>
+                <span style="color:#19E6D6; font-weight:bold; font-size:12px; min-width:25px;">${l[1]}</span>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 2: Rango de páginas + Top Sagas por tamaño -->
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-top:20px;">
+      <!-- Rango de páginas (Gráfico de barras) -->
+      <div style="padding:30px; background:linear-gradient(135deg, rgba(25,25,25,0.95), rgba(18,18,18,0.9)); border:1px solid rgba(25,230,214,0.2); border-radius:12px;">
+        <h3 style="font-family:'MedievalSharp', cursive; color:#19E6D6; margin:0 0 20px 0; font-size:18px;">📖 Rango de Páginas</h3>
+        <div style="display:grid; gap:10px;">
+          ${Object.entries(pageRanges).map(([range, count]) => {
+            const maxCount = Math.max(...Object.values(pageRanges));
+            const percentage = (count / maxCount) * 100;
+            return `
+              <div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                  <span style="color:#ccc; font-size:12px;">${range}</span>
+                  <span style="color:#19E6D6; font-weight:bold; font-size:12px;">${count}</span>
+                </div>
+                <div style="width:100%; height:20px; background:rgba(25,230,214,0.1); border-radius:4px; overflow:hidden;">
+                  <div style="height:100%; background:linear-gradient(90deg, #19E6D6, #00d4d4); width:${percentage}%; transition:width 0.3s;"></div>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+
+      <!-- Top Sagas por tamaño -->
+      <div style="padding:30px; background:linear-gradient(135deg, rgba(25,25,25,0.95), rgba(18,18,18,0.9)); border:1px solid rgba(25,230,214,0.2); border-radius:12px;">
+        <h3 style="font-family:'MedievalSharp', cursive; color:#19E6D6; margin:0 0 20px 0; font-size:18px;">📚 Sagas Más Largas</h3>
+        <div style="display:grid; gap:8px;">
+          ${topSagasBySize.map((s, i) => `
+            <div style="padding:10px 12px; background:rgba(25,230,214,0.05); border-left:3px solid #19E6D6; border-radius:6px;">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                  <div style="color:#fff; font-size:13px; font-weight:bold;">${s[0]}</div>
+                  <div style="color:#999; font-size:11px; margin-top:2px;">${s[1].count} libro${s[1].count !== 1 ? 's' : ''}</div>
+                </div>
+                <div style="color:#19E6D6; font-weight:bold; font-size:18px; font-family:'MedievalSharp', cursive;">${s[1].count}</div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 3: Libros más largos + Libros más recientes -->
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-top:20px;">
+      <!-- Top 5 libros más largos -->
+      <div style="padding:30px; background:linear-gradient(135deg, rgba(25,25,25,0.95), rgba(18,18,18,0.9)); border:1px solid rgba(25,230,214,0.2); border-radius:12px;">
+        <h3 style="font-family:'MedievalSharp', cursive; color:#19E6D6; margin:0 0 20px 0; font-size:18px;">📖 Libros Más Largos</h3>
+        <div style="display:grid; gap:8px;">
+          ${longestBooks.map((b, i) => `
+            <div style="padding:10px 12px; background:rgba(25,230,214,0.05); border-left:3px solid #19E6D6; border-radius:6px;">
+              <div style="display:flex; justify-content:space-between; align-items:start; gap:8px;">
+                <div style="flex:1;">
+                  <div style="color:#fff; font-size:13px; font-weight:bold; line-height:1.3;">${b.title}</div>
+                  <div style="color:#999; font-size:11px; margin-top:3px;">${b.author}</div>
+                </div>
+                <div style="color:#19E6D6; font-weight:bold; font-size:16px; font-family:'MedievalSharp', cursive; white-space:nowrap;">${b.pageCount}p</div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+
+      <!-- Top 5 libros más recientes -->
+      <div style="padding:30px; background:linear-gradient(135deg, rgba(25,25,25,0.95), rgba(18,18,18,0.9)); border:1px solid rgba(25,230,214,0.2); border-radius:12px;">
+        <h3 style="font-family:'MedievalSharp', cursive; color:#19E6D6; margin:0 0 20px 0; font-size:18px;">📅 Libros Más Recientes</h3>
+        <div style="display:grid; gap:8px;">
+          ${newestBooks.map((b, i) => {
+            const date = new Date(b.publishedDate);
+            return `
+              <div style="padding:10px 12px; background:rgba(25,230,214,0.05); border-left:3px solid #19E6D6; border-radius:6px;">
+                <div style="display:flex; justify-content:space-between; align-items:start; gap:8px;">
+                  <div style="flex:1;">
+                    <div style="color:#fff; font-size:13px; font-weight:bold; line-height:1.3;">${b.title}</div>
+                    <div style="color:#999; font-size:11px; margin-top:3px;">${b.author}</div>
+                  </div>
+                  <div style="color:#19E6D6; font-weight:bold; font-size:12px; white-space:nowrap; text-align:right;">${date.toLocaleDateString('es-ES')}</div>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    </div>
+
+    <!-- Información de Cobertura -->
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-top:20px;">
+      <div style="padding:20px; background:rgba(25,230,214,0.05); border:1px solid rgba(25,230,214,0.2); border-radius:8px;">
+        <h4 style="font-family:'MedievalSharp', cursive; color:#19E6D6; margin:0 0 12px 0; font-size:14px;">🖼️ Cobertura de Portadas</h4>
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div style="flex:1;">
+            <div style="height:8px; background:rgba(25,230,214,0.2); border-radius:4px; overflow:hidden;">
+              <div style="height:100%; background:linear-gradient(90deg, #19E6D6, #00d4d4); width:${porcentajeCob}%;"></div>
+            </div>
+          </div>
+          <div style="font-weight:bold; color:#19E6D6; font-size:16px;">${librosConCobertura}/${totalLibros}</div>
+        </div>
+        <div style="color:#999; font-size:12px; margin-top:6px;">${librosConCobertura} con portada • ${librosSinCobertura} sin portada</div>
+      </div>
+
+      <div style="padding:20px; background:rgba(25,230,214,0.05); border:1px solid rgba(25,230,214,0.2); border-radius:8px;">
+        <h4 style="font-family:'MedievalSharp', cursive; color:#19E6D6; margin:0 0 12px 0; font-size:14px;">📝 Cobertura de Descripciones</h4>
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div style="flex:1;">
+            <div style="height:8px; background:rgba(25,230,214,0.2); border-radius:4px; overflow:hidden;">
+              <div style="height:100%; background:linear-gradient(90deg, #19E6D6, #00d4d4); width:${porcentajeDescrip}%;"></div>
+            </div>
+          </div>
+          <div style="font-weight:bold; color:#19E6D6; font-size:16px;">${porcentajeDescrip}%</div>
+        </div>
+        <div style="color:#999; font-size:12px; margin-top:6px;">${librosConDescrip} con descripción</div>
+      </div>
+    </div>
     
     <!-- Información de la biblioteca -->
     <div style="margin-top:30px; padding:20px; background:rgba(25,230,214,0.05); border:1px solid rgba(25,230,214,0.2); border-radius:8px;">
-      <h3 style="font-family:'MedievalSharp', cursive; color:#19E6D6; margin-top:0;">Información de la Biblioteca</h3>
+      <h3 style="font-family:'MedievalSharp', cursive; color:#19E6D6; margin-top:0;">ℹ️ Información de la Biblioteca</h3>
       <p style="color:#ccc; line-height:1.8; margin:0;">
         <strong>Última actualización:</strong> ${new Date().toLocaleString('es-ES')}<br>
         <strong>Versión:</strong> Azkaban Reads v1.0<br>
-        <strong>Estado:</strong> En línea<br>
-        <strong>Total de Elementos:</strong> ${totalLibros + totalAutores + totalSagas}
+        <strong>Estado:</strong> 🟢 En línea<br>
+        <strong>Total de Elementos Indexados:</strong> ${totalLibros + totalAutores + totalSagas}
       </p>
     </div>
     
@@ -1787,7 +2104,293 @@ app.get('/api/sync-drive-metadata', async (req, res) => {
     });
   } catch (err) {
     console.error('[SYNC] Error:', err.message);
-    res.status(500).json({ error: err.message });
+      res.status(500).json({ error: err.message });
+  }
+});
+
+// Página de upload de EPUB
+app.get('/upload', (req, res) => {
+  const pass = req.query.pass || '';
+  if (pass !== '252914') {
+    return res.status(403).redirect('/');
+  }
+
+  const html = `<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Cargar EPUB - Azkaban Reads</title>
+  <link rel="preload" as="image" href="/cover/secuendarias/portada11.png">
+  <style>${css}</style>
+  <style>
+    .upload-container { max-width: 900px; margin: 40px auto; padding: 40px; }
+    .drop-zone { border: 3px dashed #19E6D6; border-radius: 12px; padding: 40px; text-align: center; cursor: pointer; transition: all 0.3s; background: rgba(25,230,214,0.05); }
+    .drop-zone.hover { background: rgba(25,230,214,0.15); border-color: #00d4d4; }
+    .file-input { display: none; }
+    .file-list { margin-top: 30px; display: grid; gap: 20px; }
+    .file-card { padding: 20px; background: linear-gradient(135deg, rgba(25,25,25,0.95), rgba(18,18,18,0.9)); border: 1px solid rgba(25,230,214,0.2); border-radius: 12px; }
+    .file-card h4 { color: #19E6D6; margin: 0 0 15px 0; font-family: 'MedievalSharp', cursive; }
+    .form-group { margin-bottom: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    .form-group.full { grid-template-columns: 1fr; }
+    input, textarea { width: 100%; padding: 10px; border: 2px solid rgba(25,230,214,0.3); background: rgba(25,25,25,0.8); color: #fff; border-radius: 6px; font-family: inherit; box-sizing: border-box; }
+    input:focus, textarea:focus { border-color: #19E6D6; outline: none; }
+    .required::after { content: ' *'; color: #ff6b6b; }
+    .upload-btn { width: 100%; padding: 15px; margin-top: 20px; background: #19E6D6; color: #000; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 16px; font-family: 'MedievalSharp', cursive; transition: all 0.3s; }
+    .upload-btn:hover:not(:disabled) { transform: scale(1.02); box-shadow: 0 0 20px rgba(25,230,214,0.5); }
+    .upload-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .progress { display: none; margin-top: 20px; text-align: center; color: #19E6D6; }
+    .status-message { padding: 15px; border-radius: 6px; margin-top: 15px; display: none; }
+    .status-message.success { background: rgba(76, 175, 80, 0.2); border: 1px solid #4CAF50; color: #4CAF50; }
+    .status-message.error { background: rgba(255, 107, 107, 0.2); border: 1px solid #ff6b6b; color: #ff6b6b; }
+  </style>
+</head>
+<body>
+  <div class="header-banner top" style="background-image:url('/cover/secuendarias/portada11.png');"></div>
+  <div class="overlay top">
+    <div class="top-buttons secondary"><a href="/">Inicio</a></div>
+    <h1>📤 Cargar EPUB</h1>
+    <div class="top-buttons">
+      <a href="/libros">Libros</a>
+      <a href="/autores">Autores</a>
+      <a href="/sagas">Sagas</a>
+    </div>
+  </div>
+
+  <div class="upload-container">
+    <div class="drop-zone" id="dropZone">
+      <div style="font-size: 48px; margin-bottom: 10px;">📚</div>
+      <p style="color: #19E6D6; font-size: 18px; font-weight: bold; margin: 10px 0;">Arrastra archivos EPUB aquí</p>
+      <p style="color: #999; margin: 10px 0;">o haz clic para seleccionar</p>
+      <input type="file" id="fileInput" class="file-input" accept=".epub" multiple>
+    </div>
+
+    <div class="file-list" id="fileList"></div>
+    
+    <button class="upload-btn" id="submitBtn" disabled>Cargar Archivos a Drive</button>
+    <div id="statusMessage" class="status-message"></div>
+    <div class="progress" id="progress">
+      <p>Cargando... <span id="progressText">0%</span></p>
+    </div>
+  </div>
+
+  <script>
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const fileList = document.getElementById('fileList');
+    const submitBtn = document.getElementById('submitBtn');
+    const statusMessage = document.getElementById('statusMessage');
+    const progress = document.getElementById('progress');
+    const progressText = document.getElementById('progressText');
+
+    let files = [];
+
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+      dropZone.addEventListener(eventName, preventDefaults, false);
+    });
+
+    function preventDefaults(e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+      dropZone.addEventListener(eventName, () => dropZone.classList.add('hover'));
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+      dropZone.addEventListener(eventName, () => dropZone.classList.remove('hover'));
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+      const dt = e.dataTransfer;
+      const newFiles = dt.files;
+      handleFiles(newFiles);
+    });
+
+    dropZone.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
+
+    function handleFiles(newFiles) {
+      files = Array.from(newFiles);
+      renderFileList();
+    }
+
+    function renderFileList() {
+      fileList.innerHTML = '';
+      files.forEach((file, index) => {
+        const fileName = file.name.replace('.epub', '');
+        const fileCard = document.createElement('div');
+        fileCard.className = 'file-card';
+        fileCard.innerHTML = '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">' +
+          '<h4>📖 ' + fileName + '</h4>' +
+          '<button onclick="removeFile(' + index + ')" style="padding: 5px 10px; background: #ff6b6b; color: #fff; border: none; border-radius: 4px; cursor: pointer;">Eliminar</button>' +
+          '</div>' +
+          '<div class="form-group full">' +
+          '<label style="color: #19E6D6; font-weight: bold;">Nombre del Libro <span class="required"></span></label>' +
+          '<input type="text" class="book-title" data-index="' + index + '" value="' + fileName + '" placeholder="Nombre">' +
+          '</div>' +
+          '<div class="form-group full">' +
+          '<label style="color: #19E6D6; font-weight: bold;">Autor <span class="required"></span></label>' +
+          '<input type="text" class="book-author" data-index="' + index + '" placeholder="Autor">' +
+          '</div>' +
+          '<div class="form-group">' +
+          '<div>' +
+          '<label style="color: #19E6D6; font-weight: bold;">Saga <span class="required"></span></label>' +
+          '<input type="text" class="book-saga" data-index="' + index + '" placeholder="Nombre de la saga">' +
+          '</div>' +
+          '<div>' +
+          '<label style="color: #19E6D6; font-weight: bold;">Número en Saga <span class="required"></span></label>' +
+          '<input type="number" class="book-saga-number" data-index="' + index + '" value="1" min="0">' +
+          '</div>' +
+          '</div>' +
+          '<div class="form-group full">' +
+          '<label style="color: #19E6D6; font-weight: bold;">Descripción (Opcional)</label>' +
+          '<textarea class="book-description" data-index="' + index + '" placeholder="Descripción del libro" rows="3"></textarea>' +
+          '</div>';
+        fileList.appendChild(fileCard);
+      });
+      updateSubmitBtn();
+    }
+
+    function removeFile(index) {
+      files.splice(index, 1);
+      renderFileList();
+    }
+
+    function updateSubmitBtn() {
+      const allValid = files.length > 0 && files.every((file, index) => {
+        const title = document.querySelector('.book-title[data-index="' + index + '"]')?.value;
+        const author = document.querySelector('.book-author[data-index="' + index + '"]')?.value;
+        const saga = document.querySelector('.book-saga[data-index="' + index + '"]')?.value;
+        return title && author && saga;
+      });
+      submitBtn.disabled = !allValid;
+    }
+
+    document.addEventListener('input', (e) => {
+      if (e.target.classList.contains('book-title') || 
+          e.target.classList.contains('book-author') || 
+          e.target.classList.contains('book-saga')) {
+        updateSubmitBtn();
+      }
+    });
+
+    submitBtn.addEventListener('click', async () => {
+      if (files.length === 0) return;
+
+      submitBtn.disabled = true;
+      progress.style.display = 'block';
+      statusMessage.style.display = 'none';
+
+      try {
+        for (let i = 0; i < files.length; i++) {
+          const file = files[i];
+          const title = document.querySelector('.book-title[data-index="' + i + '"]').value;
+          const author = document.querySelector('.book-author[data-index="' + i + '"]').value;
+          const saga = document.querySelector('.book-saga[data-index="' + i + '"]').value;
+          const sagaNumber = document.querySelector('.book-saga-number[data-index="' + i + '"]').value;
+          const description = document.querySelector('.book-description[data-index="' + i + '"]').value;
+
+          const formData = new FormData();
+          formData.append('file', file);
+          formData.append('title', title);
+          formData.append('author', author);
+          formData.append('saga', saga);
+          formData.append('sagaNumber', sagaNumber);
+          formData.append('description', description);
+
+          const response = await fetch('/api/upload-to-drive', {
+            method: 'POST',
+            body: formData
+          });
+
+          if (!response.ok) throw new Error('Error uploading file');
+          
+          progressText.textContent = Math.round(((i + 1) / files.length) * 100) + '%';
+        }
+
+        statusMessage.className = 'status-message success';
+        statusMessage.textContent = '✅ Todos los archivos cargados correctamente a Drive';
+        statusMessage.style.display = 'block';
+        progress.style.display = 'none';
+        files = [];
+        renderFileList();
+      } catch (err) {
+        statusMessage.className = 'status-message error';
+        statusMessage.textContent = '❌ Error: ' + err.message;
+        statusMessage.style.display = 'block';
+        progress.style.display = 'none';
+        submitBtn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>`;
+  res.send(html);
+});
+
+// API: Subir EPUB a Drive
+app.post('/api/upload-to-drive', upload.single('file'), async (req, res) => {
+  try {
+    const pass = req.query.pass || '';
+    if (pass !== '252914' && req.headers['x-api-key'] !== '252914') {
+      return res.status(403).json({ error: 'Acceso denegado' });
+    }
+
+    if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+
+    const { title, author, saga, sagaNumber, description } = req.body;
+    if (!title || !author || !saga) {
+      return res.status(400).json({ error: 'Faltan campos requeridos' });
+    }
+
+    // Generar ID único para el archivo
+    const fileId = 'local_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    const fileName = `${title} - ${author} (${saga} #${sagaNumber || 1}).epub`;
+    
+    // Buscar datos completos en Google Books
+    console.log(`[UPLOAD] 🔍 Buscando datos en Google Books para: ${title} - ${author}`);
+    const googleBooksData = await fetchGoogleBooksData(title, author);
+
+    // Preparar libro con datos de Google Books
+    const book = {
+      id: fileId,
+      title: googleBooksData?.title || title,
+      author: author,
+      saga: {
+        name: saga,
+        number: parseInt(sagaNumber) || 1
+      },
+      description: description || googleBooksData?.description || null,
+      publisher: googleBooksData?.publisher || null,
+      publishedDate: googleBooksData?.publishedDate || new Date().toISOString().split('T')[0],
+      pageCount: googleBooksData?.pageCount || null,
+      categories: googleBooksData?.categories || [],
+      language: googleBooksData?.language || 'es',
+      averageRating: googleBooksData?.averageRating || null,
+      ratingsCount: googleBooksData?.ratingsCount || null,
+      imageLinks: googleBooksData?.imageLinks || null,
+      previewLink: googleBooksData?.previewLink || null,
+      coverUrl: googleBooksData?.imageLinks?.thumbnail || getRandomCoverImage() || null,
+      uploadDate: new Date().toISOString()
+    };
+
+    bookMetadata.push(book);
+    await fs.promises.writeFile(BOOKS_FILE, JSON.stringify(bookMetadata, null, 2));
+
+    console.log(`[UPLOAD] ✅ Libro registrado: ${fileName} (ID: ${fileId})`);
+    console.log(`[UPLOAD] 📚 Libro agregado con portada: ${book.coverUrl ? '✅ Encontrada' : '❌ Fallback'}`);
+    
+    res.json({ 
+      success: true, 
+      fileId: fileId,
+      fileName: fileName,
+      coverUrl: book.coverUrl,
+      message: 'Archivo procesado correctamente (almacenado localmente)'
+    });
+  } catch (err) {
+    console.error('[UPLOAD] Error:', err.message);
+    res.status(500).json({ error: err.message || 'Error procesando archivo' });
   }
 });
 
