@@ -1,0 +1,10 @@
+
+> kobo-library@1.0.0 start
+> node server.js
+
+Servidor escuchando en puerto 3000
+[API /book-cover] Buscando: Wilder
+[fetchGoogleBooksData] 429 - Reintentando en 4000ms (intento 1/2)
+[fetchGoogleBooksData] 429 - Reintentando en 8000ms (intento 2/2)
+[fetchGoogleBooksData] Error: Request failed with status code 429
+Killed
