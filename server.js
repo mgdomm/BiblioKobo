@@ -361,6 +361,17 @@ function uniqueBooks(arr) {
   });
 }
 
+// Recargar bookMetadata desde el JSON más reciente en disco
+function reloadBooksMetadata() {
+  try {
+    if (fs.existsSync(BOOKS_FILE)) {
+      bookMetadata = JSON.parse(fs.readFileSync(BOOKS_FILE));
+    }
+  } catch (err) {
+    console.warn('Error releyendo books.json:', err.message);
+  }
+}
+
 function actualizarBooksJSON(newFiles) {
   let updated = false;
   newFiles.forEach(f => {
@@ -1140,6 +1151,9 @@ app.get('/libros', async (req,res)=>{
     const query = (req.query.buscar||'').trim().toLowerCase();
     const orden = req.query.ordenar||'alfabetico';
     
+    // Recargar bookMetadata desde el JSON más reciente
+    reloadBooksMetadata();
+    
     // Sincronizar con Drive para asegurar que tenemos todos los libros
     const files = await listAllFiles(folderId);
     actualizarBooksJSON(files);
@@ -1165,6 +1179,7 @@ app.get('/libros', async (req,res)=>{
 
 // Autores
 app.get('/autores', (req,res)=>{
+  reloadBooksMetadata();
   const query = (req.query.buscar||'').trim().toLowerCase();
   let autores = [...new Set(bookMetadata.map(b=>b.author).filter(a=>a))].sort();
   if(query) autores = autores.filter(a=>a.toLowerCase().includes(query));
@@ -1239,6 +1254,7 @@ app.get('/autores', (req,res)=>{
 
 // Sagas
 app.get('/sagas', (req,res)=>{
+  reloadBooksMetadata();
   const query = (req.query.buscar||'').trim().toLowerCase();
   let sagas = [...new Set(bookMetadata.map(b=>b.saga?.name).filter(a=>a))].sort();
   if(query) sagas = sagas.filter(s=>s.toLowerCase().includes(query));

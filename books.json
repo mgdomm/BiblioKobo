@@ -2976,5 +2976,101 @@
     "coverUrl": "http://books.google.com/books/content?id=On7xEAAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
     "uploadDate": "2025-12-08T20:55:07.648Z",
     "createdTime": "2025-12-08T20:55:06.426Z"
+  },
+  {
+    "id": "1eEnIU5R9OqVFgrKeE5sYffwEFm78IlxA",
+    "driveFileId": "1eEnIU5R9OqVFgrKeE5sYffwEFm78IlxA",
+    "title": "Libro Test 1",
+    "author": "Autor Test",
+    "saga": {
+      "name": "Saga Test",
+      "number": 1
+    },
+    "description": "Descripción de prueba",
+    "publisher": null,
+    "publishedDate": "2023",
+    "pageCount": null,
+    "categories": [],
+    "language": "es",
+    "averageRating": null,
+    "ratingsCount": null,
+    "imageLinks": null,
+    "previewLink": "http://books.google.es/books?id=OhAD0QEACAAJ&dq=intitle:Libro+Test+1+inauthor:Autor+Test&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "coverUrl": "/cover/11.png",
+    "uploadDate": "2025-12-08T21:39:27.462Z",
+    "createdTime": "2025-12-08T21:39:26.285Z"
+  },
+  {
+    "id": "1ZxW1KtTBRS8N7ULCOZxSk1xJ_luwEN1M",
+    "driveFileId": "1ZxW1KtTBRS8N7ULCOZxSk1xJ_luwEN1M",
+    "title": "Libro Test 2",
+    "author": "Autor Test",
+    "saga": {
+      "name": "Saga Test",
+      "number": 2
+    },
+    "description": "Descripción de prueba 2",
+    "publisher": null,
+    "publishedDate": "2025-12-08",
+    "pageCount": null,
+    "categories": [],
+    "language": "es",
+    "averageRating": null,
+    "ratingsCount": null,
+    "imageLinks": null,
+    "previewLink": null,
+    "coverUrl": "/cover/10.png",
+    "uploadDate": "2025-12-08T21:39:49.102Z",
+    "createdTime": "2025-12-08T21:39:48.062Z"
+  },
+  {
+    "id": "1Ck4yrmhlVicSzVT_w26HthuB6-Mt_yr_",
+    "driveFileId": "1Ck4yrmhlVicSzVT_w26HthuB6-Mt_yr_",
+    "title": "Libro Test 3",
+    "author": "Autor Test",
+    "saga": {
+      "name": "Saga Test",
+      "number": 3
+    },
+    "description": "Descripción de prueba 3",
+    "publisher": null,
+    "publishedDate": "2023",
+    "pageCount": null,
+    "categories": [],
+    "language": "es",
+    "averageRating": null,
+    "ratingsCount": null,
+    "imageLinks": null,
+    "previewLink": "http://books.google.es/books?id=OhAD0QEACAAJ&dq=intitle:Libro+Test+3+inauthor:Autor+Test&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "coverUrl": "/cover/10.png",
+    "uploadDate": "2025-12-08T21:40:08.469Z",
+    "createdTime": "2025-12-08T21:40:06.823Z"
+  },
+  {
+    "id": "1wYpRNFM8b8TzGA_HPBa_f6ocU2wNqDyF",
+    "title": "El Pozo de la Ascension",
+    "author": "Brandon Sanderson",
+    "saga": {
+      "name": "Nacidos de la Bruma",
+      "number": 2
+    }
+  },
+  {
+    "id": "1aiBrUlQQldftEKCzh4MHvGxod8YVQ1Dx",
+    "title": "El Heroe de las Eras",
+    "author": "Brandon Sanderson",
+    "saga": {
+      "name": "Nacidos de la Bruma",
+      "number": 3
+    }
+  },
+  {
+    "id": "1LSEVvz6yA-etW6UEk04IYBFDRGL7A6x_",
+    "title": "El Imperio Final",
+    "author": "Brandon Sanderson",
+    "saga": {
+      "name": "Nacidos de la Bruma",
+      "number": 1
+    }
   }
 ]
