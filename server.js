@@ -2329,7 +2329,21 @@ app.get('/upload', (req, res) => {
             body: formData
           });
 
-          if (!response.ok) throw new Error('Error uploading file');
+          if (!response.ok) {
+            // Intentar mostrar el mensaje real del backend para depurar mejor
+            let errorMessage = 'Error uploading file';
+            try {
+              const errorJson = await response.json();
+              errorMessage = errorJson?.error || errorMessage;
+            } catch (_) {
+              try {
+                errorMessage = await response.text();
+              } catch (_) {
+                // ignore
+              }
+            }
+            throw new Error(errorMessage);
+          }
           
           progressText.textContent = Math.round(((i + 1) / files.length) * 100) + '%';
         }
