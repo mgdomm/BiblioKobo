@@ -8,6 +8,7 @@ const archiver = require('archiver');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const GOOGLE_BOOKS_API_KEY = process.env.GOOGLE_BOOKS_API_KEY || 'AIzaSyB0MQVmhlniPDBo8llZzq9VTgwcbr3cjuE';
 
 // Middleware para parsear JSON
 app.use(express.json());
@@ -428,57 +429,30 @@ async function fetchSynopsis(title, author) {
   return null;
 }
 
-// Ratings vía Goodreads (auto_complete) con fallback a Open Library
+// Ratings vía Google Books API
 async function fetchRating(title, author, isbn = null) {
   const key = `${(title||'').toLowerCase()}|${(author||'').toLowerCase()}|${isbn||''}`;
   if (ratingsCache.has(key)) return ratingsCache.get(key);
 
-  console.log(`[fetchRating] Starting for: "${title}" by "${author}"`);
-
-  // Strategy 1: Google Books API (has real ratings!)
   try {
     const query = isbn || `intitle:${title} inauthor:${author}`;
-    const url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&maxResults=5`;
-    console.log(`[Google Books] Query: "${query}"`);
-    const resp = await axios.get(url, { timeout: 5000 });
-    const items = resp.data?.items || [];
-    console.log(`[Google Books] Got ${items.length} results`);
+    const keyParam = GOOGLE_BOOKS_API_KEY ? `&key=${GOOGLE_BOOKS_API_KEY}` : '';
+    const url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&maxResults=1&printType=books${keyParam}`;
     
-    for (const item of items) {
-      const rating = item.volumeInfo?.averageRating;
-      const votes = item.volumeInfo?.ratingsCount || 0;
-      if (rating && rating > 0 && rating <= 5 && votes > 0) {
-        console.log(`[Google Books] SUCCESS: rating=${rating} votes=${votes}`);
+    const resp = await axios.get(url, { timeout: 4000 });
+    const item = resp.data?.items?.[0];
+    
+    if (item?.volumeInfo?.averageRating) {
+      const rating = item.volumeInfo.averageRating;
+      if (rating > 0 && rating <= 5) {
         setRatingCache(key, rating);
         return rating;
       }
     }
   } catch (err) {
-    console.error(`[Google Books] Error: ${err.message}`);
+    console.warn(`[fetchRating] Error: ${err?.message}`);
   }
 
-  // Strategy 2: Open Library
-  try {
-    const sUrl = `https://openlibrary.org/search.json?title=${encodeURIComponent(title||'')}&author=${encodeURIComponent(author||'')}&limit=3`;
-    const sr = await axios.get(sUrl, { timeout: 5000 });
-    const docs = sr.data.docs || [];
-    if (docs.length && docs[0].key) {
-      const workKey = docs[0].key.startsWith('/works/') ? docs[0].key : `/works/${docs[0].key}`;
-      const rUrl = `https://openlibrary.org${workKey}/ratings.json`;
-      const rr = await axios.get(rUrl, { timeout: 5000 });
-      const avg = rr.data?.summary?.average || rr.data?.average || 0;
-      const rating = Number(avg) || 0;
-      if (rating > 0) {
-        console.log(`[Open Library] SUCCESS: rating=${rating}`);
-        setRatingCache(key, rating);
-        return rating;
-      }
-    }
-  } catch (err) {
-    console.error(`[Open Library] Error: ${err.message}`);
-  }
-
-  console.log(`[fetchRating] No rating found for "${title}"`);
   setRatingCache(key, 0);
   return 0;
 }
@@ -1405,7 +1379,7 @@ app.get('/stats', async (req, res) => {
         <div style="font-size:24px; color:#19E6D6; font-weight:bold; font-family:'MedievalSharp', cursive;">${promedioLibrosPorAutor}</div>
       </div>
     </div>
-    
+
     <!-- Top Autores -->
     <div style="margin-top:20px; padding:30px; background:linear-gradient(135deg, rgba(25,25,25,0.95), rgba(18,18,18,0.9)); border:1px solid rgba(25,230,214,0.2); border-radius:12px;">
       <h3 style="font-family:'MedievalSharp', cursive; color:#19E6D6; margin:0 0 20px 0; font-size:20px;">Top 5 Autores</h3>
