@@ -2420,6 +2420,75 @@ app.get('/upload', (req, res) => {
   res.send(html);
 });
 
+// API: Sincronizar datos de Google Books para libros sin portada/descripción
+app.get('/api/sync-google-books', async (req, res) => {
+  try {
+    const pass = req.query.pass || '';
+    if (pass !== '252914') {
+      return res.status(403).json({ error: 'Acceso denegado' });
+    }
+
+    reloadBooksMetadata();
+    
+    // Encontrar libros sin coverUrl o sin description
+    const booksToSync = bookMetadata.filter(b => !b.coverUrl || !b.description);
+    
+    if (booksToSync.length === 0) {
+      return res.json({ 
+        success: true, 
+        message: 'Todos los libros tienen portada y descripción',
+        updated: 0,
+        total: bookMetadata.length
+      });
+    }
+
+    console.log(`[SYNC-GBOOKS] 🔍 Sincronizando ${booksToSync.length} libros...`);
+    
+    let updated = 0;
+    for (const book of booksToSync) {
+      try {
+        const googleBooksData = await fetchGoogleBooksData(book.title, book.author);
+        if (googleBooksData) {
+          // Actualizar solo campos vacíos
+          if (!book.description && googleBooksData.description) {
+            book.description = googleBooksData.description;
+            console.log(`[SYNC-GBOOKS] ✅ ${book.title}: descripción agregada`);
+          }
+          if (!book.coverUrl && googleBooksData.imageLinks?.thumbnail) {
+            book.coverUrl = googleBooksData.imageLinks.thumbnail;
+            console.log(`[SYNC-GBOOKS] ✅ ${book.title}: portada agregada`);
+          }
+          if (!book.imageLinks && googleBooksData.imageLinks) {
+            book.imageLinks = googleBooksData.imageLinks;
+          }
+          if (!book.averageRating && googleBooksData.averageRating) {
+            book.averageRating = googleBooksData.averageRating;
+            book.ratingsCount = googleBooksData.ratingsCount;
+          }
+          updated++;
+        }
+      } catch (err) {
+        console.warn(`[SYNC-GBOOKS] Error sincronizando ${book.title}:`, err.message);
+      }
+    }
+
+    // Guardar cambios
+    await fs.promises.writeFile(BOOKS_FILE, JSON.stringify(bookMetadata, null, 2));
+    console.log(`[SYNC-GBOOKS] ✅ Sincronización completada: ${updated}/${booksToSync.length} libros actualizados`);
+
+    res.json({ 
+      success: true, 
+      message: `Se actualizaron ${updated} libros con datos de Google Books`,
+      updated,
+      total: bookMetadata.length,
+      synced: updated > 0
+    });
+  } catch (err) {
+    console.error('[SYNC-GBOOKS] Error:', err.message);
+    res.status(500).json({ error: 'Error sincronizando con Google Books: ' + err.message });
+  }
+});
+
 // API: Subir EPUB a Drive
 app.post('/api/upload-to-drive', upload.single('file'), async (req, res) => {
   try {
