@@ -236,21 +236,82 @@ function renderBookPage({ libros, titlePage, tipo, nombre, req, noResultsHtml })
   </div>
   <form method="get" action="/${tipo}" style="display:flex;flex-direction:column;align-items:center;gap:8px;margin-top:12px;">
     <div style="display:flex;gap:8px;align-items:center;"><input type="search" name="buscar" placeholder="Buscar título o autor" value="${req && req.query.buscar ? req.query.buscar.replace(/"/g,'&quot;') : ''}" /><button type="submit">Buscar</button></div>
-    <div style="margin-top:6px">
+    <div style="margin-top:6px;display:flex;gap:8px;align-items:center;">
       <select id="orden" name="ordenar" onchange="this.form.submit()" style="width:auto;min-width:0;padding:4px 8px;border-radius:6px;">
         <option value="alfabetico" ${orden==='alfabetico'?'selected':''}>A→Z</option>
         <option value="alfabetico-desc" ${orden==='alfabetico-desc'?'selected':''}>Z→A</option>
         <option value="recientes" ${orden==='recientes'?'selected':''}>Más recientes</option>
         ${tipo==='saga'?`<option value="numero" ${orden==='numero'?'selected':''}>#Número</option>`:''}
       </select>
+      ${tipo==='libros'?`<button type="button" id="multi-download-btn" style="display:none;padding:6px 12px;border-radius:8px;border:1px solid #19E6D6;background:#19E6D6;color:#000;font-family:'MedievalSharp', cursive;font-size:14px;cursor:pointer;text-shadow:0 1px 2px rgba(255,255,255,0.8);box-shadow:0 4px 12px rgba(0,0,0,0.4);">Descarga múltiple</button>`:''}
     </div>
     <input type="hidden" name="name" value="${nombre}" />
   </form>
   <div id="grid">${booksHtml}</div>
   <p><a href="/${tipo==='autor'?'autores':'sagas'}" class="button">← Volver</a></p>
 
-  <!-- Script para fade por línea -->
   <script>
+    ${tipo === 'libros' ? `
+    // Multi-download button appears when more than one checkbox is selected
+    const checkboxes = document.querySelectorAll('.book-checkbox');
+    const multiBtn = document.getElementById('multi-download-btn');
+    
+    function updateMultiBtn() {
+      if (!multiBtn) return;
+      const selected = Array.from(checkboxes).filter(cb => cb.checked);
+      if (selected.length > 1) {
+        multiBtn.style.display = 'inline-flex';
+        multiBtn.disabled = false;
+        multiBtn.textContent = 'Descarga múltiple (' + selected.length + ')';
+      } else {
+        multiBtn.style.display = 'none';
+        multiBtn.disabled = true;
+      }
+    }
+    
+    checkboxes.forEach(cb => cb.addEventListener('change', updateMultiBtn));
+    
+    multiBtn?.addEventListener('click', async () => {
+      const selected = Array.from(checkboxes).filter(cb => cb.checked).map(cb => cb.value);
+      if (selected.length < 2) return;
+      
+      multiBtn.disabled = true;
+      const originalLabel = multiBtn.textContent;
+      multiBtn.textContent = 'Creando ZIP...';
+      
+      try {
+        const res = await fetch('/download-zip', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ids: selected })
+        });
+        
+        if (!res.ok) throw new Error('Error en descarga');
+        
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'libros.zip';
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        
+        // Deseleccionar checkboxes después de descargar
+        checkboxes.forEach(cb => cb.checked = false);
+        updateMultiBtn();
+      } catch (err) {
+        alert('Error al crear ZIP: ' + err.message);
+        multiBtn.textContent = originalLabel;
+      }
+      
+      multiBtn.disabled = false;
+    });
+    
+    updateMultiBtn();
+    ` : ''}
+    
     function applyRowFade() {
       const headerHeight = 300;
       const fadeLength = headerHeight * 0.4; // 40% of header
