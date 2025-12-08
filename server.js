@@ -17,7 +17,6 @@ const GOOGLE_BOOKS_API_KEY = process.env.GOOGLE_BOOKS_API_KEY || 'AIzaSyA4Rm0J2m
 // Middleware para compresión gzip
 app.use(compression());
 
-// Middleware para parsear JSON
 app.use(express.json());
 
 // Middleware para archivos multipart
@@ -45,9 +44,10 @@ const OAUTH_TOKEN = path.join(__dirname, 'oauth-token.json');
 const SERVICE_ACCOUNT_FILE = path.join(__dirname, 'service-account.json');
 
 const hasOAuth = fs.existsSync(OAUTH_TOKEN) && fs.existsSync(OAUTH_CREDENTIALS);
+const hasServiceAccount = fs.existsSync(SERVICE_ACCOUNT_FILE);
 
-let auth;
-let drive;
+let driveUpload = null; // se usa para subidas
+let driveRead = null;   // se usa para listados/descargas
 
 if (hasOAuth) {
   // Usar OAuth (cuenta personal)
@@ -55,18 +55,42 @@ if (hasOAuth) {
   const token = JSON.parse(fs.readFileSync(OAUTH_TOKEN));
   const { client_id, client_secret, redirect_uris } = credentials.installed || credentials.web;
   
-  auth = new google.auth.OAuth2(client_id, client_secret, redirect_uris[0]);
-  auth.setCredentials(token);
-  drive = google.drive({ version: 'v3', auth });
-  console.log('✅ Usando OAuth (cuenta personal)');
-} else {
-  // Usar Service Account (solo lectura)
-  auth = new google.auth.GoogleAuth({
+  const oauthAuth = new google.auth.OAuth2(client_id, client_secret, redirect_uris[0]);
+  oauthAuth.setCredentials(token);
+  const oauthDrive = google.drive({ version: 'v3', auth: oauthAuth });
+
+  // Detectar alcance del token: drive.file solo ve archivos creados por la app
+  const scopeStr = (token.scope || '').toString();
+  const scopes = scopeStr.split(/\s+/).filter(Boolean);
+  const hasFullDriveScope = scopes.some(s => s.endsWith('/drive') || s.endsWith('/drive.readonly'));
+
+  driveUpload = oauthDrive;
+  if (hasFullDriveScope) {
+    driveRead = oauthDrive;
+    console.log('✅ Usando OAuth (cuenta personal) con alcance completo');
+  } else if (hasServiceAccount) {
+    console.warn('⚠️ OAuth tiene alcance drive.file (solo archivos propios). Se usará Service Account para lectura/listados.');
+    const saAuth = new google.auth.GoogleAuth({
+      keyFile: SERVICE_ACCOUNT_FILE,
+      scopes: ['https://www.googleapis.com/auth/drive'],
+    });
+    driveRead = google.drive({ version: 'v3', auth: saAuth });
+    console.log('✅ Service Account se usará solo para leer/listar');
+  } else {
+    console.warn('⚠️ OAuth tiene alcance drive.file y no hay Service Account disponible. Solo se verán archivos creados desde la app.');
+    driveRead = oauthDrive;
+  }
+} else if (hasServiceAccount) {
+  // Solo Service Account (lectura/escritura según permisos de carpeta)
+  const saAuth = new google.auth.GoogleAuth({
     keyFile: SERVICE_ACCOUNT_FILE,
     scopes: ['https://www.googleapis.com/auth/drive'],
   });
-  drive = google.drive({ version: 'v3', auth });
-  console.log('⚠️  Usando Service Account (solo lectura)');
+  driveUpload = google.drive({ version: 'v3', auth: saAuth });
+  driveRead = driveUpload;
+  console.log('⚠️  Usando Service Account (solo lectura/permiso compartido)');
+} else {
+  console.error('❌ No hay credenciales OAuth ni Service Account disponibles.');
 }
 
 const folderId = '1-4G6gGNtt6KVS90AbWbtH3JlpetHrPEi';
@@ -313,9 +337,10 @@ body { padding-top:300px; }
 
 // ------------------ FUNCIONES ------------------
 async function listAllFiles(folderId) {
+  if (!driveRead) throw new Error('Google Drive no está inicializado para lectura');
   let files = [], pageToken = null;
   do {
-    const res = await drive.files.list({
+    const res = await driveRead.files.list({
       q: `'${folderId}' in parents and trashed=false`,
       fields: 'nextPageToken, files(id,name,createdTime)',
       pageSize: 1000,
@@ -1452,14 +1477,14 @@ app.get('/download', async (req, res) => {
   if (!id) return res.status(400).send('Falta id');
   try {
     // obtener metadatos para el nombre y mimeType
-    const meta = await drive.files.get({ fileId: id, fields: 'name,mimeType' });
+    const meta = await driveRead.files.get({ fileId: id, fields: 'name,mimeType' });
     const filename = (meta.data && meta.data.name) ? meta.data.name.replace(/\"/g, '') : `file-${id}`;
     const mime = (meta.data && meta.data.mimeType) ? meta.data.mimeType : 'application/octet-stream';
     res.setHeader('Content-Type', mime);
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
 
     // stream del contenido
-    const r = await drive.files.get({ fileId: id, alt: 'media' }, { responseType: 'stream' });
+    const r = await driveRead.files.get({ fileId: id, alt: 'media' }, { responseType: 'stream' });
     r.data.on('error', err => {
       console.error('Stream error:', err);
       try { res.status(500).end(); } catch (e) {}
@@ -1502,9 +1527,9 @@ app.post('/download-zip', async (req, res) => {
 
     for (const id of ids) {
       try {
-        const meta = await drive.files.get({ fileId: id, fields: 'name' });
+        const meta = await driveRead.files.get({ fileId: id, fields: 'name' });
         const filename = (meta.data && meta.data.name) ? meta.data.name : `file-${id}`;
-        const stream = await drive.files.get({ fileId: id, alt: 'media' }, { responseType: 'stream' });
+        const stream = await driveRead.files.get({ fileId: id, alt: 'media' }, { responseType: 'stream' });
         
         archive.append(stream.data, { name: filename });
       } catch (err) {
@@ -2379,7 +2404,7 @@ app.post('/api/upload-to-drive', upload.single('file'), async (req, res) => {
       return res.status(403).json({ error: 'Acceso denegado' });
     }
 
-    if (!drive) {
+    if (!driveUpload) {
       return res.status(500).json({ error: 'Google Drive no está inicializado' });
     }
 
@@ -2401,7 +2426,7 @@ app.post('/api/upload-to-drive', upload.single('file'), async (req, res) => {
     let driveFileId = null;
     let driveCreatedTime = new Date().toISOString();
     try {
-      const uploadResp = await drive.files.create({
+      const uploadResp = await driveUpload.files.create({
         requestBody: {
           name: fileName,
           parents: folderId ? [folderId] : []
