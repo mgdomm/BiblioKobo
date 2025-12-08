@@ -190,20 +190,15 @@ select:focus { outline:none; border-color:#fff; box-shadow:0 0 8px rgba(255,255,
 button[type="submit"] { padding:6px 12px; font-family:'MedievalSharp', cursive; font-weight:normal; font-size:12px; border:2px solid #19E6D6; background:#111; color:#fff; border-radius:6px; cursor:pointer; transition:0.2s; }
 button[type="submit"]:hover { background:#19E6D6; color:#000; }
 
-#grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(120px, 1fr)); gap:30px; padding:30px 20px 40px 20px; max-width:100%; margin:0 auto; }
-.book { display:inline-block; vertical-align:top; width:110px; min-height:160px; background:rgba(17,17,17,0.9); padding:6px; border-radius:8px; border:1px solid rgba(255,255,255,0.06); margin:4px; text-align:center; word-wrap:break-word; transition:opacity 0.3s, transform 0.2s; }
-.book img { width:80px; height:120px; border-radius:5px; object-fit:cover; margin-bottom:4px; }
-.title { font-size:12px; font-weight:700; color:#eee; font-family:'MedievalSharp', cursive; margin-bottom:2px; }
-.author-span a, .number-span a { color:#fff; text-decoration:none; font-family:'MedievalSharp', cursive; font-size:12px; font-weight:400; }
-.author-span, .number-span { font-size:12px; color:#fff; font-family:'MedievalSharp', cursive; font-weight:400; }
-.book { position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; vertical-align:top; width:100%; min-height:auto; background:linear-gradient(180deg, rgba(18,18,18,0.92), rgba(12,12,12,0.9)); padding:8px; border-radius:10px; border:1px solid rgba(255,255,255,0.04); text-align:center; word-wrap:break-word; transition:opacity 0.3s, transform 0.15s; box-shadow:0 6px 18px rgba(0,0,0,0.6); }
+#grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 130px)); gap:30px; padding:30px 20px 40px 20px; max-width:100%; margin:0 auto; justify-content:center; }
+.book { position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; width:130px; min-height:auto; background:linear-gradient(180deg, rgba(18,18,18,0.92), rgba(12,12,12,0.9)); padding:8px; border-radius:10px; border:1px solid rgba(255,255,255,0.04); text-align:center; word-wrap:break-word; transition:opacity 0.3s, transform 0.15s; box-shadow:0 6px 18px rgba(0,0,0,0.6); }
 .book img { width:90px; height:140px; border-radius:6px; object-fit:cover; margin-bottom:8px; display:block; margin-left:auto; margin-right:auto; }
-.title { font-size:14px; font-weight:700; color:#fff; font-family:'MedievalSharp', cursive; margin:0 0 6px 0; padding-bottom:6px; border-bottom:1px solid rgba(255,255,255,0.04); }
-.title a { color: inherit; text-decoration: none; display:block; padding-bottom:6px; }
-.author-span, .number-span { font-size:12px; color:#ddd; font-family:'MedievalSharp', cursive; font-weight:400; display:block; margin-top:6px; }
+.title { font-size:12px; font-weight:700; color:#fff; font-family:'MedievalSharp', cursive; margin:0 0 6px 0; padding:6px 4px 6px 4px; border-bottom:1px solid rgba(255,255,255,0.04); line-height:1.3; }
+.title a { color: inherit; text-decoration: none; display:block; padding:0; }
+.author-span, .number-span { font-size:11px; color:#ddd; font-family:'MedievalSharp', cursive; font-weight:400; display:block; margin-top:4px; padding:0 2px; line-height:1.2; }
 .author-span a { color:#fff; text-decoration:none; font-style:italic; font-weight:400; }
-.number-span a { color:#19E6D6; text-decoration:none; font-weight:600; font-size:11px; text-transform:uppercase; }
-.meta a { font-size:11px; font-weight:bold; text-decoration:none; color:#fff; background:rgba(34,34,34,0.7); padding:3px 6px; border-radius:4px; display:inline-block; margin-top:3px; transition:0.2s; }
+.number-span a { color:#19E6D6; text-decoration:none; font-weight:600; font-size:10px; text-transform:uppercase; }
+.meta a { font-size:10px; font-weight:bold; text-decoration:none; color:#fff; background:rgba(34,34,34,0.7); padding:3px 6px; border-radius:4px; display:inline-block; margin-top:4px; transition:0.2s; }
 .meta a:hover { background:rgba(68,68,68,0.9); }
 .author-span a:hover, .number-span a:hover { color:#fff; text-decoration:none; opacity:0.9; }
 a.button { display:inline-block; margin:10px; text-decoration:none; padding:14px 28px; background:#222; color:#fff; border-radius:8px; font-size:20px; font-weight:bold; transition:0.2s; }
