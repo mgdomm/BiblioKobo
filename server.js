@@ -44,10 +44,12 @@ const OAUTH_CREDENTIALS = path.join(__dirname, 'oauth-credentials.json');
 const OAUTH_TOKEN = path.join(__dirname, 'oauth-token.json');
 const SERVICE_ACCOUNT_FILE = path.join(__dirname, 'service-account.json');
 
+const hasOAuth = fs.existsSync(OAUTH_TOKEN) && fs.existsSync(OAUTH_CREDENTIALS);
+
 let auth;
 let drive;
 
-if (fs.existsSync(OAUTH_TOKEN) && fs.existsSync(OAUTH_CREDENTIALS)) {
+if (hasOAuth) {
   // Usar OAuth (cuenta personal)
   const credentials = JSON.parse(fs.readFileSync(OAUTH_CREDENTIALS));
   const token = JSON.parse(fs.readFileSync(OAUTH_TOKEN));
@@ -2379,6 +2381,11 @@ app.post('/api/upload-to-drive', upload.single('file'), async (req, res) => {
 
     if (!drive) {
       return res.status(500).json({ error: 'Google Drive no está inicializado' });
+    }
+
+    // Evitar intentos con Service Account (sin cuota de subida)
+    if (!hasOAuth) {
+      return res.status(503).json({ error: 'Subidas deshabilitadas: falta OAuth configurado en el servidor (no se puede usar Service Account para subir)' });
     }
 
     if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
