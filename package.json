@@ -9,8 +9,10 @@
   "dependencies": {
     "archiver": "^7.0.1",
     "axios": "^1.6.0",
+    "compression": "^1.8.1",
     "express": "^4.18.2",
-    "googleapis": "^126.0.0"
+    "googleapis": "^126.0.0",
+    "sharp": "^0.34.5"
   },
   "author": "MG",
   "license": "MIT",

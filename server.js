@@ -5,16 +5,23 @@ const fs = require('fs');
 const os = require('os');
 const axios = require('axios');
 const archiver = require('archiver');
+const compression = require('compression');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const GOOGLE_BOOKS_API_KEY = process.env.GOOGLE_BOOKS_API_KEY || 'AIzaSyA4Rm0J2mdQuCK7MChxJP-SnMrV9HVrnGo';
 
+// Middleware para compresión gzip
+app.use(compression());
+
 // Middleware para parsear JSON
 app.use(express.json());
 
-// Servir carpeta cover
-app.use('/cover', express.static(path.join(__dirname, 'cover')));
+// Servir carpeta cover con caché agresivo
+app.use('/cover', express.static(path.join(__dirname, 'cover'), {
+  maxAge: '1d',
+  etag: false
+}));
 
 // Service Account
 const SERVICE_ACCOUNT_FILE = path.join(__dirname, 'service-account.json');
@@ -889,9 +896,9 @@ function renderBookPage({ libros, titlePage, tipo, nombre, req, noResultsHtml })
 app.get('/', (req,res)=>{
   res.send(`<!DOCTYPE html>
 <html lang="es">
-  <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Azkaban Reads</title><link rel="preload" as="image" href="/cover/portada/portada1.png"><style>${css}</style><style>body{padding-top:0;} .header-banner.home{background-size:cover;background-position:center;will-change:transform;} .overlay.home{opacity:0;animation:fadeIn 0.5s ease forwards;} @keyframes fadeIn{from{opacity:0;} to{opacity:1;}}</style></head>
+  <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Azkaban Reads</title><link rel="preload" as="image" href="/cover/portada/portada1.png?v=${Date.now()}"><style>${css}</style><style>body{padding-top:0;} .header-banner.home{background-size:cover;background-position:center;will-change:transform;background-color:#0a0a0a;opacity:0;animation:fadeInBanner 1.2s ease forwards;} .header-banner.home::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.4) 70%, #0a0a0a 100%);pointer-events:none;z-index:1;} .overlay.home{opacity:0;visibility:hidden;animation:fadeIn 0.6s ease forwards;z-index:2;} @keyframes fadeInBanner{from{opacity:0;} to{opacity:1;}} @keyframes fadeIn{from{opacity:0;} to{opacity:1;visibility:visible;}}</style></head>
 <body>
-  <div class="header-banner home" style="height:100vh; background-image:url('/cover/portada/portada1.png'); background-size:cover; background-position:center;"></div>
+  <div class="header-banner home" id="home-bg" style="height:100vh; background-size:cover; background-position:center; background-image:url('/cover/portada/portada1.png?v=${Date.now()}');"></div>
   <div class="overlay home" style="justify-content:center;">
     <h1>Azkaban Reads</h1>
     <div class="top-buttons">
