@@ -3,9 +3,13 @@ const { google } = require('googleapis');
 const path = require('path');
 const fs = require('fs');
 const axios = require('axios');
+const archiver = require('archiver');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Middleware para parsear JSON
+app.use(express.json());
 
 // Servir carpeta cover
 app.use('/cover', express.static(path.join(__dirname, 'cover')));
@@ -43,6 +47,75 @@ try {
   bookMetadata = [];
 }
 
+// Contador simple de descargas (memoria)
+let downloadCount = 0;
+
+// ------------------ DETECCIÓN KOBO ------------------
+function isKobo(req) {
+  const ua = (req.headers['user-agent'] || '').toLowerCase();
+  return ua.includes('kobo') || req.query.kobo === '1';
+}
+
+// ------------------ AUTH MIDDLEWARE ------------------
+const ADMIN_PASSWORD = process.env.ADMIN_PASS || '252914';
+const deniedMessages = [
+  "La clave que murmuras no rompe mis cadenas… Inténtalo otra vez, forastero.",
+  "Ese no es el conjuro… aquí dentro lo sabríamos. Prueba de nuevo.",
+  "Tus palabras golpean la puerta, pero ninguna abre los barrotes. Contraseña incorrecta…",
+  "He escuchado miles de claves en esta celda… la tuya no es la correcta.",
+  "Si esa es tu mejor contraseña, estaremos encerrados mucho tiempo…",
+  "No… no… esa no es… la correcta sigue escapando, como mi cordura…",
+  "La contraseña… la contraseña verdadera grita en la oscuridad, pero esa no es.",
+  "¿Otra clave falsa? Me recuerda a las promesas que me trajeron aquí…",
+  "Intentas escapar, ¿verdad? Esa palabra no abriría ni una celda oxidada.",
+  "¿Contraseña? Sí. ¿Correcta? No. Aquí hasta los dementores se reirían…",
+  "Ni los dementores aceptarían esa clave… vuelve a intentarlo.",
+  "Podrías engañar a un trol, pero no a esta puerta.",
+  "La puerta permanece sellada… tu palabra carece de poder.",
+  "Has pronunciado la clave equivocada. Los muros susurran tu error.",
+  "El encantamiento no responde… quizá intentes otra vez, forastero.",
+  "La contraseña es falsa. Los espíritus de Azkaban ríen en la oscuridad.",
+  "¡No, no, no! Esa no es la clave… la clave verdadera duele recordarla…",
+  "Te equivocas… como todos… siempre se equivocan. Vuelve a intentarlo.",
+  "La contraseña… no… esa no… ¡los dementores vendrán si sigues fallando!",
+  "Otra vez mal… yo también olvidé la mía una vez… y perdí años en la neblina…",
+  "Alto ahí. La contraseña no coincide. Retrocede, visitante.",
+  "Acceso denegado. Ni siquiera los condenados usan palabras tan torpes.",
+  "Contraseña errónea. Las puertas de esta prisión no ceden tan fácil."
+];
+
+function checkAuth(req, res, next) {
+  const pass = req.query.pass || req.body.pass || '';
+  if (pass === ADMIN_PASSWORD) {
+    next();
+  } else {
+    const randomMsg = deniedMessages[Math.floor(Math.random() * deniedMessages.length)];
+    res.status(403).send(`<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"><title>Acceso Denegado</title><style>${css}</style></head>
+<body>
+  <div class="header-banner top" style="background-image:url('/cover/secuendarias/portada11.png');"></div>
+  <div class="overlay top">
+    <div class="top-buttons secondary"><a href="/">Inicio</a></div>
+    <h1>Azkaban</h1>
+    <div class="top-buttons">
+      <a href="/libros">Libros</a>
+      <a href="/autores">Autores</a>
+      <a href="/sagas">Sagas</a>
+    </div>
+  </div>
+  <div style="padding:60px 40px; color:#eee; text-align:center;">
+    <h2 style="font-family:'MedievalSharp', cursive; font-size:28px; color:#19E6D6; margin-bottom:20px;">🔒 Acceso Denegado</h2>
+    <p style="font-size:1.2em; line-height:1.8; max-width:700px; margin:0 auto; color:#fff;">${randomMsg}</p>
+    <p style="margin-top:30px;">
+      <a href="/" class="button">← Volver</a>
+    </p>
+  </div>
+</body>
+</html>`);
+  }
+}
+
 // ------------------ CSS ------------------
 const css = `
 @import url('https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap');
@@ -68,15 +141,20 @@ h1 { font-family:'MedievalSharp', cursive; font-size:48px; color:#fff; margin:0;
 .top-buttons.secondary a { color:#fff; text-decoration:none; border:none; padding:4px 8px; background:transparent; font-size:16px; }
 
 form { margin:20px 0; text-align:center; }
-input[type="search"], select { padding:6px 8px; margin:0 4px; font-size:14px; border-radius:6px; border:1px solid #555; background:#111; color:#fff; }
+input[type="search"] { padding:6px 8px; margin:0 4px; font-size:12px; border-radius:6px; border:2px solid #19E6D6; background:#111; color:#fff; font-family:'MedievalSharp', cursive; font-weight:normal; transition:0.2s; }
+input[type="search"]:focus { outline:none; border-color:#19E6D6; box-shadow:0 0 8px rgba(25,230,214,0.4); }
+select { padding:6px 8px; margin:0 4px; font-size:12px; border-radius:6px; border:2px solid #fff; background:#111; color:#fff; font-family:'MedievalSharp', cursive; font-weight:normal; transition:0.2s; }
+select:focus { outline:none; border-color:#fff; box-shadow:0 0 8px rgba(255,255,255,0.4); }
+button[type="submit"] { padding:6px 12px; font-family:'MedievalSharp', cursive; font-weight:normal; font-size:12px; border:2px solid #19E6D6; background:#111; color:#fff; border-radius:6px; cursor:pointer; transition:0.2s; }
+button[type="submit"]:hover { background:#19E6D6; color:#000; }
 
-#grid { text-align:center; overflow-y:auto; padding:12px 8px 40px 8px; }
+#grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(120px, 1fr)); gap:30px; padding:30px 20px 40px 20px; max-width:100%; margin:0 auto; }
 .book { display:inline-block; vertical-align:top; width:110px; min-height:160px; background:rgba(17,17,17,0.9); padding:6px; border-radius:8px; border:1px solid rgba(255,255,255,0.06); margin:4px; text-align:center; word-wrap:break-word; transition:opacity 0.3s, transform 0.2s; }
 .book img { width:80px; height:120px; border-radius:5px; object-fit:cover; margin-bottom:4px; }
 .title { font-size:12px; font-weight:700; color:#eee; font-family:'MedievalSharp', cursive; margin-bottom:2px; }
 .author-span a, .number-span a { color:#fff; text-decoration:none; font-family:'MedievalSharp', cursive; font-size:12px; font-weight:400; }
 .author-span, .number-span { font-size:12px; color:#fff; font-family:'MedievalSharp', cursive; font-weight:400; }
-.book { display:inline-block; vertical-align:top; width:130px; min-height:180px; background:linear-gradient(180deg, rgba(18,18,18,0.92), rgba(12,12,12,0.9)); padding:10px; border-radius:10px; border:1px solid rgba(255,255,255,0.04); margin:6px; text-align:center; word-wrap:break-word; transition:opacity 0.3s, transform 0.15s; box-shadow:0 6px 18px rgba(0,0,0,0.6); }
+.book { position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; vertical-align:top; width:100%; min-height:auto; background:linear-gradient(180deg, rgba(18,18,18,0.92), rgba(12,12,12,0.9)); padding:8px; border-radius:10px; border:1px solid rgba(255,255,255,0.04); text-align:center; word-wrap:break-word; transition:opacity 0.3s, transform 0.15s; box-shadow:0 6px 18px rgba(0,0,0,0.6); }
 .book img { width:90px; height:140px; border-radius:6px; object-fit:cover; margin-bottom:8px; display:block; margin-left:auto; margin-right:auto; }
 .title { font-size:14px; font-weight:700; color:#fff; font-family:'MedievalSharp', cursive; margin:0 0 6px 0; padding-bottom:6px; border-bottom:1px solid rgba(255,255,255,0.04); }
 .title a { color: inherit; text-decoration: none; display:block; padding-bottom:6px; }
@@ -88,6 +166,38 @@ input[type="search"], select { padding:6px 8px; margin:0 4px; font-size:14px; bo
 .author-span a:hover, .number-span a:hover { color:#fff; text-decoration:none; opacity:0.9; }
 a.button { display:inline-block; margin:10px; text-decoration:none; padding:14px 28px; background:#222; color:#fff; border-radius:8px; font-size:20px; font-weight:bold; transition:0.2s; }
 a.button:hover { background:#444; }
+
+/* Avatares para autores y emblemas para sagas */
+.card-block { display:flex; flex-direction:column; align-items:center; gap:8px; }
+.avatar-rect { width:90px; height:120px; border-radius:8px; background:linear-gradient(160deg, rgba(40,40,40,0.9), rgba(18,18,18,0.9)); border:1px solid rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; font-family:'MedievalSharp', cursive; font-size:32px; color:#fff; letter-spacing:1px; text-shadow:0 2px 6px rgba(0,0,0,0.6); }
+.count-badge { margin-top:-4px; font-size:11px; color:#19E6D6; background:rgba(25,230,214,0.12); border:1px solid rgba(25,230,214,0.5); padding:3px 8px; border-radius:999px; font-family:Garamond, serif; }
+.emblem-rect { width:90px; height:120px; border-radius:8px; background:linear-gradient(180deg, rgba(18,18,18,0.95), rgba(8,8,8,0.9)); border:1px solid rgba(25,230,214,0.35); position:relative; display:flex; align-items:center; justify-content:center; }
+.emblem-rect svg { width:48px; height:48px; fill:none; stroke:#19E6D6; stroke-width:2; filter:drop-shadow(0 0 4px rgba(25,230,214,0.5)); }
+.book:hover { transform:translateY(-2px); box-shadow:0 10px 24px rgba(0,0,0,0.35); }
+
+/* Checkbox de selección en esquina */
+.book-checkbox { appearance:none; -webkit-appearance:none; position:absolute; top:4px; right:2px; width:14px; height:14px; border:1.5px solid rgba(255,255,255,0.4); border-radius:50%; background:rgba(0,0,0,0.8); cursor:pointer; display:grid; place-items:center; transition:0.15s ease; z-index:10; }
+.book-checkbox:hover { border-color:rgba(255,255,255,0.6); }
+.book-checkbox:focus { outline:none; box-shadow:0 0 6px rgba(25,230,214,0.5); }
+.book-checkbox::after { content:""; width:8px; height:8px; border-radius:1px; clip-path:polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0, 43% 62%); background:transparent; transform:scale(0); transition:0.15s ease; }
+.book-checkbox:checked { border-color:#19E6D6; background:rgba(25,230,214,0.3); box-shadow:0 0 0 1px rgba(25,230,214,0.4), 0 0 8px rgba(25,230,214,0.4); }
+.book-checkbox:checked::after { background:#19E6D6; transform:scale(1); filter:drop-shadow(0 0 3px rgba(25,230,214,0.6)); }
+
+/* Modal login para stats */
+#login-modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; justify-content:center; align-items:center; }
+#login-modal.active { display:flex; }
+.login-box { background:linear-gradient(135deg, rgba(18,18,18,0.95), rgba(12,12,12,0.9)); border:2px solid rgba(25,230,214,0.5); border-radius:12px; padding:40px; text-align:center; max-width:400px; box-shadow:0 8px 32px rgba(0,0,0,0.8); }
+.login-box h2 { font-family:'MedievalSharp', cursive; color:#19E6D6; font-size:24px; margin:0 0 20px 0; }
+.login-box input { width:100%; padding:12px; margin:10px 0; border:1px solid rgba(25,230,214,0.4); background:rgba(25,25,25,0.8); color:#fff; border-radius:6px; font-size:14px; box-sizing:border-box; }
+.login-box input:focus { outline:none; border-color:#19E6D6; box-shadow:0 0 8px rgba(25,230,214,0.4); }
+.login-box button { padding:10px 20px; margin:10px 5px; border:none; border-radius:6px; font-weight:bold; cursor:pointer; background:#19E6D6; color:#000; font-size:14px; }
+.login-box button:hover { background:#1dd4c8; }
+.login-box button.cancel { background:rgba(255,255,255,0.1); color:#fff; }
+.login-box button.cancel:hover { background:rgba(255,255,255,0.2); }
+.hidden-stats-btn { position:fixed; bottom:20px; right:20px; width:44px; height:44px; background:transparent; border:1px solid #19E6D6; border-radius:50%; color:#19E6D6; cursor:pointer; z-index:100; transition:0.25s; display:flex; align-items:center; justify-content:center; padding:0; }
+.hidden-stats-btn svg { width:22px; height:22px; fill:none; stroke:#19E6D6; stroke-width:2.2; filter:drop-shadow(0 0 4px rgba(25,230,214,0.4)); }
+.hidden-stats-btn:hover { box-shadow:0 0 10px rgba(25,230,214,0.4), 0 0 20px rgba(25,230,214,0.2); transform:scale(1.08); }
+
 /* ensure content sits below fixed top banner */
 body { padding-top:300px; }
 `;
@@ -150,6 +260,31 @@ function getCoverForBook(bookId) {
   return coverImages[index];
 }
 
+function sagaEmblemSvg(name) {
+  const icons = [
+    '<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 4 L40 18 L24 44 L8 18 Z" /><path d="M24 12 L32 20 L24 36 L16 20 Z" /></svg>',
+    '<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 6 L40 14 V26 c0 8-7 14-16 18-9-4-16-10-16-18V14 Z" /><path d="M16 18 L24 22 L32 18" /></svg>',
+    '<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M8 12 L22 10 V38 L8 40 Z" /><path d="M40 12 L26 10 V38 L40 40 Z" /><path d="M22 24 L26 24" /></svg>',
+    '<svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="16" /><path d="M24 8 V16" /><path d="M24 32 V40" /><path d="M16 24 H8" /><path d="M40 24 H32" /></svg>'
+  ];
+  const sum = (name || '').split('').reduce((acc,c)=>acc + c.charCodeAt(0), 0);
+  return icons[sum % icons.length];
+}
+
+function azkbanSymbol(text) {
+  const symbols = [
+    '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#19E6D6" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5m0 4v1"/></svg>', // Prisión
+    '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#19E6D6" stroke-width="2"><path d="M4 7h16M4 7v10c0 2 2 4 8 4s8-2 8-4V7M8 11v6M12 11v6M16 11v6"/></svg>', // Rejas
+    '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#19E6D6" stroke-width="2"><path d="M12 2c-5.5 0-10 4.5-10 10s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2m0 4v6m0 4v1"/></svg>', // Oscuridad
+    '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#19E6D6" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>', // Estrella malvada
+    '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#19E6D6" stroke-width="2"><path d="M3 12c0-3.314 2.686-6 6-6h6c3.314 0 6 2.686 6 6s-2.686 6-6 6H9c-3.314 0-6-2.686-6-6z"/><path d="M8 12h8"/></svg>', // Cápsula
+    '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#19E6D6" stroke-width="2"><path d="M6 12h12M12 6v12M4 10h2M18 10h2M4 14h2M18 14h2"/></svg>', // Cruz
+    '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#19E6D6" stroke-width="2"><circle cx="12" cy="12" r="8"/><path d="M8 12l4-4 4 4M8 12l4 4 4-4"/></svg>' // Espiral
+  ];
+  const sum = (text || '').split('').reduce((acc,c)=>acc + c.charCodeAt(0), 0);
+  return symbols[sum % symbols.length];
+}
+
 // ------------------ SINOPSIS FETCH ------------------
 async function fetchSynopsis(title, author) {
   // Use Open Library to try to fetch a description
@@ -201,21 +336,25 @@ function ordenarBooks(books, criterio, tipo = null) {
 
 // ------------------ RENDER ------------------
 function renderBookPage({ libros, titlePage, tipo, nombre, req, noResultsHtml }) {
-  const orden = (req && req.query.ordenar) || 'alfabetico';
+  const orden = (req && req.query.orden) || 'alfabetico';
   libros = ordenarBooks(libros, orden, tipo);
-  const maxHeight = 180;
   let booksHtml = libros.map(book => {
     const cover = getCoverForBook(book.id);
     const imgHtml = cover ? `<img src="${cover}" />` : `<div style="width:80px;height:120px;background:#333;border-radius:5px;"></div>`;
-    const title = book.title || (book.name ? book.name.replace(/\.[^/.]+$/, "") : 'Sin título');
+    // SIEMPRE usar solo datos del JSON
+    const title = book.title || 'Sin título';
     const author = book.author || 'Desconocido';
     const sagaName = book.saga?.name || '';
-    const sagaHtml = sagaName ? `<div class="number-span"><a href="/saga?name=${encodeURIComponent(sagaName)}">${sagaName}</a></div>` : '';
+    const sagaNum = book.saga?.number || '';
+    // Si estamos en página de saga, mostrar número; si no, no mostrar
+    const sagaDisplay = (tipo === 'saga' && sagaNum) ? `${sagaName} #${sagaNum}` : sagaName;
+    const sagaHtml = sagaName ? `<div class="number-span"><a href="/saga?name=${encodeURIComponent(sagaName)}">${sagaDisplay}</a></div>` : '';
     const authorHtml = `<div class="author-span"><a href="/autor?name=${encodeURIComponent(author)}">${author}</a></div>`;
     // link image and title to detail page
     const imgLink = `<a href="/libro?id=${encodeURIComponent(book.id)}">${imgHtml}</a>`;
     const titleLink = `<a href="/libro?id=${encodeURIComponent(book.id)}">${title}</a>`;
-    return `<div class="book" style="min-height:${maxHeight}px">${imgLink}<div class="title">${titleLink}</div>${authorHtml}${sagaHtml}<div class="meta"><a href="/download?id=${encodeURIComponent(book.id)}">Descargar</a></div></div>`;
+    const checkbox = `<input type="checkbox" class="book-checkbox" value="${book.id}" title="Seleccionar para descargar en ZIP">`;
+    return `<div class="book">${checkbox}${imgLink}<div class="title">${titleLink}</div>${authorHtml}${sagaHtml}<div class="meta"><a href="/download?id=${encodeURIComponent(book.id)}">Descargar</a></div></div>`;
   }).join('');
 
   if (!booksHtml || booksHtml.trim() === '') {
@@ -243,7 +382,7 @@ function renderBookPage({ libros, titlePage, tipo, nombre, req, noResultsHtml })
         <option value="recientes" ${orden==='recientes'?'selected':''}>Más recientes</option>
         ${tipo==='saga'?`<option value="numero" ${orden==='numero'?'selected':''}>#Número</option>`:''}
       </select>
-      ${tipo==='libros'?`<button type="button" id="multi-download-btn" style="display:none;padding:6px 12px;border-radius:8px;border:1px solid #19E6D6;background:#19E6D6;color:#000;font-family:'MedievalSharp', cursive;font-size:14px;cursor:pointer;text-shadow:0 1px 2px rgba(255,255,255,0.8);box-shadow:0 4px 12px rgba(0,0,0,0.4);">Descarga múltiple</button>`:''}
+      <button type="button" id="multi-download-btn" style="display:none;padding:6px 12px;border-radius:8px;border:1px solid #19E6D6;background:#19E6D6;color:#000;font-family:'MedievalSharp', cursive;font-size:14px;cursor:pointer;text-shadow:0 1px 2px rgba(255,255,255,0.8);box-shadow:0 4px 12px rgba(0,0,0,0.4);">Descarga múltiple</button>
     </div>
     <input type="hidden" name="name" value="${nombre}" />
   </form>
@@ -251,7 +390,6 @@ function renderBookPage({ libros, titlePage, tipo, nombre, req, noResultsHtml })
   <p><a href="/${tipo==='autor'?'autores':'sagas'}" class="button">← Volver</a></p>
 
   <script>
-    ${tipo === 'libros' ? `
     // Multi-download button appears when more than one checkbox is selected
     const checkboxes = document.querySelectorAll('.book-checkbox');
     const multiBtn = document.getElementById('multi-download-btn');
@@ -260,7 +398,7 @@ function renderBookPage({ libros, titlePage, tipo, nombre, req, noResultsHtml })
       if (!multiBtn) return;
       const selected = Array.from(checkboxes).filter(cb => cb.checked);
       if (selected.length > 1) {
-        multiBtn.style.display = 'inline-flex';
+        multiBtn.style.display = 'inline-block';
         multiBtn.disabled = false;
         multiBtn.textContent = 'Descarga múltiple (' + selected.length + ')';
       } else {
@@ -310,7 +448,6 @@ function renderBookPage({ libros, titlePage, tipo, nombre, req, noResultsHtml })
     });
     
     updateMultiBtn();
-    ` : ''}
     
     function applyRowFade() {
       const headerHeight = 300;
@@ -367,6 +504,100 @@ app.get('/', (req,res)=>{
       <a href="/sagas">Sagas</a>
     </div>
   </div>
+  
+  <!-- Botón flotante de stats -->
+  <button id="stats-btn" style="position:fixed;bottom:20px;right:20px;width:48px;height:48px;border-radius:50%;background:transparent;border:2px solid #19E6D6;cursor:pointer;z-index:100;display:flex;align-items:center;justify-content:center;transition:0.25s;padding:0;color:#19E6D6;">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M13 2l-8 12h7l-7 8 12-14h-7l3-6z"></path>
+    </svg>
+  </button>
+  
+  <!-- Modal de login para stats -->
+  <div id="login-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:9999;justify-content:center;align-items:center;">
+    <div style="background:linear-gradient(135deg, rgba(18,18,18,0.95), rgba(12,12,12,0.9));border:2px solid rgba(25,230,214,0.5);border-radius:12px;padding:40px;text-align:center;max-width:400px;box-shadow:0 8px 32px rgba(0,0,0,0.8);">
+      <h2 style="font-family:'MedievalSharp', cursive;color:#19E6D6;font-size:24px;margin:0 0 20px 0;">🔒 Acceso a Stats</h2>
+      <input type="password" id="pass-input" placeholder="Contraseña" style="width:100%;padding:12px;margin:10px 0;border:2px solid #19E6D6;background:rgba(25,25,25,0.8);color:#fff;border-radius:6px;font-size:14px;box-sizing:border-box;outline:none;transition:all 0.3s ease;" onkeypress="if(event.key==='Enter')document.getElementById('login-btn').click();">
+      <div id="error-message" style="display:none;margin-top:10px;color:#ff6b6b;font-family:'MedievalSharp', cursive;font-size:13px;line-height:1.4;min-height:50px;"></div>
+      <div style="margin-top:20px;">
+        <button id="login-btn" style="padding:10px 20px;margin:10px 5px;border:none;border-radius:6px;font-weight:bold;cursor:pointer;background:#19E6D6;color:#000;font-size:14px;">Entrar</button>
+        <button id="cancel-btn" style="padding:10px 20px;margin:10px 5px;border:none;border-radius:6px;font-weight:bold;cursor:pointer;background:rgba(255,255,255,0.1);color:#fff;font-size:14px;">Cancelar</button>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    const errorMessages = [
+      "La clave que murmuras no rompe mis cadenas… Inténtalo otra vez, forastero.",
+      "Ese no es el conjuro… aquí dentro lo sabríamos. Prueba de nuevo.",
+      "Tus palabras golpean la puerta, pero ninguna abre los barrotes. Contraseña incorrecta…",
+      "He escuchado miles de claves en esta celda… la tuya no es la correcta.",
+      "Si esa es tu mejor contraseña, estaremos encerrados mucho tiempo…",
+      "No… no… esa no es… la correcta sigue escapando, como mi cordura…",
+      "La contraseña… la contraseña verdadera grita en la oscuridad, pero esa no es.",
+      "¿Otra clave falsa? Me recuerda a las promesas que me trajeron aquí…",
+      "Intentas escapar, ¿verdad? Esa palabra no abriría ni una celda oxidada.",
+      "¿Contraseña? Sí. ¿Correcta? No. Aquí hasta los dementores se reirían…",
+      "Ni los dementores aceptarían esa clave… vuelve a intentarlo.",
+      "Podrías engañar a un trol, pero no a esta puerta.",
+      "La puerta permanece sellada… tu palabra carece de poder.",
+      "Has pronunciado la clave equivocada. Los muros susurran tu error.",
+      "El encantamiento no responde… quizá intentes otra vez, forastero.",
+      "La contraseña es falsa. Los espíritus de Azkaban ríen en la oscuridad.",
+      "¡No, no, no! Esa no es la clave… la clave verdadera duele recordarla…",
+      "Te equivocas… como todos… siempre se equivocan. Vuelve a intentarlo.",
+      "La contraseña… no… esa no… ¡los dementores vendrán si sigues fallando!",
+      "Otra vez mal… yo también olvidé la mía una vez… y perdí años en la neblina…",
+      "Alto ahí. La contraseña no coincide. Retrocede, visitante.",
+      "Acceso denegado. Ni siquiera los condenados usan palabras tan torpes.",
+      "Contraseña errónea. Las puertas de esta prisión no ceden tan fácil."
+    ];
+    
+    const statsBtn = document.getElementById('stats-btn');
+    const loginModal = document.getElementById('login-modal');
+    const loginBtn = document.getElementById('login-btn');
+    const cancelBtn = document.getElementById('cancel-btn');
+    const passInput = document.getElementById('pass-input');
+    const errorMessage = document.getElementById('error-message');
+    
+    statsBtn.addEventListener('click', () => {
+      loginModal.style.display = 'flex';
+      passInput.focus();
+      errorMessage.style.display = 'none';
+      passInput.value = '';
+    });
+    
+    cancelBtn.addEventListener('click', () => {
+      loginModal.style.display = 'none';
+      passInput.value = '';
+      errorMessage.style.display = 'none';
+    });
+    
+    loginBtn.addEventListener('click', () => {
+      if (passInput.value === '252914') {
+        window.location.href = '/stats?pass=' + encodeURIComponent(passInput.value);
+      } else {
+        const randomMsg = errorMessages[Math.floor(Math.random() * errorMessages.length)];
+        errorMessage.textContent = randomMsg;
+        errorMessage.style.display = 'block';
+        passInput.value = '';
+        passInput.focus();
+      }
+    });
+    
+    passInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') loginBtn.click();
+    });
+    
+    statsBtn.addEventListener('mouseenter', () => {
+      statsBtn.style.boxShadow = '0 0 15px rgba(25,230,214,0.5)';
+      statsBtn.style.transform = 'scale(1.1)';
+    });
+    
+    statsBtn.addEventListener('mouseleave', () => {
+      statsBtn.style.boxShadow = 'none';
+      statsBtn.style.transform = 'scale(1)';
+    });
+  </script>
 </body>
 </html>`);
 });
@@ -389,24 +620,13 @@ app.get('/libros', async (req,res)=>{
     }
 
     files = ordenarBooks(files, orden);
-    // Build an array of metadata-shaped objects for rendering so titles/authors/sagas are available
+    // Build an array of metadata-shaped objects for rendering - SOLO desde JSON
     const librosForRender = files.map(f => {
       const meta = bookMetadata.find(b => b.id === f.id);
       if (meta) return { ...meta, id: f.id };
-      // fallback: parse filename like in actualizarBooksJSON
-      const base = (f.name || '').replace(/\.[^/.]+$/, "");
-      const parts = base.split(' - ');
-      const title = parts[0]?.trim() || f.name || 'Sin título';
-      const author = parts[1]?.trim() || 'Desconocido';
-      let saga = null;
-      if (parts[2]) {
-        const sagaMatch = parts[2].match(/^(.*?)(?:\s*#(\d+))?$/);
-        if (sagaMatch) {
-          saga = { name: sagaMatch[1].trim() };
-          if (sagaMatch[2]) saga.number = parseInt(sagaMatch[2], 10);
-        }
-      }
-      return { id: f.id, title, author, saga };
+      // Si no está en JSON, algo falló
+      console.warn(`[WARN] Libro ${f.id} no encontrado en JSON`);
+      return null;
     }).filter(x => x);
 
     const noResultsHtml = `<div style="padding:40px;color:#eee;"><h2>¡Oh, qué desastre!</h2><p style="font-size: 1.2em; line-height: 1.5;"><strong>Un prisionero de Azkaban murmura:</strong> "Claramente, el libro que buscas ha sido confiscado por el Ministerio por 'contenido altamente peligroso'... O tal vez, simplemente no existe. Vuelve cuando tu búsqueda sea menos patética."</p></div>`;
@@ -419,7 +639,10 @@ app.get('/autores', (req,res)=>{
   const query = (req.query.buscar||'').trim().toLowerCase();
   let autores = [...new Set(bookMetadata.map(b=>b.author).filter(a=>a))].sort();
   if(query) autores = autores.filter(a=>a.toLowerCase().includes(query));
-  const authorsHtml = autores.map(a=>`<div class="book" style="min-height:100px"><div class="title">${a}</div><div class="meta"><a href="/autor?name=${encodeURIComponent(a)}">Ver libros</a></div></div>`).join('');
+  const authorsHtml = autores.map(a=>{
+    const initials = a.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0, 3);
+    return `<div class="book"><div style="width:50px; height:50px; border:2px solid #19E6D6; border-radius:50%; display:flex; align-items:center; justify-content:center; margin-bottom:8px;"><span style="font-family:'MedievalSharp', cursive; color:#19E6D6; font-size:18px; font-weight:normal;">${initials}</span></div><div class="title">${a}</div><div class="meta"><a href="/autor?name=${encodeURIComponent(a)}">Ver libros</a></div></div>`;
+  }).join('');
   res.send(`<!DOCTYPE html>
 <html lang="es">
 <head><meta charset="UTF-8"><title>Autores</title><style>${css}</style></head>
@@ -490,7 +713,10 @@ app.get('/sagas', (req,res)=>{
   const query = (req.query.buscar||'').trim().toLowerCase();
   let sagas = [...new Set(bookMetadata.map(b=>b.saga?.name).filter(a=>a))].sort();
   if(query) sagas = sagas.filter(s=>s.toLowerCase().includes(query));
-  const sagasHtml = sagas.map(s=>`<div class="book" style="min-height:100px"><div class="title">${s}</div><div class="meta"><a href="/saga?name=${encodeURIComponent(s)}">Ver libros</a></div></div>`).join('');
+  const sagasHtml = sagas.map(s=>{
+    const symbol = azkbanSymbol(s);
+    return `<div class="book"><div style="width:50px; height:50px; border:2px solid #19E6D6; border-radius:50%; display:flex; align-items:center; justify-content:center; margin-bottom:8px;">${symbol}</div><div class="title">${s}</div><div class="meta"><a href="/saga?name=${encodeURIComponent(s)}">Ver libros</a></div></div>`;
+  }).join('');
   res.send(`<!DOCTYPE html>
 <html lang="es">
 <head><meta charset="UTF-8"><title>Sagas</title><style>${css}</style></head>
@@ -636,11 +862,228 @@ app.get('/download', async (req, res) => {
       try { res.status(500).end(); } catch (e) {}
     });
     r.data.pipe(res);
+    downloadCount++;
   } catch (err) {
     console.error('Download failed, falling back to Drive URL:', err && err.message ? err.message : err);
     // fallback: redirect al enlace público de Drive
     return res.redirect(`https://drive.google.com/uc?export=download&id=${id}`);
   }
+});
+
+// Descargar múltiples archivos como ZIP
+app.post('/download-zip', async (req, res) => {
+  const { ids } = req.body;
+  if (!ids || !Array.isArray(ids) || ids.length === 0) {
+    return res.status(400).json({ error: 'IDs inválidos' });
+  }
+
+  try {
+    const archive = archiver('zip', { zlib: { level: 5 } });
+
+    res.setHeader('Content-Type', 'application/zip');
+    res.setHeader('Content-Disposition', 'attachment; filename="libros.zip"');
+
+    archive.on('error', (err) => {
+      console.error('Archive error:', err);
+      if (!res.headersSent) {
+        res.status(500).json({ error: 'Error en ZIP' });
+      }
+    });
+
+    res.on('error', (err) => {
+      console.error('Response error:', err);
+      archive.abort();
+    });
+
+    archive.pipe(res);
+
+    for (const id of ids) {
+      try {
+        const meta = await drive.files.get({ fileId: id, fields: 'name' });
+        const filename = (meta.data && meta.data.name) ? meta.data.name : `file-${id}`;
+        const stream = await drive.files.get({ fileId: id, alt: 'media' }, { responseType: 'stream' });
+        
+        archive.append(stream.data, { name: filename });
+      } catch (err) {
+        console.warn(`Error agregando archivo ${id}:`, err.message);
+      }
+    }
+
+    await archive.finalize();
+    downloadCount++;
+  } catch (err) {
+    console.error('ZIP creation failed:', err);
+    if (!res.headersSent) {
+      res.status(500).json({ error: 'Error creando ZIP: ' + err.message });
+    }
+  }
+});
+
+// Stats dashboard - protegido con contraseña
+app.get('/stats', (req, res) => {
+  const pass = req.query.pass || '';
+  if (pass !== '252914') {
+    const randomMsg = deniedMessages[Math.floor(Math.random() * deniedMessages.length)];
+    return res.status(403).send(`<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"><title>Acceso Denegado</title><style>${css}</style></head>
+<body>
+  <div class="header-banner top" style="background-image:url('/cover/secuendarias/portada11.png');"></div>
+  <div class="overlay top">
+    <div class="top-buttons secondary"><a href="/">Inicio</a></div>
+    <h1>Azkaban</h1>
+    <div class="top-buttons">
+      <a href="/libros">Libros</a>
+      <a href="/autores">Autores</a>
+      <a href="/sagas">Sagas</a>
+    </div>
+  </div>
+  <div style="padding:60px 40px; color:#eee; text-align:center;">
+    <h2 style="font-family:'MedievalSharp', cursive; font-size:28px; color:#19E6D6; margin-bottom:20px;">🔒 Acceso Denegado</h2>
+    <p style="font-size:1.2em; line-height:1.8; max-width:700px; margin:0 auto; color:#fff;">${randomMsg}</p>
+    <p style="margin-top:30px;">
+      <a href="/" class="button">← Volver</a>
+    </p>
+  </div>
+</body>
+</html>`);
+  }
+  
+  // Calcular estadísticas
+  const totalLibros = bookMetadata.length;
+  const totalAutores = [...new Set(bookMetadata.map(b => b.author))].length;
+  const totalSagas = [...new Set(bookMetadata.filter(b => b.saga?.name).map(b => b.saga.name))].length;
+  
+  // Top autores
+  const autorCount = {};
+  bookMetadata.forEach(b => {
+    autorCount[b.author] = (autorCount[b.author] || 0) + 1;
+  });
+  const topAutores = Object.entries(autorCount)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
+    .map(([name, count]) => ({ name, count }));
+  
+  // Top sagas
+  const sagaCount = {};
+  bookMetadata.filter(b => b.saga?.name).forEach(b => {
+    sagaCount[b.saga.name] = (sagaCount[b.saga.name] || 0) + 1;
+  });
+  const topSagas = Object.entries(sagaCount)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
+    .map(([name, count]) => ({ name, count }));
+  
+  const promedioLibrosPorAutor = (totalLibros / totalAutores).toFixed(1);
+  
+  res.send(`<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"><title>Dashboard - Azkaban Reads</title><style>${css}</style></head>
+<body>
+  <div class="header-banner top" style="background-image:url('/cover/secuendarias/portada11.png');"></div>
+  <div class="overlay top">
+    <div class="top-buttons secondary"><a href="/">Inicio</a></div>
+    <h1><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#19E6D6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline; vertical-align:-8px; margin-right:2px;"><path d="M13 2l-8 12h7l-7 8 12-14h-7l3-6z"></path></svg>Dashboard</h1>
+    <div class="top-buttons">
+      <a href="/libros">Libros</a>
+      <a href="/autores">Autores</a>
+      <a href="/sagas">Sagas</a>
+    </div>
+  </div>
+  
+  <div style="padding:40px; max-width:1200px; margin:0 auto;">
+    <!-- Estadísticas principales - más pequeñas -->
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:12px; margin-top:20px; margin-bottom:30px;">
+      <div style="background:linear-gradient(135deg, rgba(25,230,214,0.1), rgba(25,230,214,0.05)); border:2px solid rgba(25,230,214,0.3); border-radius:12px; padding:15px; text-align:center;">
+        <div style="width:32px; height:32px; border:2px solid #19E6D6; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 6px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#19E6D6" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        </div>
+        <div style="font-size:11px; color:#aaa; margin-bottom:6px;">Libros</div>
+        <div style="font-size:24px; color:#19E6D6; font-weight:bold; font-family:'MedievalSharp', cursive;">${totalLibros}</div>
+      </div>
+      
+      <div style="background:linear-gradient(135deg, rgba(25,230,214,0.1), rgba(25,230,214,0.05)); border:2px solid rgba(25,230,214,0.3); border-radius:12px; padding:15px; text-align:center;">
+        <div style="width:32px; height:32px; border:2px solid #19E6D6; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 6px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#19E6D6" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg>
+        </div>
+        <div style="font-size:11px; color:#aaa; margin-bottom:6px;">Autores</div>
+        <div style="font-size:24px; color:#19E6D6; font-weight:bold; font-family:'MedievalSharp', cursive;">${totalAutores}</div>
+      </div>
+      
+      <div style="background:linear-gradient(135deg, rgba(25,230,214,0.1), rgba(25,230,214,0.05)); border:2px solid rgba(25,230,214,0.3); border-radius:12px; padding:15px; text-align:center;">
+        <div style="width:32px; height:32px; border:2px solid #19E6D6; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 6px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#19E6D6" stroke-width="2"><path d="M9 12h.01"/><path d="M15 12h.01"/><path d="M10 16c1 1 2 2 4 2s3-1 4-2"/><path d="M9 5h6M6.5 5h11M2 12c0 2.5 1 4.5 3 5.5m16-1c2-1 3-3 3-5.5 0-5-4.5-9-9-9S3 7 3 12"/></svg>
+        </div>
+        <div style="font-size:11px; color:#aaa; margin-bottom:6px;">Sagas</div>
+        <div style="font-size:24px; color:#19E6D6; font-weight:bold; font-family:'MedievalSharp', cursive;">${totalSagas}</div>
+      </div>
+      
+      <div style="background:linear-gradient(135deg, rgba(25,230,214,0.1), rgba(25,230,214,0.05)); border:2px solid rgba(25,230,214,0.3); border-radius:12px; padding:15px; text-align:center;">
+        <div style="width:32px; height:32px; border:2px solid #19E6D6; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 6px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#19E6D6" stroke-width="2"><path d="M13 2l-8 12h7l-7 8 12-14h-7l3-6z"/></svg>
+        </div>
+        <div style="font-size:11px; color:#aaa; margin-bottom:6px;">Descargas</div>
+        <div style="font-size:24px; color:#19E6D6; font-weight:bold; font-family:'MedievalSharp', cursive;">${downloadCount}</div>
+      </div>
+      
+      <div style="background:linear-gradient(135deg, rgba(25,230,214,0.1), rgba(25,230,214,0.05)); border:2px solid rgba(25,230,214,0.3); border-radius:12px; padding:15px; text-align:center;">
+        <div style="width:32px; height:32px; border:2px solid #19E6D6; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 6px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#19E6D6" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><polyline points="3 6 9 12 3 18"/></svg>
+        </div>
+        <div style="font-size:11px; color:#aaa; margin-bottom:6px;">Promedio</div>
+        <div style="font-size:24px; color:#19E6D6; font-weight:bold; font-family:'MedievalSharp', cursive;">${promedioLibrosPorAutor}</div>
+      </div>
+    </div>
+    
+    <!-- Top Autores -->
+    <div style="margin-top:20px; padding:30px; background:linear-gradient(135deg, rgba(25,25,25,0.95), rgba(18,18,18,0.9)); border:1px solid rgba(25,230,214,0.2); border-radius:12px;">
+      <h3 style="font-family:'MedievalSharp', cursive; color:#19E6D6; margin:0 0 20px 0; font-size:20px;">Top 5 Autores</h3>
+      <div style="display:grid; gap:10px;">
+        ${topAutores.map((a, i) => `
+          <div style="display:flex; align-items:center; justify-content:space-between; padding:12px 15px; background:rgba(25,230,214,0.05); border-left:3px solid #19E6D6; border-radius:6px;">
+            <div style="display:flex; align-items:center; gap:12px;">
+              <div style="width:28px; height:28px; background:#19E6D6; color:#000; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold; font-family:'MedievalSharp', cursive;">${i + 1}</div>
+              <span style="color:#fff; font-family:'MedievalSharp', cursive;">${a.name}</span>
+            </div>
+            <div style="color:#19E6D6; font-weight:bold; font-size:18px; font-family:'MedievalSharp', cursive;">${a.count}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+    
+    <!-- Top Sagas -->
+    <div style="margin-top:30px; padding:30px; background:linear-gradient(135deg, rgba(25,25,25,0.95), rgba(18,18,18,0.9)); border:1px solid rgba(25,230,214,0.2); border-radius:12px;">
+      <h3 style="font-family:'MedievalSharp', cursive; color:#19E6D6; margin:0 0 20px 0; font-size:20px;">Top 5 Sagas</h3>
+      <div style="display:grid; gap:10px;">
+        ${topSagas.map((s, i) => `
+          <div style="display:flex; align-items:center; justify-content:space-between; padding:12px 15px; background:rgba(25,230,214,0.05); border-left:3px solid #19E6D6; border-radius:6px;">
+            <div style="display:flex; align-items:center; gap:12px;">
+              <div style="width:28px; height:28px; background:#19E6D6; color:#000; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold; font-family:'MedievalSharp', cursive;">${i + 1}</div>
+              <span style="color:#fff; font-family:'MedievalSharp', cursive;">${s.name}</span>
+            </div>
+            <div style="color:#19E6D6; font-weight:bold; font-size:18px; font-family:'MedievalSharp', cursive;">${s.count}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+    
+    <!-- Información de la biblioteca -->
+    <div style="margin-top:30px; padding:20px; background:rgba(25,230,214,0.05); border:1px solid rgba(25,230,214,0.2); border-radius:8px;">
+      <h3 style="font-family:'MedievalSharp', cursive; color:#19E6D6; margin-top:0;">Información de la Biblioteca</h3>
+      <p style="color:#ccc; line-height:1.8; margin:0;">
+        <strong>Última actualización:</strong> ${new Date().toLocaleString('es-ES')}<br>
+        <strong>Versión:</strong> Azkaban Reads v1.0<br>
+        <strong>Estado:</strong> En línea<br>
+        <strong>Total de Elementos:</strong> ${totalLibros + totalAutores + totalSagas}
+      </p>
+    </div>
+    
+    <p style="text-align:center; margin-top:30px;">
+      <a href="/" class="button">← Volver a Inicio</a>
+    </p>
+  </div>
+</body>
+</html>`);
 });
 
 app.listen(PORT,()=>console.log(`Servidor escuchando en puerto ${PORT}`));

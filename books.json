@@ -1417,5 +1417,68 @@
     "title": "pg55-images-3",
     "author": "Desconocido",
     "saga": null
+  },
+  {
+    "id": "1W602DeeFwVSWLryLuEjOpzBSScNid80H",
+    "title": "Las dos torres",
+    "author": "J. R. R. Tolkien",
+    "saga": {
+      "name": "El Señor de los Anillos",
+      "number": 2
+    }
+  },
+  {
+    "id": "1Vf3bYvLdCmdgtijjhhDUUIvS05G8NF8U",
+    "title": "El Senor de los Anillos",
+    "author": "J. R. R. Tolkien",
+    "saga": {
+      "name": "El Señor de los Anillos",
+      "number": 0
+    }
+  },
+  {
+    "id": "1vvuEc3GkvoQp0HlpYOrwxTyl0TvkNu0a",
+    "title": "La comunidad del anillo",
+    "author": "J. R. R. Tolkien",
+    "saga": {
+      "name": "El Señor de los Anillos",
+      "number": 1
+    }
+  },
+  {
+    "id": "1VRR76_Mz0flPMXFvk8Hup2eO2yNY3y3T",
+    "title": "El retorno del rey",
+    "author": "J. R. R. Tolkien",
+    "saga": {
+      "name": "El Señor de los Anillos",
+      "number": 3
+    }
+  },
+  {
+    "id": "1I-YYcKvqSiYWaAfRVWRcg2gwRieSOg5X",
+    "title": "Apendices",
+    "author": "J.R.R. Tolkien",
+    "saga": {
+      "name": "El Señor de los Anillos",
+      "number": 4
+    }
+  },
+  {
+    "id": "15KOBswQD-bXg1lQGvK3jbzAFSuGz6GoM",
+    "title": "La esfinge de los hielos",
+    "author": "Julio Verne",
+    "saga": null
+  },
+  {
+    "id": "1blEe4WUnw0CgVLuEzwj9ECasjn7Rlda-",
+    "title": "Aventuras de un nino irlandes",
+    "author": "Julio Verne",
+    "saga": null
+  },
+  {
+    "id": "1V_qQpEMdHGpwPkIp6aDGD2w6H66reENH",
+    "title": "El faro del fin del mundo",
+    "author": "Julio Verne",
+    "saga": null
   }
 ]
