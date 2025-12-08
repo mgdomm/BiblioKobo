@@ -8,7 +8,7 @@ const archiver = require('archiver');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const GOOGLE_BOOKS_API_KEY = process.env.GOOGLE_BOOKS_API_KEY || 'AIzaSyB0MQVmhlniPDBo8llZzq9VTgwcbr3cjuE';
+const GOOGLE_BOOKS_API_KEY = process.env.GOOGLE_BOOKS_API_KEY || 'AIzaSyA4Rm0J2mdQuCK7MChxJP-SnMrV9HVrnGo';
 
 // Middleware para parsear JSON
 app.use(express.json());
@@ -25,14 +25,24 @@ const auth = new google.auth.GoogleAuth({
 const drive = google.drive({ version: 'v3', auth });
 const folderId = '1-4G6gGNtt6KVS90AbWbtH3JlpetHrPEi';
 
-// Leer imágenes cover locales (solo .png)
+// Leer imágenes cover locales (solo .png directamente en /cover, sin subcarpetas)
 let coverImages = [];
 try {
   coverImages = fs.readdirSync(path.join(__dirname, 'cover'))
-    .filter(f => f.endsWith('.png'))
+    .filter(f => {
+      const fullPath = path.join(__dirname, 'cover', f);
+      return fs.statSync(fullPath).isFile() && f.endsWith('.png');
+    })
     .map(f => `/cover/${f}`);
+  console.log(`✅ ${coverImages.length} imágenes de portada disponibles para fallback`);
 } catch (err) {
   console.warn('No se encontró la carpeta cover. Se usarán placeholders.');
+}
+
+// Función para obtener imagen aleatoria de fallback
+function getRandomCoverImage() {
+  if (coverImages.length === 0) return null;
+  return coverImages[Math.floor(Math.random() * coverImages.length)];
 }
 
 // Leer o crear JSON con metadata de libros
@@ -457,6 +467,71 @@ async function fetchRating(title, author, isbn = null) {
   return 0;
 }
 
+// Control de rate limiting para Google Books API
+let lastGoogleBooksCall = 0;
+const GOOGLE_BOOKS_MIN_DELAY = 800; // 800ms entre llamadas
+
+// Obtener datos completos del libro desde Google Books
+async function fetchGoogleBooksData(title, author, isbn = null) {
+  let retries = 0;
+  const maxRetries = 2;
+  
+  while (retries <= maxRetries) {
+    try {
+      // Esperar para respetar rate limiting
+      const timeSinceLastCall = Date.now() - lastGoogleBooksCall;
+      if (timeSinceLastCall < GOOGLE_BOOKS_MIN_DELAY) {
+        const waitTime = GOOGLE_BOOKS_MIN_DELAY - timeSinceLastCall;
+        await new Promise(r => setTimeout(r, waitTime));
+      }
+      
+      lastGoogleBooksCall = Date.now();
+      
+      const query = isbn || `intitle:${title} inauthor:${author}`;
+      const keyParam = GOOGLE_BOOKS_API_KEY ? `&key=${GOOGLE_BOOKS_API_KEY}` : '';
+      const url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&maxResults=1&printType=books${keyParam}`;
+      
+      const resp = await axios.get(url, { timeout: 5000 });
+      const item = resp.data?.items?.[0];
+      
+      if (item?.volumeInfo) {
+        const vol = item.volumeInfo;
+        return {
+          title: vol.title || null,
+          authors: vol.authors || [],
+          publisher: vol.publisher || null,
+          publishedDate: vol.publishedDate || null,
+          description: vol.description || null,
+          pageCount: vol.pageCount || null,
+          categories: vol.categories || [],
+          averageRating: vol.averageRating || null,
+          ratingsCount: vol.ratingsCount || null,
+          language: vol.language || null,
+          imageLinks: vol.imageLinks || null,
+          previewLink: vol.previewLink || null
+        };
+      }
+      return null;
+    } catch (err) {
+      retries++;
+      if (err?.response?.status === 429) {
+        // Rate limit: esperar más tiempo antes de reintentar
+        if (retries <= maxRetries) {
+          const backoffDelay = Math.pow(2, retries) * 2000; // 4s, 8s
+          console.warn(`[fetchGoogleBooksData] 429 - Reintentando en ${backoffDelay}ms (intento ${retries}/${maxRetries})`);
+          await new Promise(r => setTimeout(r, backoffDelay));
+          lastGoogleBooksCall = 0; // Reset para poder hacer nueva llamada
+          continue;
+        }
+      }
+      console.warn(`[fetchGoogleBooksData] Error: ${err?.message}`);
+      return null;
+    }
+  }
+  
+  return null;
+}
+
 async function fetchRatingOpenLibrary(title, author) {
   try {
     const sUrl = `https://openlibrary.org/search.json?title=${encodeURIComponent(title||'')}&author=${encodeURIComponent(author||'')}&limit=3`;
@@ -595,9 +670,19 @@ function ordenarBooks(books, criterio, tipo = null) {
 function renderBookPage({ libros, titlePage, tipo, nombre, req, noResultsHtml }) {
   const orden = (req && (req.query.ordenar || req.query.orden)) || 'alfabetico';
   libros = ordenarBooks(libros, orden, tipo);
-  let booksHtml = libros.map(book => {
-    const cover = getCoverForBook(book.id);
-    const imgHtml = cover ? `<img src="${cover}" />` : `<div style="width:80px;height:120px;background:#333;border-radius:5px;"></div>`;
+  
+  // Paginación
+  const itemsPerPage = 25;
+  const currentPage = parseInt(req?.query?.page || '1', 10);
+  const totalItems = libros.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedLibros = libros.slice(startIndex, endIndex);
+  
+  let booksHtml = paginatedLibros.map(book => {
+    const cover = book.coverUrl || getCoverForBook(book.id);
+    const imgHtml = cover ? `<img src="${cover}" data-book-id="${book.id}" data-title="${book.title}" data-author="${book.author}" />` : `<div style="width:80px;height:120px;background:#333;border-radius:5px;" data-book-id="${book.id}" data-title="${book.title}" data-author="${book.author}"></div>`;
     // SIEMPRE usar solo datos del JSON
     const title = book.title || 'Sin título';
     const author = book.author || 'Desconocido';
@@ -642,8 +727,18 @@ function renderBookPage({ libros, titlePage, tipo, nombre, req, noResultsHtml })
       <button type="button" id="multi-download-btn" style="display:none;padding:6px 12px;border-radius:8px;border:1px solid #19E6D6;background:#19E6D6;color:#000;font-family:'MedievalSharp', cursive;font-size:14px;cursor:pointer;text-shadow:0 1px 2px rgba(255,255,255,0.8);box-shadow:0 4px 12px rgba(0,0,0,0.4);">Descarga múltiple</button>
     </div>
     <input type="hidden" name="name" value="${nombre}" />
+    <input type="hidden" name="page" value="${currentPage}" />
   </form>
   <div id="grid">${booksHtml}</div>
+  
+  ${totalPages > 1 ? `
+  <div style="text-align:center;margin:30px 0;display:flex;justify-content:center;align-items:center;gap:10px;flex-wrap:wrap;">
+    ${currentPage > 1 ? `<a href="?${new URLSearchParams({...req.query, page: currentPage - 1}).toString()}" class="button">← Anterior</a>` : ''}
+    <span style="color:#19E6D6;font-family:'MedievalSharp',cursive;font-size:16px;">Página ${currentPage} de ${totalPages}</span>
+    ${currentPage < totalPages ? `<a href="?${new URLSearchParams({...req.query, page: currentPage + 1}).toString()}" class="button">Siguiente →</a>` : ''}
+  </div>
+  ` : ''}
+  
   <p><a href="/${tipo==='autor'?'autores':'sagas'}" class="button">← Volver</a></p>
 
   <script>
@@ -705,6 +800,55 @@ function renderBookPage({ libros, titlePage, tipo, nombre, req, noResultsHtml })
     });
     
     updateMultiBtn();
+    
+    // Cargar covers desde API usando IntersectionObserver
+    const coverQueue = [];
+    let isLoadingCover = false;
+    
+    async function loadNextCover() {
+      if (isLoadingCover || coverQueue.length === 0) return;
+      isLoadingCover = true;
+      
+      const el = coverQueue.shift();
+      const id = el.getAttribute('data-book-id');
+      const title = el.getAttribute('data-title');
+      const author = el.getAttribute('data-author');
+      
+      try {
+        const url = '/api/book-cover?id=' + id + '&title=' + encodeURIComponent(title) + '&author=' + encodeURIComponent(author);
+        const res = await fetch(url);
+        const data = await res.json();
+        if (data.coverUrl && el.tagName === 'IMG') {
+          el.src = data.coverUrl;
+        }
+      } catch (err) {
+        console.error('Error loading cover:', err);
+      }
+      
+      isLoadingCover = false;
+      if (coverQueue.length > 0) {
+        setTimeout(loadNextCover, 100);
+      }
+    }
+    
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const img = entry.target;
+          if (!img.src || img.src.includes('portada')) {
+            if (!coverQueue.includes(img)) {
+              coverQueue.push(img);
+              loadNextCover();
+            }
+          }
+          observer.unobserve(img);
+        }
+      });
+    }, { rootMargin: '50px' });
+    
+    document.querySelectorAll('[data-book-id]').forEach(el => {
+      if (el.tagName === 'IMG') observer.observe(el);
+    });
     
     function applyRowFade() {
       const headerHeight = 300;
@@ -864,27 +1008,25 @@ app.get('/libros', async (req,res)=>{
   try {
     const query = (req.query.buscar||'').trim().toLowerCase();
     const orden = req.query.ordenar||'alfabetico';
-    let files = await listAllFiles(folderId);
+    
+    // Sincronizar con Drive para asegurar que tenemos todos los libros
+    const files = await listAllFiles(folderId);
     actualizarBooksJSON(files);
 
+    // Trabajar SOLO con datos del JSON
+    let librosForRender = bookMetadata.filter(book => {
+      // Verificar que el libro existe en Drive
+      return files.some(f => f.id === book.id);
+    });
+
+    // Aplicar búsqueda
     if(query){
-      files = files.filter(f=>{
-        const metadata = bookMetadata.find(b=>b.id===f.id);
-        const title = (metadata?.title||f.name||'').toLowerCase();
-        const author = (metadata?.author||'').toLowerCase();
+      librosForRender = librosForRender.filter(book => {
+        const title = (book.title || '').toLowerCase();
+        const author = (book.author || '').toLowerCase();
         return title.includes(query) || author.includes(query);
       });
     }
-
-    files = ordenarBooks(files, orden);
-    // Build an array of metadata-shaped objects for rendering - SOLO desde JSON
-    const librosForRender = files.map(f => {
-      const meta = bookMetadata.find(b => b.id === f.id);
-      if (meta) return { ...meta, id: f.id };
-      // Si no está en JSON, algo falló
-      console.warn(`[WARN] Libro ${f.id} no encontrado en JSON`);
-      return null;
-    }).filter(x => x);
 
     res.send(renderBookPage({libros:librosForRender,titlePage:'Libros',tipo:'libros',nombre:'libros',req,noResultsHtml:getRandomNoResultHtml()}));
   } catch(err){console.error(err); res.send('<p>Error al cargar libros.</p>');}
@@ -1146,19 +1288,29 @@ app.get('/recomendados', async (req,res)=>{
 app.get('/libro', async (req, res) => {
   const id = req.query.id;
   if (!id) return res.redirect('/libros');
-  const meta = bookMetadata.find(b => b.id === id);
-  const cover = getCoverForBook(id);
-  const title = meta?.title || 'Sin título';
-  const author = meta?.author || 'Desconocido';
-  const saga = meta?.saga?.name || null;
-  let synopsis = null;
-  try {
-    synopsis = await fetchSynopsis(title, author);
-  } catch (err) {
-    console.error('Error fetching synopsis:', err);
+  
+  // Usar endpoint /api/book-data para obtener/cachear datos
+  let meta = bookMetadata.find(b => b.id === id);
+  if (!meta) return res.redirect('/libros');
+  
+  // Si no tiene datos completos, buscarlos
+  if (!meta.description || meta.averageRating === undefined) {
+    try {
+      const response = await axios.get(`http://localhost:${PORT}/api/book-data?id=${id}`);
+      meta = response.data;
+    } catch (err) {
+      console.error('[/libro] Error al obtener datos:', err.message);
+    }
   }
+  
+  const cover = meta.coverUrl || getCoverForBook(id);
+  const title = meta.title || 'Sin título';
+  const author = meta.author || 'Desconocido';
+  const saga = meta.saga?.name || null;
+  const synopsis = meta.description || 'No se encontró sinopsis.';
+  const rating = meta.averageRating ? `⭐ ${meta.averageRating}/5` : '';
 
-  const synopsisHtml = synopsis ? `<div style="max-width:760px;margin:18px auto;color:#ddd;line-height:1.5;">${synopsis}</div>` : `<div style="max-width:760px;margin:18px auto;color:#ddd;line-height:1.5;">No se encontró sinopsis automática.</div>`;
+  const synopsisHtml = `<div style="max-width:760px;margin:18px auto;color:#ddd;line-height:1.5;">${synopsis}</div>`;
 
   res.send(`<!DOCTYPE html>
 <html lang="es">
@@ -1177,6 +1329,7 @@ app.get('/libro', async (req, res) => {
         <h2 style="margin:0 0 8px;color:#fff;font-family:'MedievalSharp',cursive;">${title}</h2>
         <div style="color:#ddd;margin-bottom:6px;">Autor: <a href="/autor?name=${encodeURIComponent(author)}" style="color:#fff;text-decoration:none;">${author}</a></div>
         ${saga?`<div style="color:#19E6D6;margin-bottom:12px;">Saga: <a href="/saga?name=${encodeURIComponent(saga)}" style="color:#19E6D6;text-decoration:none;">${saga}</a></div>`:''}
+        ${rating?`<div style="color:#FFD700;margin-bottom:12px;font-size:18px;">${rating}</div>`:''}
         <p><a href="/download?id=${encodeURIComponent(id)}" class="button">Descargar</a></p>
       </div>
     </div>
@@ -1429,6 +1582,211 @@ app.get('/stats', async (req, res) => {
   </div>
 </body>
 </html>`);
+});
+
+// API: Obtener portada de Google Books y guardar en JSON
+app.get('/api/book-cover', async (req, res) => {
+  const { title, author, id } = req.query;
+  if (!title || !author) return res.status(400).json({ error: 'Faltan parámetros' });
+
+  try {
+    // Buscar en books.json
+    let book = bookMetadata.find(b => b.id === id || (b.title.toLowerCase() === title.toLowerCase() && b.author.toLowerCase() === author.toLowerCase()));
+    
+    // Si ya tiene coverUrl, devolverlo
+    if (book?.coverUrl) {
+      console.log(`[API /book-cover] ✅ En caché: ${title}`);
+      return res.json({ coverUrl: book.coverUrl, cached: true });
+    }
+
+    // Buscar en Google Books
+    console.log(`[API /book-cover] Buscando: ${title}`);
+    const data = await fetchGoogleBooksData(title, author);
+    const coverUrl = data?.imageLinks?.thumbnail || data?.imageLinks?.smallThumbnail;
+
+    if (coverUrl && book) {
+      book.coverUrl = coverUrl;
+      await fs.promises.writeFile(BOOKS_FILE, JSON.stringify(bookMetadata, null, 2));
+      return res.json({ coverUrl: coverUrl, cached: false });
+    }
+
+    // Si no se encontró en Google Books, usar imagen aleatoria de fallback
+    const fallbackCover = getRandomCoverImage();
+    if (fallbackCover && book) {
+      book.coverUrl = fallbackCover;
+      await fs.promises.writeFile(BOOKS_FILE, JSON.stringify(bookMetadata, null, 2));
+      console.log(`[API /book-cover] 🎲 Fallback asignado: ${fallbackCover} para ${title}`);
+      return res.json({ coverUrl: fallbackCover, cached: false, fallback: true });
+    }
+
+    res.json({ coverUrl: coverUrl || fallbackCover || null, cached: false, fallback: !!fallbackCover });
+  } catch (err) {
+    console.error('[API /book-cover] Error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// API: Obtener datos completos del libro desde Google Books y guardar TODO en JSON
+app.get('/api/book-data', async (req, res) => {
+  const { id } = req.query;
+  if (!id) return res.status(400).json({ error: 'Falta id' });
+
+  try {
+    let book = bookMetadata.find(b => b.id === id);
+    if (!book) return res.status(404).json({ error: 'No encontrado' });
+
+    // Si ya tiene TODOS los datos principales, devolverlo sin buscar
+    if (book.description && book.averageRating !== undefined && book.publisher && book.pageCount) {
+      console.log(`[API /book-data] ✅ En caché (completo): ${book.title}`);
+      return res.json({ ...book, cached: true });
+    }
+
+    // Buscar en Google Books para rellenar datos faltantes
+    console.log(`[API /book-data] 🔄 Buscando datos de: ${book.title}`);
+    const data = await fetchGoogleBooksData(book.title, book.author);
+
+    if (data) {
+      // Actualizar TODOS los campos del libro
+      book.coverUrl = data.imageLinks?.thumbnail || data.imageLinks?.smallThumbnail || book.coverUrl || null;
+      book.description = data.description || book.description || null;
+      book.publisher = data.publisher || book.publisher || null;
+      book.publishedDate = data.publishedDate || book.publishedDate || null;
+      book.pageCount = data.pageCount || book.pageCount || null;
+      book.categories = data.categories || book.categories || [];
+      book.language = data.language || book.language || null;
+      book.averageRating = data.averageRating !== undefined ? data.averageRating : (book.averageRating || null);
+      book.ratingsCount = data.ratingsCount || book.ratingsCount || 0;
+      book.previewLink = data.previewLink || book.previewLink || null;
+      book.imageLinks = data.imageLinks || book.imageLinks || null;
+      
+      // Guardar cambios en JSON
+      await fs.promises.writeFile(BOOKS_FILE, JSON.stringify(bookMetadata, null, 2));
+      console.log(`[API /book-data] ✅ Datos guardados: ${book.title}`);
+    }
+
+    // Si no tiene coverUrl después de buscar, asignar fallback aleatorio
+    if (!book.coverUrl) {
+      const fallbackCover = getRandomCoverImage();
+      if (fallbackCover) {
+        book.coverUrl = fallbackCover;
+        await fs.promises.writeFile(BOOKS_FILE, JSON.stringify(bookMetadata, null, 2));
+        console.log(`[API /book-data] 🎲 Fallback asignado: ${fallbackCover} para ${book.title}`);
+      }
+    }
+
+    res.json({ ...book, cached: data ? false : true });
+  } catch (err) {
+    console.error('[API /book-data] Error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Función para eliminar duplicados basados en título, autor y saga
+function removeDuplicateBooks(books) {
+  const seen = new Map();
+  const unique = [];
+  let duplicatesRemoved = 0;
+
+  books.forEach(book => {
+    const key = `${(book.title || '').toLowerCase().trim()}|${(book.author || '').toLowerCase().trim()}|${(book.saga?.name || '').toLowerCase().trim()}|${book.saga?.number || 0}`;
+    
+    if (!seen.has(key)) {
+      seen.set(key, book);
+      unique.push(book);
+    } else {
+      // Ya existe, comparar cuál tiene más datos
+      const existing = seen.get(key);
+      const existingFields = [existing.coverUrl, existing.description, existing.publisher, existing.pageCount].filter(Boolean).length;
+      const newFields = [book.coverUrl, book.description, book.publisher, book.pageCount].filter(Boolean).length;
+      
+      if (newFields > existingFields) {
+        // Reemplazar con el que tiene más datos
+        const idx = unique.indexOf(existing);
+        unique[idx] = book;
+        seen.set(key, book);
+        console.log(`[DEDUP] 🔄 Reemplazando "${book.title}" (más completo)`);
+      } else {
+        console.log(`[DEDUP] ❌ Eliminando duplicado: "${book.title}" (ID: ${book.id})`);
+      }
+      duplicatesRemoved++;
+    }
+  });
+
+  if (duplicatesRemoved > 0) {
+    console.log(`[DEDUP] ✅ ${duplicatesRemoved} duplicados eliminados`);
+  }
+
+  return unique;
+}
+
+// API: Sincronizar metadatos de libros nuevos en Drive
+app.get('/api/sync-drive-metadata', async (req, res) => {
+  try {
+    console.log(`[SYNC] 🔄 Iniciando sincronización de metadatos con Drive...`);
+    
+    // Obtener archivos del Drive
+    const allFiles = await listAllFiles(folderId);
+    let librosNuevos = 0;
+    let datosActualizados = 0;
+
+    for (const file of allFiles) {
+      let book = bookMetadata.find(b => b.id === file.id);
+      
+      if (!book) {
+        // Libro nuevo del Drive - agregarlo
+        book = {
+          id: file.id,
+          title: file.name.replace(/\.[^/.]+$/, ''),
+          author: 'Desconocido',
+          saga: { name: '', number: 0 }
+        };
+        bookMetadata.push(book);
+        librosNuevos++;
+        console.log(`[SYNC] ➕ Nuevo libro: ${book.title}`);
+      }
+
+      // Buscar datos en Google Books si no los tiene
+      if (!book.description || !book.averageRating) {
+        const data = await fetchGoogleBooksData(book.title, book.author);
+        
+        if (data) {
+          book.coverUrl = data.imageLinks?.thumbnail || data.imageLinks?.smallThumbnail || null;
+          book.description = data.description || null;
+          book.publisher = data.publisher || null;
+          book.publishedDate = data.publishedDate || null;
+          book.pageCount = data.pageCount || null;
+          book.categories = data.categories || [];
+          book.language = data.language || null;
+          book.averageRating = data.averageRating || null;
+          book.ratingsCount = data.ratingsCount || 0;
+          book.previewLink = data.previewLink || null;
+          book.imageLinks = data.imageLinks || null;
+          datosActualizados++;
+          console.log(`[SYNC] 📚 Metadatos actualizados: ${book.title}`);
+        }
+      }
+    }
+
+    // Eliminar duplicados antes de guardar
+    const beforeCount = bookMetadata.length;
+    bookMetadata = removeDuplicateBooks(bookMetadata);
+    const duplicatesRemoved = beforeCount - bookMetadata.length;
+
+    // Guardar cambios
+    await fs.promises.writeFile(BOOKS_FILE, JSON.stringify(bookMetadata, null, 2));
+    
+    res.json({ 
+      success: true, 
+      totalLibros: bookMetadata.length,
+      librosNuevos,
+      datosActualizados,
+      duplicatesRemoved,
+      mensaje: `Sincronización completada. ${librosNuevos} libros nuevos, ${datosActualizados} actualizados, ${duplicatesRemoved} duplicados eliminados.`
+    });
+  } catch (err) {
+    console.error('[SYNC] Error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 app.listen(PORT,()=>console.log(`Servidor escuchando en puerto ${PORT}`));
