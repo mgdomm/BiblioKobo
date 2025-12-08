@@ -989,7 +989,7 @@ app.get('/', (req,res)=>{
   <!-- Modal de login para stats/upload -->
   <div id="login-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:9999;justify-content:center;align-items:center;">
     <div style="background:linear-gradient(135deg, rgba(18,18,18,0.95), rgba(12,12,12,0.9));border:2px solid rgba(25,230,214,0.5);border-radius:12px;padding:40px;text-align:center;max-width:400px;box-shadow:0 8px 32px rgba(0,0,0,0.8);">
-      <h2 id="modal-title" style="font-family:'MedievalSharp', cursive;color:#19E6D6;font-size:24px;margin:0 0 20px 0;">🔒 Acceso a Stats</h2>
+      <h2 id="modal-title" style="font-family:'MedievalSharp', cursive;color:#19E6D6;font-size:24px;margin:0 0 20px 0;">Acceso a Stats</h2>
       <input type="password" id="pass-input" placeholder="Contraseña" style="width:100%;padding:12px;margin:10px 0;border:2px solid #19E6D6;background:rgba(25,25,25,0.8);color:#fff;border-radius:6px;font-size:14px;box-sizing:border-box;outline:none;transition:all 0.3s ease;" onkeypress="if(event.key==='Enter')document.getElementById('login-btn').click();">
       <div id="error-message" style="display:none;margin-top:10px;color:#ff6b6b;font-family:'MedievalSharp', cursive;font-size:13px;line-height:1.4;min-height:50px;"></div>
       <div style="margin-top:20px;">
@@ -1039,7 +1039,7 @@ app.get('/', (req,res)=>{
     
     statsBtn.addEventListener('click', () => {
       currentAction = 'stats';
-      modalTitle.textContent = '🔒 Acceso a Stats';
+      modalTitle.textContent = 'Acceso a Stats';
       loginModal.style.display = 'flex';
       passInput.focus();
       errorMessage.style.display = 'none';
@@ -1048,7 +1048,7 @@ app.get('/', (req,res)=>{
     
     uploadBtn.addEventListener('click', () => {
       currentAction = 'upload';
-      modalTitle.textContent = '📤 Subir Archivos EPUB';
+      modalTitle.textContent = 'Acceder a Uploads';
       loginModal.style.display = 'flex';
       passInput.focus();
       errorMessage.style.display = 'none';
@@ -2169,7 +2169,7 @@ app.get('/upload', (req, res) => {
   <div class="header-banner top" style="background-image:url('/cover/secuendarias/portada11.png');"></div>
   <div class="overlay top">
     <div class="top-buttons secondary"><a href="/">Inicio</a></div>
-    <h1>📤 Cargar EPUB</h1>
+    <h1 style="display:flex;align-items:center;gap:12px;"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:#19E6D6;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>Uploads</h1>
     <div class="top-buttons">
       <a href="/libros">Libros</a>
       <a href="/autores">Autores</a>
@@ -2179,7 +2179,7 @@ app.get('/upload', (req, res) => {
 
   <div class="upload-container">
     <div class="drop-zone" id="dropZone">
-      <div style="font-size: 48px; margin-bottom: 10px;">📚</div>
+      <div style="font-size: 0px; margin-bottom: 10px;"></div>
       <p style="color: #19E6D6; font-size: 18px; font-weight: bold; margin: 10px 0;">Arrastra archivos EPUB aquí</p>
       <p style="color: #999; margin: 10px 0;">o haz clic para seleccionar</p>
       <input type="file" id="fileInput" class="file-input" accept=".epub" multiple>
