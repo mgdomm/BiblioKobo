@@ -2920,5 +2920,61 @@
     "title": "Un destino teñido de sangre",
     "author": "Danielle L. Jensen",
     "saga": null
+  },
+  {
+    "id": "1tXAJjgn2-v6Hrs2JEj5JIfSXlp3w5NwQ",
+    "driveFileId": "1tXAJjgn2-v6Hrs2JEj5JIfSXlp3w5NwQ",
+    "title": "Quicksilver",
+    "author": "Callie Hart",
+    "saga": {
+      "name": "Quicksilver",
+      "number": 1
+    },
+    "description": "This #1 New York Times bestseller is a highly addicting enemies-to-lovers Romantasy with razor-sharp banter, heart-stopping action, and blistering hot romance. Do not touch the sword. Do not turn the key. Do not open the gate. Twenty-four-year-old Saeris Fane is good at keeping secrets. No one knows about the strange powers she possesses, or the fact that she has been picking pockets and stealing from the Undying Queen’s reservoirs for as long as she can remember. In the land of the unforgiving desert, there isn’t much a girl wouldn’t do for a glass of water. But a secret is like a knot. Sooner or later, it is bound to come undone. When Saeris comes face-to-face with Death himself, she inadvertently reopens a gateway between realms and is transported to a land of ice and snow. The Fae have always been the stuff of myth, of legend, of nightmares…but it turns out they’re real, and Saeris has landed right in the middle of a centuries-long conflict that might just get her killed. The first of her kind to tread the frozen mountains of Yvelia in over a thousand years, Saeris mistakenly binds herself to Kingfisher, a handsome Fae warrior, who has secrets and nefarious agendas of his own. He will use her Alchemist’s magic to protect his people, no matter what it costs him… or her. Death has a name. It is Kingfisher of the Ajun Gate. His past is murky. His attitude stinks. And he’s the only way Saeris is going to make it home. Be careful of the deals you make, dear child. The devil is in the details... Now with an embossed cover, silver foiling, and an updated interior design. N.B. Quicksilver contains depictions of graphic violence/adult situations and is therefore recommended for readers 17+. For a full list of tropes and TWs, please visit the author's website.",
+    "publisher": "Hachette UK",
+    "publishedDate": "2024-09-10",
+    "pageCount": 410,
+    "categories": [
+      "Fiction"
+    ],
+    "language": "en",
+    "averageRating": null,
+    "ratingsCount": null,
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=f0sbEQAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=f0sbEQAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+    },
+    "previewLink": "http://books.google.es/books?id=f0sbEQAAQBAJ&printsec=frontcover&dq=intitle:Quicksilver+inauthor:Callie+Hart&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "coverUrl": "http://books.google.com/books/content?id=f0sbEQAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
+    "uploadDate": "2025-12-08T20:52:07.029Z",
+    "createdTime": "2025-12-08T20:52:05.689Z"
+  },
+  {
+    "id": "1g6efoun9iiyaHsRM8zZ8uy2-EWrpmNaA",
+    "driveFileId": "1g6efoun9iiyaHsRM8zZ8uy2-EWrpmNaA",
+    "title": "La asistenta",
+    "author": "Freida McFadden",
+    "saga": {
+      "name": "La Asistenta",
+      "number": 1
+    },
+    "description": "EL LIBRO DEL QUE TODO EL MUNDO HABLA. El thriller psicológico más adictivo y viral de Freida McFadden. Novela ganadora del Premio Valencia Negra en la categoría Best Novel. Todos los días friego la preciosa casa de los Winchester de arriba abajo. Recojo a su hija del colegio y preparo deliciosas comidas para toda la familia antes de subir a cenar sola en mi minúscula habitación del piso superior. Intento no prestar atención a Nina cuando lo ensucia todo simplemente para ver cómo lo limpio. A las extrañas mentiras que cuenta sobre su propia hija. A su marido, que cada día parece más abatido. Pero cuando miro a Andrew a los ojos, castaños, encantadores y llenos de dolor, no me resulta difícil imaginar cómo sería vivir en la piel de Nina. El gran vestidor, el coche de lujo, el esposo perfecto. Hasta que un día no me resisto a probarme uno de sus maravillosos vestidos blancos. Solo quiero saber qué se siente. Pero ella pronto lo descubre, y cuando me doy cuenta de que la puerta de mi habitación solo se cierra por fuera ya es demasiado tarde. Algo me reconforta: los Winchester no saben quién soy en realidad. No saben de lo que soy capaz... «McFadden es la mega bestseller mundial actual». El Confidencial",
+    "publisher": "SUMA",
+    "publishedDate": "2024-02-01",
+    "pageCount": 344,
+    "categories": [
+      "Fiction"
+    ],
+    "language": "es",
+    "averageRating": null,
+    "ratingsCount": null,
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=On7xEAAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=On7xEAAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+    },
+    "previewLink": "http://books.google.es/books?id=On7xEAAAQBAJ&printsec=frontcover&dq=intitle:La+asistenta+inauthor:Freida+McFadden&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "coverUrl": "http://books.google.com/books/content?id=On7xEAAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
+    "uploadDate": "2025-12-08T20:55:07.648Z",
+    "createdTime": "2025-12-08T20:55:06.426Z"
   }
 ]

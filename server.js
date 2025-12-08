@@ -24,10 +24,11 @@ app.use(express.json());
 const upload = multer({
   storage: multer.memoryStorage(),
   fileFilter: (req, file, cb) => {
-    if (file.mimetype === 'application/epub+zip' || file.originalname.endsWith('.epub')) {
+    // Validar solo por extensión .epub (el mimetype puede variar según navegador)
+    if (file.originalname.toLowerCase().endsWith('.epub')) {
       cb(null, true);
     } else {
-      cb(new Error('Solo se permiten archivos EPUB'), false);
+      cb(new Error('Solo se permiten archivos .epub'), false);
     }
   }
 });
@@ -2202,6 +2203,7 @@ app.get('/upload', (req, res) => {
     const statusMessage = document.getElementById('statusMessage');
     const progress = document.getElementById('progress');
     const progressText = document.getElementById('progressText');
+    const passParam = new URLSearchParams(window.location.search).get('pass') || '';
 
     let files = [];
 
@@ -2320,8 +2322,10 @@ app.get('/upload', (req, res) => {
           formData.append('sagaNumber', sagaNumber);
           formData.append('description', description);
 
-          const response = await fetch('/api/upload-to-drive', {
+          const uploadUrl = '/api/upload-to-drive' + (passParam ? ('?pass=' + encodeURIComponent(passParam)) : '');
+          const response = await fetch(uploadUrl, {
             method: 'POST',
+            headers: passParam ? { 'x-api-key': passParam } : {},
             body: formData
           });
 
@@ -2354,8 +2358,13 @@ app.get('/upload', (req, res) => {
 app.post('/api/upload-to-drive', upload.single('file'), async (req, res) => {
   try {
     const pass = req.query.pass || '';
-    if (pass !== '252914' && req.headers['x-api-key'] !== '252914') {
+    const apiKey = req.headers['x-api-key'] || '';
+    if (pass !== '252914' && apiKey !== '252914') {
       return res.status(403).json({ error: 'Acceso denegado' });
+    }
+
+    if (!drive) {
+      return res.status(500).json({ error: 'Google Drive no está inicializado' });
     }
 
     if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
@@ -2365,21 +2374,44 @@ app.post('/api/upload-to-drive', upload.single('file'), async (req, res) => {
       return res.status(400).json({ error: 'Faltan campos requeridos' });
     }
 
-    // Generar ID único para el archivo
-    const fileId = 'local_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
     const fileName = `${title} - ${author} (${saga} #${sagaNumber || 1}).epub`;
-    
-    // Buscar datos completos en Google Books
+
+    // Subir a Drive en la carpeta compartida existente
+    let driveFileId = null;
+    let driveCreatedTime = new Date().toISOString();
+    try {
+      const uploadResp = await drive.files.create({
+        requestBody: {
+          name: fileName,
+          parents: folderId ? [folderId] : []
+        },
+        media: {
+          mimeType: req.file.mimetype || 'application/epub+zip',
+          body: bufferToStream(req.file.buffer)
+        },
+        fields: 'id,name,parents,createdTime'
+      });
+
+      driveFileId = uploadResp.data.id;
+      driveCreatedTime = uploadResp.data.createdTime || driveCreatedTime;
+      console.log(`[UPLOAD] ☁️ Subido a Drive: ${fileName} (ID: ${driveFileId})`);
+    } catch (err) {
+      console.error('[UPLOAD] Error subiendo a Drive:', err.message);
+      return res.status(500).json({ error: 'No se pudo subir a Drive: ' + err.message });
+    }
+
+    // Buscar datos completos en Google Books (solo para complementar)
     console.log(`[UPLOAD] 🔍 Buscando datos en Google Books para: ${title} - ${author}`);
     const googleBooksData = await fetchGoogleBooksData(title, author);
 
-    // Preparar libro con datos de Google Books
+    // Preparar libro: PRIORIZAR datos del formulario, solo completar vacíos con Google Books
     const book = {
-      id: fileId,
-      title: googleBooksData?.title || title,
-      author: author,
+      id: driveFileId,
+      driveFileId,
+      title: title, // Siempre usar el del formulario
+      author: author, // Siempre usar el del formulario
       saga: {
-        name: saga,
+        name: saga, // Siempre usar el del formulario
         number: parseInt(sagaNumber) || 1
       },
       description: description || googleBooksData?.description || null,
@@ -2393,21 +2425,25 @@ app.post('/api/upload-to-drive', upload.single('file'), async (req, res) => {
       imageLinks: googleBooksData?.imageLinks || null,
       previewLink: googleBooksData?.previewLink || null,
       coverUrl: googleBooksData?.imageLinks?.thumbnail || getRandomCoverImage() || null,
-      uploadDate: new Date().toISOString()
+      uploadDate: new Date().toISOString(),
+      createdTime: driveCreatedTime
     };
 
+    // Reemplazar si ya existe el ID en memoria
+    bookMetadata = bookMetadata.filter(b => b.id !== driveFileId);
     bookMetadata.push(book);
     await fs.promises.writeFile(BOOKS_FILE, JSON.stringify(bookMetadata, null, 2));
 
-    console.log(`[UPLOAD] ✅ Libro registrado: ${fileName} (ID: ${fileId})`);
+    console.log(`[UPLOAD] ✅ Libro registrado: ${fileName} (ID: ${driveFileId})`);
     console.log(`[UPLOAD] 📚 Libro agregado con portada: ${book.coverUrl ? '✅ Encontrada' : '❌ Fallback'}`);
     
     res.json({ 
       success: true, 
-      fileId: fileId,
+      fileId: driveFileId,
       fileName: fileName,
       coverUrl: book.coverUrl,
-      message: 'Archivo procesado correctamente (almacenado localmente)'
+      driveUrl: `https://drive.google.com/file/d/${driveFileId}/view`,
+      message: 'Archivo cargado correctamente a Drive'
     });
   } catch (err) {
     console.error('[UPLOAD] Error:', err.message);
