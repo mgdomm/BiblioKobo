@@ -590,7 +590,16 @@ async function fetchGoogleBooksData(title, author, isbn = null) {
       
       lastGoogleBooksCall = Date.now();
       
-      const query = isbn || `intitle:${title} inauthor:${author}`;
+      // Construir query mejorada: buscar primero con ISBN, luego con título+autor
+      let query;
+      if (isbn) {
+        query = `isbn:${isbn}`;
+      } else {
+        // Escapar caracteres especiales y usar búsqueda por título e autor
+        const cleanTitle = title.replace(/[:"()]/g, '');
+        const cleanAuthor = author.replace(/[:"()]/g, '');
+        query = `intitle:"${cleanTitle}" inauthor:"${cleanAuthor}"`;
+      }
       const keyParam = GOOGLE_BOOKS_API_KEY ? `&key=${GOOGLE_BOOKS_API_KEY}` : '';
       const url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&maxResults=1&printType=books${keyParam}`;
       
@@ -2465,6 +2474,11 @@ app.post('/api/upload-to-drive', upload.single('file'), async (req, res) => {
     // Buscar datos completos en Google Books (solo para complementar)
     console.log(`[UPLOAD] 🔍 Buscando datos en Google Books para: ${title} - ${author}`);
     const googleBooksData = await fetchGoogleBooksData(title, author);
+    if (googleBooksData) {
+      console.log(`[UPLOAD] ✅ Google Books: descripción=${googleBooksData.description ? '✅' : '❌'}, portada=${googleBooksData.imageLinks?.thumbnail ? '✅' : '❌'}`);
+    } else {
+      console.log(`[UPLOAD] ⚠️ No se encontraron datos en Google Books`);
+    }
 
     // Preparar libro: PRIORIZAR datos del formulario, solo completar vacíos con Google Books
     const book = {
