@@ -2,6 +2,7 @@ const express = require('express');
 const { google } = require('googleapis');
 const path = require('path');
 const fs = require('fs');
+const os = require('os');
 const axios = require('axios');
 const archiver = require('archiver');
 
@@ -49,6 +50,36 @@ try {
 
 // Contador simple de descargas (memoria)
 let downloadCount = 0;
+
+// Cache sencillo para ratings externos
+const ratingsCache = new Map();
+const RATINGS_CACHE_FILE = path.join(os.tmpdir(), 'ratings-cache-bibliokobo.json');
+try {
+  if (fs.existsSync(RATINGS_CACHE_FILE)) {
+    const data = JSON.parse(fs.readFileSync(RATINGS_CACHE_FILE, 'utf8'));
+    Object.entries(data || {}).forEach(([k, v]) => ratingsCache.set(k, Number(v) || 0));
+  }
+} catch (err) {
+  console.warn('No se pudo leer ratings-cache.json, se cargará vacío');
+}
+let ratingsCacheDirty = false;
+let ratingsCacheTimer = null;
+function persistRatingsCacheSoon() {
+  ratingsCacheDirty = true;
+  if (ratingsCacheTimer) return;
+  ratingsCacheTimer = setTimeout(() => {
+    try {
+      const obj = {};
+      ratingsCache.forEach((v, k) => { obj[k] = v; });
+      fs.writeFileSync(RATINGS_CACHE_FILE, JSON.stringify(obj, null, 2));
+      ratingsCacheDirty = false;
+    } catch (err) {
+      console.warn('No se pudo persistir ratings-cache.json', err.message);
+    } finally {
+      ratingsCacheTimer = null;
+    }
+  }, 500);
+}
 
 // ------------------ DETECCIÓN KOBO ------------------
 function isKobo(req) {
@@ -285,6 +316,86 @@ function azkbanSymbol(text) {
   return symbols[sum % symbols.length];
 }
 
+// Mensajes aleatorios cuando no hay resultados en búsquedas
+const noResultMessages = [
+  '<strong>Un prisionero de Azkaban murmura:</strong> "El libro no existe o fue confiscado. Vuelve luego."',
+  '<strong>Un prisionero de Azkaban murmura:</strong> "Claramente, lo que buscas ha sido confiscado por el Ministerio por \"contenido altamente peligroso\"... O tal vez, simplemente no existe. Vuelve cuando tu búsqueda sea menos patética."',
+  '¡Ah, qué tragedia! Un prisionero de Azkaban se carcajea entre dientes:<br>“Lo que buscas no aparece ni en los registros secretos del Ministerio… eso solo significa dos cosas: fue incinerado… o jamás existió.”',
+  '“¡Menudo espectáculo! Desde una celda en ruinas, un reo susurra:<br>‘He revisado hasta las sombras… y no, no hay rastro de ese nombre. Quizá tu imaginación te juega trucos patéticos.’”',
+  '“¡Qué fracaso tan glorioso! Un prisionero encadenado murmura:<br>‘Ni los dementores lograron encontrar eso… y créeme, ellos olfatean hasta los pensamientos. Definitivamente, no existe.’”',
+  '“¡Ay, qué pena! Una voz ronca se oye entre los muros:<br>‘Si el Ministerio lo confiscó, ni yo podría encontrarlo… pero lo más probable es que solo estés buscando fantasmas.’”',
+  '“¡Oh, la desilusión! Un interno se ríe con un eco perturbador:<br>‘Tu búsqueda está tan vacía como mi celda… ese autor no figura en ninguna parte. Acepta la derrota, forastero.’”',
+  '“¡Qué vergüenza tan innecesaria! Un prisionero susurra enloquecido:<br>‘Ni siquiera los archivos prohibidos tienen ese título… y créeme, lo revisé todo. Eso nunca ha existido.’”',
+  '“¡Un desastre anunciado! Desde la oscuridad, alguien rechina los dientes:<br>‘Otro nombre inexistente… el Ministerio ni se molestaría en confiscar algo tan insignificante.’”',
+  '“¡Qué intento tan triste! Una voz gastada murmura:<br>‘Si estuviera en algún registro, lo habría oído durante mis años de encierro… pero no, tu búsqueda es pura fantasía.’”',
+  '“¡Oh, qué lástima infinita! Un prisionero observa la nada y dice:<br>‘Lo que buscas no está, no estuvo y probablemente nunca estará. Incluso la magia tiene límites.’”',
+  '“¡Qué patética sorpresa! Desde una celda húmeda se escucha:<br>‘Ni el Ministerio, ni Azkaban, ni los dementores conocen lo que pides… así que debes aceptar la verdad: no existe.’”'
+];
+
+function getRandomNoResultHtml() {
+  const msg = noResultMessages[Math.floor(Math.random() * noResultMessages.length)];
+  return `<div style="padding:40px;color:#eee;"><h2>¡Oh, qué desastre!</h2><p style="font-size: 1.2em; line-height: 1.5;">${msg}</p></div>`;
+}
+
+// Runas: paleta de símbolos estilizados (líneas simples)
+function runePalette() {
+  return [
+    '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#19E6D6" stroke-width="2" stroke-linecap="round"><path d="M12 3v18"/><path d="M12 12l6-6"/></svg>',
+    '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#19E6D6" stroke-width="2" stroke-linecap="round"><path d="M12 3v18"/><path d="M12 12l-6-6"/></svg>',
+    '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#19E6D6" stroke-width="2" stroke-linecap="round"><path d="M12 3v18"/><path d="M12 12l6-4"/><path d="M12 12l6 4"/></svg>',
+    '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#19E6D6" stroke-width="2" stroke-linecap="round"><path d="M12 3v18"/><path d="M12 10l-6 4"/><path d="M12 14l-6-4"/></svg>',
+    '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#19E6D6" stroke-width="2" stroke-linecap="round"><path d="M12 4v16"/><path d="M6 8l6 8"/><path d="M18 8l-6 8"/></svg>',
+    '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#19E6D6" stroke-width="2" stroke-linecap="round"><path d="M8 4l8 16"/><path d="M16 4l-8 16"/></svg>',
+    '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#19E6D6" stroke-width="2" stroke-linecap="round"><path d="M12 4l5 8-5 8-5-8z"/></svg>',
+    '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#19E6D6" stroke-width="2" stroke-linecap="round"><path d="M12 4v16"/><path d="M8 8l4 4 4-4"/></svg>',
+    '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#19E6D6" stroke-width="2" stroke-linecap="round"><path d="M12 20V4"/><path d="M16 16l-4-4-4 4"/></svg>',
+    '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#19E6D6" stroke-width="2" stroke-linecap="round"><path d="M7 5l10 14"/><path d="M17 5L7 19"/><path d="M7 12h10"/></svg>',
+    '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#19E6D6" stroke-width="2" stroke-linecap="round"><path d="M12 4v16"/><path d="M6 9l6 6"/><path d="M18 9l-6 6"/></svg>',
+    '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#19E6D6" stroke-width="2" stroke-linecap="round"><path d="M12 4v16"/><path d="M7 8h10"/><path d="M7 16h10"/></svg>',
+    '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#19E6D6" stroke-width="2" stroke-linecap="round"><path d="M8 4h8"/><path d="M8 12h8"/><path d="M8 20h8"/></svg>',
+    '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#19E6D6" stroke-width="2" stroke-linecap="round"><path d="M6 5h12"/><path d="M12 5v14"/><path d="M8 19h8"/></svg>',
+    '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#19E6D6" stroke-width="2" stroke-linecap="round"><path d="M12 4v16"/><path d="M8 12l4-8 4 8-4 8z"/></svg>',
+    '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#19E6D6" stroke-width="2" stroke-linecap="round"><path d="M7 7l10 10"/><path d="M17 7L7 17"/></svg>',
+    '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#19E6D6" stroke-width="2" stroke-linecap="round"><path d="M6 12h12"/><path d="M12 4v16"/><path d="M8 8l8 8"/></svg>',
+    '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#19E6D6" stroke-width="2" stroke-linecap="round"><path d="M12 5v14"/><path d="M7 9l5 5 5-5"/></svg>',
+    '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#19E6D6" stroke-width="2" stroke-linecap="round"><path d="M8 4l8 16"/><path d="M16 4L8 20"/><path d="M12 10v4"/></svg>',
+    '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#19E6D6" stroke-width="2" stroke-linecap="round"><path d="M12 4l6 8-6 8-6-8z"/><path d="M12 8v8"/></svg>',
+    '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#19E6D6" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12"/><path d="M18 6L6 18"/><path d="M12 3v18"/></svg>',
+    '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#19E6D6" stroke-width="2" stroke-linecap="round"><path d="M12 4v16"/><path d="M7 7l10 10"/></svg>',
+    '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#19E6D6" stroke-width="2" stroke-linecap="round"><path d="M7 5h10"/><path d="M7 19h10"/><path d="M12 5v14"/><path d="M7 12h10"/></svg>',
+    '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#19E6D6" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12"/><path d="M18 6L6 18"/><path d="M12 6v12"/></svg>',
+    '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#19E6D6" stroke-width="2" stroke-linecap="round"><path d="M9 4h6"/><path d="M12 4v16"/><path d="M8 14l4-6 4 6"/></svg>'
+  ];
+}
+
+function shuffleArray(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+// Devuelve una lista de runas sin repetir; si faltan, rota variantes
+function uniqueRunes(count) {
+  const palette = runePalette();
+  const pool = shuffleArray([...palette]);
+  const result = [];
+  let variant = 0;
+  while (result.length < count) {
+    if (pool.length) {
+      result.push(pool.pop());
+      continue;
+    }
+    const base = palette[variant % palette.length];
+    const angle = ((variant * 37) % 80) - 40; // giro ligero para diferenciarlas
+    const rotated = base.replace('<svg ', `<svg style="transform:rotate(${angle}deg)" `);
+    result.push(rotated);
+    variant++;
+  }
+  return result;
+}
+
 // ------------------ SINOPSIS FETCH ------------------
 async function fetchSynopsis(title, author) {
   // Use Open Library to try to fetch a description
@@ -317,6 +428,209 @@ async function fetchSynopsis(title, author) {
   return null;
 }
 
+// Ratings vía Goodreads (auto_complete) con fallback a Open Library
+async function fetchRating(title, author, isbn = null) {
+  const key = `${(title||'').toLowerCase()}|${(author||'').toLowerCase()}|${isbn||''}`;
+  if (ratingsCache.has(key)) return ratingsCache.get(key);
+
+  const normalize = (str = '') => str
+    .toString()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[^a-z0-9\s]/g, '')
+    .trim();
+
+  const titleNorm = normalize(title);
+  const authorNorm = normalize(author);
+
+  // Preferir búsqueda directa por ISBN cuando esté disponible
+  if (isbn) {
+    const isbnRating = await fetchGoodreadsByIsbn(isbn);
+    if (isbnRating) {
+      setRatingCache(key, isbnRating);
+      return isbnRating;
+    }
+  }
+
+  try {
+    const query = [title, author].filter(Boolean).join(' ');
+    const url = `https://www.goodreads.com/book/auto_complete?format=json&q=${encodeURIComponent(query)}`;
+    const resp = await axios.get(url, { timeout: 7000, headers: { 'User-Agent': 'Mozilla/5.0' } });
+    const items = Array.isArray(resp.data) ? resp.data.slice(0, 25) : [];
+
+    let bestRating = 0;
+    let bestCandidate = null;
+    for (const item of items) {
+      const itemTitle = normalize(item.title || item.bookTitle || item.bookTitleBare || '');
+      const itemAuthor = normalize(item.author?.name || item.authorName || item.author || '');
+      const rating = Number(item.average_rating || item.avg_rating || 0) || 0;
+      const votes = Number(item.ratings_count || item.ratingsCount || item.work_ratings_count || item.ratings || 0) || 0;
+      // descartar valores dudosos (sin votos, rating fuera de rango, o 5.0 sin respaldo)
+      if (!rating || rating > 5 || votes < 1) continue;
+      if (rating >= 4.99 && votes < 500) continue;
+
+      const titleMatch = titleNorm && itemTitle ? (itemTitle === titleNorm || itemTitle.includes(titleNorm) || titleNorm.includes(itemTitle)) : false;
+      const authorMatch = authorNorm && itemAuthor ? (itemAuthor === authorNorm || itemAuthor.includes(authorNorm) || authorNorm.includes(itemAuthor)) : false;
+
+      // Requerimos coincidencia de título; autor opcional si hay muchos votos
+      if (!titleMatch) continue;
+      if (!authorMatch && votes < 50) continue;
+
+      if (rating > bestRating) {
+        bestRating = rating;
+        bestCandidate = item;
+        if (bestRating >= 4.8 && votes >= 1000) break; // suficientemente confiable
+      }
+    }
+
+    // Si tenemos un candidato, intentar extraer rating real desde la página de Goodreads
+    if (bestCandidate) {
+      const pageId = bestCandidate.id || bestCandidate.bookId || bestCandidate.workId || bestCandidate.bookIdV2;
+      if (pageId) {
+        const pageRating = await fetchGoodreadsPageRating(pageId);
+        if (pageRating) {
+          setRatingCache(key, pageRating);
+          return pageRating;
+        }
+      }
+      // fallback: usar el rating del autocomplete si no pudimos parsear página
+      if (bestRating) {
+        setRatingCache(key, bestRating);
+        return bestRating;
+      }
+    }
+  } catch (err) {
+    // Ignorar y caer al fallback
+  }
+
+  // Intentar con búsqueda HTML si autocomplete no dio rating válido
+  try {
+    const searchRating = await fetchGoodreadsSearchRating(title, author);
+    if (searchRating) {
+      setRatingCache(key, searchRating);
+      return searchRating;
+    }
+  } catch (err) {
+    // ignorar
+  }
+
+  // Fallback Open Library si Goodreads no devuelve rating
+  const fallback = await fetchRatingOpenLibrary(title, author);
+  setRatingCache(key, fallback);
+  return fallback;
+}
+
+async function fetchRatingOpenLibrary(title, author) {
+  try {
+    const sUrl = `https://openlibrary.org/search.json?title=${encodeURIComponent(title||'')}&author=${encodeURIComponent(author||'')}&limit=3`;
+    const sr = await axios.get(sUrl, { timeout: 5000 });
+    const docs = sr.data.docs || [];
+    if (!docs.length || !docs[0].key) return 0;
+    const workKey = docs[0].key.startsWith('/works/') ? docs[0].key : `/works/${docs[0].key}`;
+    const rUrl = `https://openlibrary.org${workKey}/ratings.json`;
+    const rr = await axios.get(rUrl, { timeout: 5000 });
+    const avg = rr.data?.summary?.average || rr.data?.average || 0;
+    return Number(avg) || 0;
+  } catch (err) {
+    return 0;
+  }
+}
+
+function setRatingCache(key, value) {
+  ratingsCache.set(key, value);
+  persistRatingsCacheSoon();
+}
+
+async function fetchGoodreadsPageRating(pageId) {
+  try {
+    const pageUrl = `https://www.goodreads.com/book/show/${pageId}`;
+    const html = await axios.get(pageUrl, { timeout: 8000, headers: { 'User-Agent': 'Mozilla/5.0' } }).then(r => r.data || '');
+    // Buscar itemprop ratingValue
+    let match = /itemprop="ratingValue"[^>]*>\s*([0-9.,]+)/i.exec(html);
+    if (match && match[1]) {
+      const num = parseFloat(match[1].replace(',', '.'));
+      if (num && num > 0 && num <= 5) return num;
+    }
+    // Buscar "average_rating":"4.00"
+    match = /"average_rating"\s*:\s*"([0-9.]+)"/i.exec(html);
+    if (match && match[1]) {
+      const num = parseFloat(match[1]);
+      if (num && num > 0 && num <= 5) return num;
+    }
+    // Buscar "avgRating":4.00
+    match = /"avgRating"\s*:\s*([0-9.]+)/i.exec(html);
+    if (match && match[1]) {
+      const num = parseFloat(match[1]);
+      if (num && num > 0 && num <= 5) return num;
+    }
+  } catch (err) {
+    // ignorar
+  }
+  return 0;
+}
+
+async function fetchGoodreadsSearchRating(title, author) {
+  const query = [title, author].filter(Boolean).join(' ');
+  if (!query) return 0;
+  try {
+    const url = `https://www.goodreads.com/search?q=${encodeURIComponent(query)}`;
+    const html = await axios.get(url, { timeout: 8000, headers: { 'User-Agent': 'Mozilla/5.0' } }).then(r => r.data || '');
+    const anchors = Array.from(html.matchAll(/<a[^>]+class="bookTitle"[^>]+href="\/book\/show\/([^"?#]+)[^\"]*"[^>]*>([\s\S]*?)<\/a>/gi));
+    const normTitle = (title||'').toLowerCase().normalize('NFD').replace(/[^a-z0-9\s]/g,'').trim();
+    let bestId = null;
+    let bestScore = -1;
+    anchors.forEach(m => {
+      const id = (m[1]||'').split('?')[0];
+      const text = (m[2]||'').replace(/<[^>]+>/g,' ').replace(/&amp;/g,'&').replace(/\s+/g,' ').trim();
+      const t = text.toLowerCase().normalize('NFD').replace(/[^a-z0-9\s]/g,'').trim();
+      if (!t) return;
+      const titleMatch = normTitle && t ? (t.includes(normTitle) || normTitle.includes(t)) : false;
+      const score = titleMatch ? t.length / Math.max(normTitle.length, 1) : 0;
+      if (score > bestScore) {
+        bestScore = score;
+        bestId = id;
+      }
+    });
+
+    if (bestId) {
+      const pageRating = await fetchGoodreadsPageRating(bestId);
+      if (pageRating) return pageRating;
+    }
+
+    // Último intento: primer aria-label global
+    const match = /aria-label="\s*([0-9.,]+)\s+average rating\s*"/i.exec(html);
+    if (match && match[1]) {
+      const num = parseFloat(match[1].replace(',', '.'));
+      if (num && num > 0 && num <= 5) return num;
+    }
+  } catch (err) {
+    // ignorar
+  }
+  return 0;
+}
+
+async function fetchGoodreadsByIsbn(isbn) {
+  if (!isbn) return 0;
+  try {
+    const url = `https://www.goodreads.com/search?q=${encodeURIComponent(isbn)}`;
+    const html = await axios.get(url, { timeout: 8000, headers: { 'User-Agent': 'Mozilla/5.0' } }).then(r => r.data || '');
+    // Buscar directamente en la página de resultados por ISBN
+    let match = /aria-label="\s*([0-9.,]+)\s+average rating\s*"/i.exec(html);
+    if (match && match[1]) {
+      const num = parseFloat(match[1].replace(',', '.'));
+      if (num && num > 0 && num <= 5) return num;
+    }
+    match = /"average_rating"\s*:\s*"([0-9.]+)"/i.exec(html);
+    if (match && match[1]) {
+      const num = parseFloat(match[1]);
+      if (num && num > 0 && num <= 5) return num;
+    }
+  } catch (err) {
+    // ignorar
+  }
+  return 0;
+}
+
 function ordenarBooks(books, criterio, tipo = null) {
   let sorted = [...books];
   if (tipo === 'autor' || tipo === 'saga') {
@@ -336,7 +650,7 @@ function ordenarBooks(books, criterio, tipo = null) {
 
 // ------------------ RENDER ------------------
 function renderBookPage({ libros, titlePage, tipo, nombre, req, noResultsHtml }) {
-  const orden = (req && req.query.orden) || 'alfabetico';
+  const orden = (req && (req.query.ordenar || req.query.orden)) || 'alfabetico';
   libros = ordenarBooks(libros, orden, tipo);
   let booksHtml = libros.map(book => {
     const cover = getCoverForBook(book.id);
@@ -358,7 +672,7 @@ function renderBookPage({ libros, titlePage, tipo, nombre, req, noResultsHtml })
   }).join('');
 
   if (!booksHtml || booksHtml.trim() === '') {
-    booksHtml = noResultsHtml || `<div style="padding:40px;color:#eee;"><h2>¡Oh, qué desastre!</h2><p style="font-size: 1.2em; line-height: 1.5;"><strong>Un prisionero de Azkaban murmura:</strong> "El libro no existe o fue confiscado. Vuelve luego."</p></div>`;
+    booksHtml = noResultsHtml || getRandomNoResultHtml();
   }
 
   return `<!DOCTYPE html>
@@ -629,8 +943,7 @@ app.get('/libros', async (req,res)=>{
       return null;
     }).filter(x => x);
 
-    const noResultsHtml = `<div style="padding:40px;color:#eee;"><h2>¡Oh, qué desastre!</h2><p style="font-size: 1.2em; line-height: 1.5;"><strong>Un prisionero de Azkaban murmura:</strong> "Claramente, el libro que buscas ha sido confiscado por el Ministerio por 'contenido altamente peligroso'... O tal vez, simplemente no existe. Vuelve cuando tu búsqueda sea menos patética."</p></div>`;
-    res.send(renderBookPage({libros:librosForRender,titlePage:'Libros',tipo:'libros',nombre:'libros',req,noResultsHtml}));
+    res.send(renderBookPage({libros:librosForRender,titlePage:'Libros',tipo:'libros',nombre:'libros',req,noResultsHtml:getRandomNoResultHtml()}));
   } catch(err){console.error(err); res.send('<p>Error al cargar libros.</p>');}
 });
 
@@ -639,10 +952,10 @@ app.get('/autores', (req,res)=>{
   const query = (req.query.buscar||'').trim().toLowerCase();
   let autores = [...new Set(bookMetadata.map(b=>b.author).filter(a=>a))].sort();
   if(query) autores = autores.filter(a=>a.toLowerCase().includes(query));
-  const authorsHtml = autores.map(a=>{
+  const authorsHtml = autores.length ? autores.map(a=>{
     const initials = a.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0, 3);
     return `<div class="book"><div style="width:50px; height:50px; border:2px solid #19E6D6; border-radius:50%; display:flex; align-items:center; justify-content:center; margin-bottom:8px;"><span style="font-family:'MedievalSharp', cursive; color:#19E6D6; font-size:18px; font-weight:normal;">${initials}</span></div><div class="title">${a}</div><div class="meta"><a href="/autor?name=${encodeURIComponent(a)}">Ver libros</a></div></div>`;
-  }).join('');
+  }).join('') : getRandomNoResultHtml();
   res.send(`<!DOCTYPE html>
 <html lang="es">
 <head><meta charset="UTF-8"><title>Autores</title><style>${css}</style></head>
@@ -713,10 +1026,11 @@ app.get('/sagas', (req,res)=>{
   const query = (req.query.buscar||'').trim().toLowerCase();
   let sagas = [...new Set(bookMetadata.map(b=>b.saga?.name).filter(a=>a))].sort();
   if(query) sagas = sagas.filter(s=>s.toLowerCase().includes(query));
-  const sagasHtml = sagas.map(s=>{
-    const symbol = azkbanSymbol(s);
+  const runes = uniqueRunes(sagas.length);
+  const sagasHtml = sagas.length ? sagas.map((s, idx)=>{
+    const symbol = runes[idx];
     return `<div class="book"><div style="width:50px; height:50px; border:2px solid #19E6D6; border-radius:50%; display:flex; align-items:center; justify-content:center; margin-bottom:8px;">${symbol}</div><div class="title">${s}</div><div class="meta"><a href="/saga?name=${encodeURIComponent(s)}">Ver libros</a></div></div>`;
-  }).join('');
+  }).join('') : getRandomNoResultHtml();
   res.send(`<!DOCTYPE html>
 <html lang="es">
 <head><meta charset="UTF-8"><title>Sagas</title><style>${css}</style></head>
@@ -786,7 +1100,17 @@ app.get('/sagas', (req,res)=>{
 app.get('/autor', (req,res)=>{
   const nombreAutor = req.query.name;
   if(!nombreAutor) return res.redirect('/autores');
-  const libros = bookMetadata.filter(b=>b.author===nombreAutor);
+  const query = (req.query.buscar||'').trim().toLowerCase();
+  const orden = req.query.ordenar || 'alfabetico';
+  let libros = bookMetadata.filter(b=>b.author===nombreAutor);
+  if (query) {
+    libros = libros.filter(b=>{
+      const title = (b.title||'').toLowerCase();
+      const author = (b.author||'').toLowerCase();
+      return title.includes(query) || author.includes(query);
+    });
+  }
+  libros = ordenarBooks(libros, orden, 'autor');
   res.send(renderBookPage({libros,titlePage:`Libros de ${nombreAutor}`,tipo:'autor',nombre:nombreAutor,req}));
 });
 
@@ -794,8 +1118,85 @@ app.get('/autor', (req,res)=>{
 app.get('/saga', (req,res)=>{
   const nombreSaga = req.query.name;
   if(!nombreSaga) return res.redirect('/sagas');
-  const libros = bookMetadata.filter(b=>b.saga?.name===nombreSaga);
+  const query = (req.query.buscar||'').trim().toLowerCase();
+  const orden = req.query.ordenar || 'alfabetico';
+  let libros = bookMetadata.filter(b=>b.saga?.name===nombreSaga);
+  if (query) {
+    libros = libros.filter(b=>{
+      const title = (b.title||'').toLowerCase();
+      const author = (b.author||'').toLowerCase();
+      return title.includes(query) || author.includes(query);
+    });
+  }
+  libros = ordenarBooks(libros, orden, 'saga');
   res.send(renderBookPage({libros,titlePage:`Libros de ${nombreSaga}`,tipo:'saga',nombre:nombreSaga,req}));
+});
+
+// Recomendados por rating (Goodreads) - Top 5
+app.get('/recomendados', async (req,res)=>{
+  try {
+    const books = shuffleArray(bookMetadata.filter(b=>b && b.title && b.author)).slice(0, 200); // muestreo para respuesta rápida
+
+    const results = [];
+    const maxConcurrent = 8;
+    let idx = 0;
+
+    const worker = async () => {
+      while (idx < books.length) {
+        const myIndex = idx++;
+        const book = books[myIndex];
+        if (!book) continue;
+        const rating = await fetchRating(book.title, book.author, book.isbn);
+        results.push({ ...book, rating });
+      }
+    };
+
+    await Promise.all(Array.from({ length: maxConcurrent }, worker));
+
+    const top = results
+      .filter(r=>r.rating > 0)
+      .sort((a,b)=> b.rating - a.rating)
+      .slice(0,5);
+
+    const cards = top.map(r=>{
+      const cover = getCoverForBook(r.id);
+      const imgHtml = cover ? `<img src="${cover}" />` : `<div style="width:80px;height:120px;background:#333;border-radius:5px;"></div>`;
+      return `<div class="book" style="align-items:flex-start;gap:6px;">
+        <div style="position:absolute;top:4px;right:6px;background:#19E6D6;color:#000;padding:2px 6px;border-radius:6px;font-size:11px;font-family:'MedievalSharp', cursive;">GR ${r.rating.toFixed(2)}</div>
+        ${imgHtml}
+        <div class="title" style="margin-top:6px;">${r.title}</div>
+        <div class="author-span" style="margin-top:2px;">${r.author}</div>
+        ${r.saga?.name ? `<div class="number-span" style="margin-top:2px;">${r.saga.name}${r.saga.number?` #${r.saga.number}`:''}</div>` : ''}
+        <div class="meta" style="margin-top:4px;"><a href="/libro?id=${encodeURIComponent(r.id)}">Ver</a></div>
+      </div>`;
+    }).join('') || getRandomNoResultHtml();
+
+    res.send(`<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"><title>Recomendados (Top 5)</title><style>${css}</style></head>
+<body>
+  <div class="header-banner top" style="background-image:url('/cover/secuendarias/portada11.png');"></div>
+  <div class="overlay top">
+    <div class="top-buttons secondary"><a href="/">Inicio</a></div>
+    <h1>Top 5 recomendados</h1>
+    <div class="top-buttons">
+      <a href="/libros">Libros</a>
+      <a href="/sagas">Sagas</a>
+      <a href="/autores">Autores</a>
+    </div>
+  </div>
+
+  <div style="padding:30px 20px 20px 20px; max-width:1100px; margin:0 auto;">
+    <p style="color:#ccc; font-family:'MedievalSharp', cursive;">Ranking calculado con ratings de Goodreads (autocomplete). Se muestran solo libros con puntaje disponible.</p>
+    <div id="grid">${cards}</div>
+    <p><a href="/" class="button">← Volver</a></p>
+  </div>
+</body>
+</html>`);
+  } catch (err) {
+    console.error(err);
+    res.send('<p>Error al cargar recomendados.</p>');
+  }
 });
 
 // Libro individual -> muestra sinopsis + portada
@@ -920,7 +1321,7 @@ app.post('/download-zip', async (req, res) => {
 });
 
 // Stats dashboard - protegido con contraseña
-app.get('/stats', (req, res) => {
+app.get('/stats', async (req, res) => {
   const pass = req.query.pass || '';
   if (pass !== '252914') {
     const randomMsg = deniedMessages[Math.floor(Math.random() * deniedMessages.length)];
@@ -975,6 +1376,29 @@ app.get('/stats', (req, res) => {
     .map(([name, count]) => ({ name, count }));
   
   const promedioLibrosPorAutor = (totalLibros / totalAutores).toFixed(1);
+
+  // Top 5 por rating (Goodreads)
+  const librosParaRating = bookMetadata.filter(b => b && b.title && b.author);
+  const results = [];
+  const maxConcurrent = 8;
+  let idx = 0;
+
+  const worker = async () => {
+    while (idx < librosParaRating.length) {
+      const myIndex = idx++;
+      const book = librosParaRating[myIndex];
+      if (!book) continue;
+      const rating = await fetchRating(book.title, book.author, book.isbn);
+      results.push({ ...book, rating });
+    }
+  };
+
+  await Promise.all(Array.from({ length: maxConcurrent }, worker));
+
+  const topRatings = results
+    .filter(r => r.rating > 0)
+    .sort((a, b) => b.rating - a.rating)
+    .slice(0, 5);
   
   res.send(`<!DOCTYPE html>
 <html lang="es">
@@ -1032,6 +1456,33 @@ app.get('/stats', (req, res) => {
         </div>
         <div style="font-size:11px; color:#aaa; margin-bottom:6px;">Promedio</div>
         <div style="font-size:24px; color:#19E6D6; font-weight:bold; font-family:'MedievalSharp', cursive;">${promedioLibrosPorAutor}</div>
+      </div>
+    </div>
+    
+    <!-- Top 5 por rating (Goodreads) -->
+    <div style="margin-top:20px; padding:30px; background:linear-gradient(135deg, rgba(25,25,25,0.95), rgba(18,18,18,0.9)); border:1px solid rgba(25,230,214,0.2); border-radius:12px;">
+      <h3 style="font-family:'MedievalSharp', cursive; color:#19E6D6; margin:0 0 16px 0; font-size:20px;">Top 5 libros Goodreads</h3>
+      <div style="overflow-x:auto;">
+        <table style="width:100%; border-collapse:collapse; min-width:480px;">
+          <thead>
+            <tr style="background:rgba(25,230,214,0.08);">
+              <th style="text-align:left; padding:10px 8px; color:#19E6D6; font-family:'MedievalSharp', cursive;">#</th>
+              <th style="text-align:left; padding:10px 8px; color:#19E6D6; font-family:'MedievalSharp', cursive;">Título</th>
+              <th style="text-align:left; padding:10px 8px; color:#19E6D6; font-family:'MedievalSharp', cursive;">Autor</th>
+              <th style="text-align:right; padding:10px 8px; color:#19E6D6; font-family:'MedievalSharp', cursive;">Rating</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${topRatings.map((r, i) => `
+              <tr style="border-bottom:1px solid rgba(25,230,214,0.1);">
+                <td style="padding:10px 8px; color:#fff; font-family:'MedievalSharp', cursive;">${i + 1}</td>
+                <td style="padding:10px 8px; color:#fff;">${r.title}</td>
+                <td style="padding:10px 8px; color:#ccc;">${r.author}</td>
+                <td style="padding:10px 8px; color:#19E6D6; text-align:right; font-weight:bold;">${r.rating.toFixed(2)}</td>
+              </tr>
+            `).join('') || `<tr><td colspan="4" style="padding:12px 8px; color:#999; text-align:center;">Sin ratings disponibles</td></tr>`}
+          </tbody>
+        </table>
       </div>
     </div>
     
