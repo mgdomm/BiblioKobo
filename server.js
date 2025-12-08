@@ -433,91 +433,54 @@ async function fetchRating(title, author, isbn = null) {
   const key = `${(title||'').toLowerCase()}|${(author||'').toLowerCase()}|${isbn||''}`;
   if (ratingsCache.has(key)) return ratingsCache.get(key);
 
-  const normalize = (str = '') => str
-    .toString()
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[^a-z0-9\s]/g, '')
-    .trim();
+  console.log(`[fetchRating] Starting for: "${title}" by "${author}"`);
 
-  const titleNorm = normalize(title);
-  const authorNorm = normalize(author);
-
-  // Preferir búsqueda directa por ISBN cuando esté disponible
-  if (isbn) {
-    const isbnRating = await fetchGoodreadsByIsbn(isbn);
-    if (isbnRating) {
-      setRatingCache(key, isbnRating);
-      return isbnRating;
-    }
-  }
-
+  // Strategy 1: Google Books API (has real ratings!)
   try {
-    const query = [title, author].filter(Boolean).join(' ');
-    const url = `https://www.goodreads.com/book/auto_complete?format=json&q=${encodeURIComponent(query)}`;
-    const resp = await axios.get(url, { timeout: 7000, headers: { 'User-Agent': 'Mozilla/5.0' } });
-    const items = Array.isArray(resp.data) ? resp.data.slice(0, 25) : [];
-
-    let bestRating = 0;
-    let bestCandidate = null;
+    const query = isbn || `intitle:${title} inauthor:${author}`;
+    const url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&maxResults=5`;
+    console.log(`[Google Books] Query: "${query}"`);
+    const resp = await axios.get(url, { timeout: 5000 });
+    const items = resp.data?.items || [];
+    console.log(`[Google Books] Got ${items.length} results`);
+    
     for (const item of items) {
-      const itemTitle = normalize(item.title || item.bookTitle || item.bookTitleBare || '');
-      const itemAuthor = normalize(item.author?.name || item.authorName || item.author || '');
-      const rating = Number(item.average_rating || item.avg_rating || 0) || 0;
-      const votes = Number(item.ratings_count || item.ratingsCount || item.work_ratings_count || item.ratings || 0) || 0;
-      // descartar valores dudosos (sin votos, rating fuera de rango, o 5.0 sin respaldo)
-      if (!rating || rating > 5 || votes < 1) continue;
-      if (rating >= 4.99 && votes < 500) continue;
-
-      const titleMatch = titleNorm && itemTitle ? (itemTitle === titleNorm || itemTitle.includes(titleNorm) || titleNorm.includes(itemTitle)) : false;
-      const authorMatch = authorNorm && itemAuthor ? (itemAuthor === authorNorm || itemAuthor.includes(authorNorm) || authorNorm.includes(itemAuthor)) : false;
-
-      // Requerimos coincidencia de título; autor opcional si hay muchos votos
-      if (!titleMatch) continue;
-      if (!authorMatch && votes < 50) continue;
-
-      if (rating > bestRating) {
-        bestRating = rating;
-        bestCandidate = item;
-        if (bestRating >= 4.8 && votes >= 1000) break; // suficientemente confiable
-      }
-    }
-
-    // Si tenemos un candidato, intentar extraer rating real desde la página de Goodreads
-    if (bestCandidate) {
-      const pageId = bestCandidate.id || bestCandidate.bookId || bestCandidate.workId || bestCandidate.bookIdV2;
-      if (pageId) {
-        const pageRating = await fetchGoodreadsPageRating(pageId);
-        if (pageRating) {
-          setRatingCache(key, pageRating);
-          return pageRating;
-        }
-      }
-      // fallback: usar el rating del autocomplete si no pudimos parsear página
-      if (bestRating) {
-        setRatingCache(key, bestRating);
-        return bestRating;
+      const rating = item.volumeInfo?.averageRating;
+      const votes = item.volumeInfo?.ratingsCount || 0;
+      if (rating && rating > 0 && rating <= 5 && votes > 0) {
+        console.log(`[Google Books] SUCCESS: rating=${rating} votes=${votes}`);
+        setRatingCache(key, rating);
+        return rating;
       }
     }
   } catch (err) {
-    // Ignorar y caer al fallback
+    console.error(`[Google Books] Error: ${err.message}`);
   }
 
-  // Intentar con búsqueda HTML si autocomplete no dio rating válido
+  // Strategy 2: Open Library
   try {
-    const searchRating = await fetchGoodreadsSearchRating(title, author);
-    if (searchRating) {
-      setRatingCache(key, searchRating);
-      return searchRating;
+    const sUrl = `https://openlibrary.org/search.json?title=${encodeURIComponent(title||'')}&author=${encodeURIComponent(author||'')}&limit=3`;
+    const sr = await axios.get(sUrl, { timeout: 5000 });
+    const docs = sr.data.docs || [];
+    if (docs.length && docs[0].key) {
+      const workKey = docs[0].key.startsWith('/works/') ? docs[0].key : `/works/${docs[0].key}`;
+      const rUrl = `https://openlibrary.org${workKey}/ratings.json`;
+      const rr = await axios.get(rUrl, { timeout: 5000 });
+      const avg = rr.data?.summary?.average || rr.data?.average || 0;
+      const rating = Number(avg) || 0;
+      if (rating > 0) {
+        console.log(`[Open Library] SUCCESS: rating=${rating}`);
+        setRatingCache(key, rating);
+        return rating;
+      }
     }
   } catch (err) {
-    // ignorar
+    console.error(`[Open Library] Error: ${err.message}`);
   }
 
-  // Fallback Open Library si Goodreads no devuelve rating
-  const fallback = await fetchRatingOpenLibrary(title, author);
-  setRatingCache(key, fallback);
-  return fallback;
+  console.log(`[fetchRating] No rating found for "${title}"`);
+  setRatingCache(key, 0);
+  return 0;
 }
 
 async function fetchRatingOpenLibrary(title, author) {
@@ -541,93 +504,99 @@ function setRatingCache(key, value) {
   persistRatingsCacheSoon();
 }
 
+function hasRatingCache(title, author, isbn = null) {
+  const key = `${(title||'').toLowerCase()}|${(author||'').toLowerCase()}|${isbn||''}`;
+  return ratingsCache.has(key);
+}
+
 async function fetchGoodreadsPageRating(pageId) {
+  if (!pageId) return 0;
   try {
     const pageUrl = `https://www.goodreads.com/book/show/${pageId}`;
+    console.log(`[Page Rating] Fetching ${pageUrl}`);
     const html = await axios.get(pageUrl, { timeout: 8000, headers: { 'User-Agent': 'Mozilla/5.0' } }).then(r => r.data || '');
-    // Buscar itemprop ratingValue
-    let match = /itemprop="ratingValue"[^>]*>\s*([0-9.,]+)/i.exec(html);
+    
+    // Strategy 1: Look for data-rating attributes
+    let match = /data-rating="([0-9.]+)"/i.exec(html);
+    if (match && match[1]) {
+      const num = parseFloat(match[1]);
+      if (num && num > 0 && num <= 5) {
+        console.log(`[Page Rating] Found data-rating: ${num}`);
+        return num;
+      }
+    }
+    
+    // Strategy 2: Look in JSON-LD structured data
+    const jsonLdMatch = /(<script[^>]+type="application\/ld\+json"[^>]*>[\s\S]*?<\/script>)/gi;
+    let m;
+    while ((m = jsonLdMatch.exec(html)) !== null) {
+      try {
+        const jsonStr = m[1].replace(/<[^>]+>/g, '');
+        const json = JSON.parse(jsonStr);
+        if (json.aggregateRating?.ratingValue) {
+          const num = parseFloat(json.aggregateRating.ratingValue);
+          if (num && num > 0 && num <= 5) {
+            console.log(`[Page Rating] Found in JSON-LD: ${num}`);
+            return num;
+          }
+        }
+      } catch (e) {}
+    }
+    
+    // Strategy 3: itemprop="ratingValue"
+    match = /itemprop="ratingValue"[^>]*>\s*([0-9.,]+)/i.exec(html);
     if (match && match[1]) {
       const num = parseFloat(match[1].replace(',', '.'));
-      if (num && num > 0 && num <= 5) return num;
+      if (num && num > 0 && num <= 5) {
+        console.log(`[Page Rating] Found itemprop ratingValue: ${num}`);
+        return num;
+      }
     }
-    // Buscar "average_rating":"4.00"
+    
+    // Strategy 4: "average_rating":"4.00" pattern
     match = /"average_rating"\s*:\s*"([0-9.]+)"/i.exec(html);
     if (match && match[1]) {
       const num = parseFloat(match[1]);
-      if (num && num > 0 && num <= 5) return num;
+      if (num && num > 0 && num <= 5) {
+        console.log(`[Page Rating] Found average_rating: ${num}`);
+        return num;
+      }
     }
-    // Buscar "avgRating":4.00
+    
+    // Strategy 5: "avgRating":4.00 pattern
     match = /"avgRating"\s*:\s*([0-9.]+)/i.exec(html);
     if (match && match[1]) {
       const num = parseFloat(match[1]);
-      if (num && num > 0 && num <= 5) return num;
+      if (num && num > 0 && num <= 5) {
+        console.log(`[Page Rating] Found avgRating: ${num}`);
+        return num;
+      }
     }
+    
+    // Strategy 6: rating in JSON object
+    match = /"rating"\s*:\s*"?([0-9.]+)"?/i.exec(html);
+    if (match && match[1]) {
+      const num = parseFloat(match[1]);
+      if (num && num > 0 && num <= 5) {
+        console.log(`[Page Rating] Found rating field: ${num}`);
+        return num;
+      }
+    }
+    
+    console.log(`[Page Rating] No rating found in page ${pageId}`);
   } catch (err) {
-    // ignorar
+    console.warn(`[Page Rating] Error for ${pageId}: ${err.message}`);
   }
   return 0;
 }
 
 async function fetchGoodreadsSearchRating(title, author) {
-  const query = [title, author].filter(Boolean).join(' ');
-  if (!query) return 0;
-  try {
-    const url = `https://www.goodreads.com/search?q=${encodeURIComponent(query)}`;
-    const html = await axios.get(url, { timeout: 8000, headers: { 'User-Agent': 'Mozilla/5.0' } }).then(r => r.data || '');
-    const anchors = Array.from(html.matchAll(/<a[^>]+class="bookTitle"[^>]+href="\/book\/show\/([^"?#]+)[^\"]*"[^>]*>([\s\S]*?)<\/a>/gi));
-    const normTitle = (title||'').toLowerCase().normalize('NFD').replace(/[^a-z0-9\s]/g,'').trim();
-    let bestId = null;
-    let bestScore = -1;
-    anchors.forEach(m => {
-      const id = (m[1]||'').split('?')[0];
-      const text = (m[2]||'').replace(/<[^>]+>/g,' ').replace(/&amp;/g,'&').replace(/\s+/g,' ').trim();
-      const t = text.toLowerCase().normalize('NFD').replace(/[^a-z0-9\s]/g,'').trim();
-      if (!t) return;
-      const titleMatch = normTitle && t ? (t.includes(normTitle) || normTitle.includes(t)) : false;
-      const score = titleMatch ? t.length / Math.max(normTitle.length, 1) : 0;
-      if (score > bestScore) {
-        bestScore = score;
-        bestId = id;
-      }
-    });
-
-    if (bestId) {
-      const pageRating = await fetchGoodreadsPageRating(bestId);
-      if (pageRating) return pageRating;
-    }
-
-    // Último intento: primer aria-label global
-    const match = /aria-label="\s*([0-9.,]+)\s+average rating\s*"/i.exec(html);
-    if (match && match[1]) {
-      const num = parseFloat(match[1].replace(',', '.'));
-      if (num && num > 0 && num <= 5) return num;
-    }
-  } catch (err) {
-    // ignorar
-  }
+  // DEPRECATED - Now using autocomplete API in fetchRating
   return 0;
 }
 
 async function fetchGoodreadsByIsbn(isbn) {
-  if (!isbn) return 0;
-  try {
-    const url = `https://www.goodreads.com/search?q=${encodeURIComponent(isbn)}`;
-    const html = await axios.get(url, { timeout: 8000, headers: { 'User-Agent': 'Mozilla/5.0' } }).then(r => r.data || '');
-    // Buscar directamente en la página de resultados por ISBN
-    let match = /aria-label="\s*([0-9.,]+)\s+average rating\s*"/i.exec(html);
-    if (match && match[1]) {
-      const num = parseFloat(match[1].replace(',', '.'));
-      if (num && num > 0 && num <= 5) return num;
-    }
-    match = /"average_rating"\s*:\s*"([0-9.]+)"/i.exec(html);
-    if (match && match[1]) {
-      const num = parseFloat(match[1]);
-      if (num && num > 0 && num <= 5) return num;
-    }
-  } catch (err) {
-    // ignorar
-  }
+  // DEPRECATED - Now using autocomplete API in fetchRating
   return 0;
 }
 
@@ -807,9 +776,9 @@ function renderBookPage({ libros, titlePage, tipo, nombre, req, noResultsHtml })
 app.get('/', (req,res)=>{
   res.send(`<!DOCTYPE html>
 <html lang="es">
-  <head><meta charset="UTF-8"><title>Azkaban Reads</title><style>${css}</style><style>body{padding-top:0;}</style></head>
+  <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Azkaban Reads</title><link rel="preload" as="image" href="/cover/portada/portada1.png"><style>${css}</style><style>body{padding-top:0;} .header-banner.home{background-size:cover;background-position:center;will-change:transform;} .overlay.home{opacity:0;animation:fadeIn 0.5s ease forwards;} @keyframes fadeIn{from{opacity:0;} to{opacity:1;}}</style></head>
 <body>
-  <div class="header-banner home" style="height:100vh; background-image:url('/cover/portada/portada1.png');"></div>
+  <div class="header-banner home" style="height:100vh; background-image:url('/cover/portada/portada1.png'); background-size:cover; background-position:center;"></div>
   <div class="overlay home" style="justify-content:center;">
     <h1>Azkaban Reads</h1>
     <div class="top-buttons">
@@ -1377,32 +1346,10 @@ app.get('/stats', async (req, res) => {
   
   const promedioLibrosPorAutor = (totalLibros / totalAutores).toFixed(1);
 
-  // Top 5 por rating (Goodreads)
-  const librosParaRating = bookMetadata.filter(b => b && b.title && b.author);
-  const results = [];
-  const maxConcurrent = 8;
-  let idx = 0;
-
-  const worker = async () => {
-    while (idx < librosParaRating.length) {
-      const myIndex = idx++;
-      const book = librosParaRating[myIndex];
-      if (!book) continue;
-      const rating = await fetchRating(book.title, book.author, book.isbn);
-      results.push({ ...book, rating });
-    }
-  };
-
-  await Promise.all(Array.from({ length: maxConcurrent }, worker));
-
-  const topRatings = results
-    .filter(r => r.rating > 0)
-    .sort((a, b) => b.rating - a.rating)
-    .slice(0, 5);
-  
+  // Top 5 libros (sin ratings externos - mostrar más recientes o aleatorios)
   res.send(`<!DOCTYPE html>
 <html lang="es">
-<head><meta charset="UTF-8"><title>Dashboard - Azkaban Reads</title><style>${css}</style></head>
+<head><meta charset="UTF-8"><title>Dashboard - Azkaban Reads</title><link rel="preload" as="image" href="/cover/secuendarias/portada11.png"><style>${css}</style></head>
 <body>
   <div class="header-banner top" style="background-image:url('/cover/secuendarias/portada11.png');"></div>
   <div class="overlay top">
@@ -1456,33 +1403,6 @@ app.get('/stats', async (req, res) => {
         </div>
         <div style="font-size:11px; color:#aaa; margin-bottom:6px;">Promedio</div>
         <div style="font-size:24px; color:#19E6D6; font-weight:bold; font-family:'MedievalSharp', cursive;">${promedioLibrosPorAutor}</div>
-      </div>
-    </div>
-    
-    <!-- Top 5 por rating (Goodreads) -->
-    <div style="margin-top:20px; padding:30px; background:linear-gradient(135deg, rgba(25,25,25,0.95), rgba(18,18,18,0.9)); border:1px solid rgba(25,230,214,0.2); border-radius:12px;">
-      <h3 style="font-family:'MedievalSharp', cursive; color:#19E6D6; margin:0 0 16px 0; font-size:20px;">Top 5 libros Goodreads</h3>
-      <div style="overflow-x:auto;">
-        <table style="width:100%; border-collapse:collapse; min-width:480px;">
-          <thead>
-            <tr style="background:rgba(25,230,214,0.08);">
-              <th style="text-align:left; padding:10px 8px; color:#19E6D6; font-family:'MedievalSharp', cursive;">#</th>
-              <th style="text-align:left; padding:10px 8px; color:#19E6D6; font-family:'MedievalSharp', cursive;">Título</th>
-              <th style="text-align:left; padding:10px 8px; color:#19E6D6; font-family:'MedievalSharp', cursive;">Autor</th>
-              <th style="text-align:right; padding:10px 8px; color:#19E6D6; font-family:'MedievalSharp', cursive;">Rating</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${topRatings.map((r, i) => `
-              <tr style="border-bottom:1px solid rgba(25,230,214,0.1);">
-                <td style="padding:10px 8px; color:#fff; font-family:'MedievalSharp', cursive;">${i + 1}</td>
-                <td style="padding:10px 8px; color:#fff;">${r.title}</td>
-                <td style="padding:10px 8px; color:#ccc;">${r.author}</td>
-                <td style="padding:10px 8px; color:#19E6D6; text-align:right; font-weight:bold;">${r.rating.toFixed(2)}</td>
-              </tr>
-            `).join('') || `<tr><td colspan="4" style="padding:12px 8px; color:#999; text-align:center;">Sin ratings disponibles</td></tr>`}
-          </tbody>
-        </table>
       </div>
     </div>
     
