@@ -1464,9 +1464,25 @@ app.get('/libro', async (req, res) => {
   const author = meta.author || 'Desconocido';
   const saga = meta.saga?.name || null;
   const synopsis = meta.description || 'No se encontró sinopsis.';
-  const rating = meta.averageRating ? `⭐ ${meta.averageRating}/5` : '';
+  const rating = meta.averageRating ? `⭐ ${meta.averageRating}/5 (${meta.ratingsCount || 'sin votos'})` : '';
+  const publisher = meta.publisher || null;
+  const publishedDate = meta.publishedDate || null;
+  const pageCount = meta.pageCount || null;
+  const categories = meta.categories || [];
+  const language = meta.language || null;
 
   const synopsisHtml = `<div style="max-width:760px;margin:18px auto;color:#ddd;line-height:1.8;font-size:27px;">${synopsis}</div>`;
+  
+  // Información adicional de Google Books
+  const infoHtml = `
+    <div style="max-width:760px;margin:30px auto;padding:20px;background:rgba(25,230,214,0.1);border-left:4px solid #19E6D6;border-radius:8px;color:#ddd;font-size:16px;line-height:1.8;">
+      ${publisher ? `<div style="margin-bottom:12px;"><strong style="color:#19E6D6;">Editorial:</strong> ${publisher}</div>` : ''}
+      ${publishedDate ? `<div style="margin-bottom:12px;"><strong style="color:#19E6D6;">Fecha de publicación:</strong> ${publishedDate}</div>` : ''}
+      ${pageCount ? `<div style="margin-bottom:12px;"><strong style="color:#19E6D6;">Páginas:</strong> ${pageCount}</div>` : ''}
+      ${language ? `<div style="margin-bottom:12px;"><strong style="color:#19E6D6;">Idioma:</strong> ${language === 'es' ? 'Español' : language.toUpperCase()}</div>` : ''}
+      ${categories.length > 0 ? `<div style="margin-bottom:12px;"><strong style="color:#19E6D6;">Categorías:</strong> ${categories.join(', ')}</div>` : ''}
+    </div>
+  `;
 
   res.send(`<!DOCTYPE html>
 <html lang="es">
@@ -1490,6 +1506,7 @@ app.get('/libro', async (req, res) => {
       </div>
     </div>
     ${synopsisHtml}
+    ${infoHtml}
   </div>
 </body>
 </html>`);
