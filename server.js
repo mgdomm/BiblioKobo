@@ -2021,7 +2021,7 @@ app.get('/stats', async (req, res) => {
       
       <!-- Buscador -->
       <div style="margin-bottom:20px;">
-        <input type="text" id="search-incomplete" placeholder="Buscar por título o autor..." style="width:100%; padding:12px 15px; background:rgba(25,230,214,0.1); border:1px solid rgba(25,230,214,0.3); border-radius:6px; color:#fff; font-size:14px; box-sizing:border-box;">
+        <input type="text" id="search-incomplete" placeholder="Buscar por título, autor o saga..." style="width:100%; padding:12px 15px; background:rgba(25,230,214,0.1); border:1px solid rgba(25,230,214,0.3); border-radius:6px; color:#fff; font-size:14px; box-sizing:border-box;">
       </div>
       
       <!-- Tabla -->
@@ -2029,16 +2029,29 @@ app.get('/stats', async (req, res) => {
         <table id="incomplete-table" style="width:100%; border-collapse:collapse; font-size:13px;">
           <thead>
             <tr style="border-bottom:2px solid rgba(25,230,214,0.3);">
-              <th style="text-align:left; padding:12px; color:#19E6D6; font-weight:bold; font-family:'MedievalSharp', cursive;">Título</th>
-              <th style="text-align:left; padding:12px; color:#19E6D6; font-weight:bold; font-family:'MedievalSharp', cursive;">Autor</th>
-              <th style="text-align:left; padding:12px; color:#19E6D6; font-weight:bold; font-family:'MedievalSharp', cursive;">Campos Faltantes</th>
-              <th style="text-align:center; padding:12px; color:#19E6D6; font-weight:bold; font-family:'MedievalSharp', cursive;">Acciones</th>
+              <th style="text-align:left; padding:12px; color:#19E6D6; font-weight:bold; font-family:'MedievalSharp', cursive; min-width:150px;">Título</th>
+              <th style="text-align:left; padding:12px; color:#19E6D6; font-weight:bold; font-family:'MedievalSharp', cursive; min-width:120px;">Autor</th>
+              <th style="text-align:left; padding:12px; color:#19E6D6; font-weight:bold; font-family:'MedievalSharp', cursive; min-width:120px;">Saga</th>
+              <th style="text-align:left; padding:12px; color:#19E6D6; font-weight:bold; font-family:'MedievalSharp', cursive; min-width:100px;">Año</th>
+              <th style="text-align:left; padding:12px; color:#19E6D6; font-weight:bold; font-family:'MedievalSharp', cursive; min-width:200px;">Descripción (primeras 80 caracteres)</th>
+              <th style="text-align:center; padding:12px; color:#19E6D6; font-weight:bold; font-family:'MedievalSharp', cursive; min-width:80px;">Campos Faltantes</th>
+              <th style="text-align:center; padding:12px; color:#19E6D6; font-weight:bold; font-family:'MedievalSharp', cursive; min-width:80px;">Acciones</th>
             </tr>
           </thead>
           <tbody id="incomplete-tbody">
           </tbody>
         </table>
       </div>
+    </div>
+
+    <!-- Buscador de cualquier libro -->
+    <div style="margin-top:40px; padding:30px; background:linear-gradient(135deg, rgba(25,25,25,0.95), rgba(18,18,18,0.9)); border:1px solid rgba(25,230,214,0.2); border-radius:12px;">
+      <h3 style="font-family:'MedievalSharp', cursive; color:#19E6D6; margin:0 0 20px 0; font-size:20px;">🔍 Buscar Libro (cualquiera)</h3>
+      <div style="display:flex; gap:10px;">
+        <input type="text" id="search-any-book" placeholder="Busca por título, autor o saga..." style="flex:1; padding:12px 15px; background:rgba(25,230,214,0.1); border:1px solid rgba(25,230,214,0.3); border-radius:6px; color:#fff; font-size:14px; box-sizing:border-box;">
+        <button onclick="searchBook()" style="padding:12px 30px; background:linear-gradient(135deg, rgba(25,230,214,0.3), rgba(25,230,214,0.2)); border:1px solid rgba(25,230,214,0.5); border-radius:6px; color:#19E6D6; font-weight:bold; cursor:pointer; font-family:'MedievalSharp', cursive; font-size:14px;">Buscar</button>
+      </div>
+      <div id="search-results" style="margin-top:15px;"></div>
     </div>
     
     <!-- Modal para editar libro -->
@@ -2095,20 +2108,27 @@ app.get('/stats', async (req, res) => {
     // Renderizar tabla de libros incompletos
     function renderIncompleteBooks(books) {
       const tbody = document.getElementById('incomplete-tbody');
-      tbody.innerHTML = books.map(book => \`
-        <tr style="border-bottom:1px solid rgba(25,230,214,0.1); transition:background 0.2s;">
-          <td style="padding:12px; color:#fff;">\${book.title}</td>
-          <td style="padding:12px; color:#ccc;">\${book.author}</td>
-          <td style="padding:12px; color:#19E6D6; font-size:12px;">
-            <span style="background:rgba(230,25,25,0.2); padding:4px 8px; border-radius:3px; display:inline-block;">
-              \${book.missingFields.join(', ')}
-            </span>
-          </td>
-          <td style="padding:12px; text-align:center;">
-            <button onclick="openEditModal('\${book.id}')" style="background:rgba(25,230,214,0.2); border:1px solid rgba(25,230,214,0.4); color:#19E6D6; padding:6px 12px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:12px;">✏️ Editar</button>
-          </td>
-        </tr>
-      \`).join('');
+      tbody.innerHTML = books.map(book => {
+        const sagaDisplay = book.saga && book.saga.name ? (book.saga.name + ' #' + (book.saga.number || 1)) : '—';
+        const yearDisplay = book.publishedDate ? new Date(book.publishedDate).getFullYear() : '—';
+        const descDisplay = book.description ? book.description.substring(0, 80) : '(vacío)';
+        const descColor = book.description ? '#ccc' : '#ff6b6b';
+        const missingStr = book.missingFields && book.missingFields.length > 0 ? book.missingFields.join(', ') : 'Ninguno';
+        return '<tr style="border-bottom:1px solid rgba(25,230,214,0.1); transition:background 0.2s;">' +
+          '<td style="padding:12px; color:#19E6D6; font-weight:bold;">' + book.title + '</td>' +
+          '<td style="padding:12px; color:#ccc;">' + book.author + '</td>' +
+          '<td style="padding:12px; color:#fff;">' + sagaDisplay + '</td>' +
+          '<td style="padding:12px; color:#fff;">' + yearDisplay + '</td>' +
+          '<td style="padding:12px; color:' + descColor + '; font-size:12px; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">' + descDisplay + '</td>' +
+          '<td style="padding:12px; color:#ff6b6b; font-size:11px; text-align:center;">' +
+          (book.missingFields && book.missingFields.length > 0 ? 
+            '<span style="background:rgba(255,107,107,0.15); padding:4px 8px; border-radius:3px; display:inline-block;">' + missingStr + '</span>' :
+            '<span style="color:#4CAF50;">✓ Completo</span>') +
+          '</td>' +
+          '<td style="padding:12px; text-align:center;">' +
+          '<button onclick="openEditModal(\'' + book.id + '\')" style="background:rgba(25,230,214,0.2); border:1px solid rgba(25,230,214,0.4); color:#19E6D6; padding:6px 12px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:11px;">✏️ Editar</button>' +
+          '</td></tr>';
+      }).join('');
     }
     
     // Filtrar tabla según búsqueda
@@ -2116,7 +2136,8 @@ app.get('/stats', async (req, res) => {
       const searchTerm = e.target.value.toLowerCase();
       const filtered = allIncompleteBooks.filter(book => 
         book.title.toLowerCase().includes(searchTerm) || 
-        book.author.toLowerCase().includes(searchTerm)
+        book.author.toLowerCase().includes(searchTerm) ||
+        (book.saga && book.saga.name && book.saga.name.toLowerCase().includes(searchTerm))
       );
       renderIncompleteBooks(filtered);
     });
@@ -2165,6 +2186,51 @@ app.get('/stats', async (req, res) => {
     // Cerrar modal al hacer clic fuera
     document.getElementById('edit-modal').addEventListener('click', function(e) {
       if (e.target === this) closeEditModal();
+    });
+    
+    // Buscar cualquier libro
+    async function searchBook() {
+      const searchTerm = document.getElementById('search-any-book').value.toLowerCase().trim();
+      if (!searchTerm) {
+        document.getElementById('search-results').innerHTML = '<p style="color:#999;">Ingresa un término de búsqueda</p>';
+        return;
+      }
+      
+      try {
+        const response = await fetch('/api/books');
+        const allBooks = await response.json();
+        
+        const results = allBooks.filter(book =>
+          book.title.toLowerCase().includes(searchTerm) ||
+          book.author.toLowerCase().includes(searchTerm) ||
+          (book.saga && book.saga.name && book.saga.name.toLowerCase().includes(searchTerm))
+        ).slice(0, 10); // Limitar a 10 resultados
+        
+        if (results.length === 0) {
+          document.getElementById('search-results').innerHTML = '<p style="color:#ff6b6b;">No se encontraron libros</p>';
+          return;
+        }
+        
+        const html = results.map(book => {
+          const sagaStr = book.saga && book.saga.name ? (book.saga.name + ' #' + (book.saga.number || 1)) : '—';
+          return '<div style="background:rgba(25,230,214,0.05); border-left:3px solid #19E6D6; padding:12px; border-radius:4px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">' +
+            '<div style="flex:1;">' +
+            '<div style="color:#19E6D6; font-weight:bold; font-family:\'MedievalSharp\', cursive;">' + book.title + '</div>' +
+            '<div style="color:#999; font-size:12px; margin-top:4px;">' + book.author + ' • ' + sagaStr + '</div>' +
+            '</div>' +
+            '<button onclick="openEditModal(\'' + book.id + '\')" style="background:rgba(25,230,214,0.2); border:1px solid rgba(25,230,214,0.4); color:#19E6D6; padding:6px 12px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:11px; white-space:nowrap;">✏️ Editar JSON</button>' +
+            '</div>';
+        }).join('');
+        
+        document.getElementById('search-results').innerHTML = '<div style="color:#999; font-size:12px; margin-bottom:12px;">Se encontraron ' + results.length + ' resultado' + (results.length !== 1 ? 's' : '') + ':</div>' + html;
+      } catch (err) {
+        document.getElementById('search-results').innerHTML = '<p style="color:#ff6b6b;">Error: ' + err.message + '</p>';
+      }
+    }
+    
+    // Buscar al presionar Enter en el buscador global
+    document.getElementById('search-any-book').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') searchBook();
     });
     
     // Cargar libros al cargar la página
@@ -2865,27 +2931,43 @@ app.get('/dashboard', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
 });
 
+// API: Obtener todos los libros
+app.get('/api/books', async (req, res) => {
+  reloadBooksMetadata();
+  res.json(bookMetadata);
+});
+
 // API: Obtener libros incompletos (con campos faltantes)
 app.get('/api/books/incomplete', async (req, res) => {
   reloadBooksMetadata();
   
-  // Definir campos requeridos
-  const requiredFields = ['title', 'author', 'description', 'coverUrl', 'pageCount', 'language', 'categories'];
+  // Definir campos requeridos para considerar un libro COMPLETO
+  // Un libro es incompleto si le falta: título, autor, saga, descripción o año
+  const requiredFields = ['title', 'author', 'saga', 'description', 'publishedDate'];
   
   // Encontrar libros incompletos
   const incompleteBooks = bookMetadata.filter(book => {
     const missingFields = requiredFields.filter(field => {
-      if (field === 'categories') return !book[field] || !Array.isArray(book[field]) || book[field].length === 0;
+      if (field === 'saga') {
+        return !book[field] || !book[field].name || book[field].name.trim() === '';
+      }
       return !book[field] || (typeof book[field] === 'string' && book[field].trim() === '');
     });
     return missingFields.length > 0;
   }).map(book => {
     const missingFields = requiredFields.filter(field => {
-      if (field === 'categories') return !book[field] || !Array.isArray(book[field]) || book[field].length === 0;
+      if (field === 'saga') {
+        return !book[field] || !book[field].name || book[field].name.trim() === '';
+      }
       return !book[field] || (typeof book[field] === 'string' && book[field].trim() === '');
     });
     return {
-      ...book,
+      id: book.id,
+      title: book.title,
+      author: book.author,
+      saga: book.saga,
+      description: book.description,
+      publishedDate: book.publishedDate,
       missingFields
     };
   }).sort((a, b) => b.missingFields.length - a.missingFields.length);
