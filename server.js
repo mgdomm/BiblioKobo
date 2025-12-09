@@ -115,6 +115,45 @@ function getRandomCoverImage() {
   return coverImages[Math.floor(Math.random() * coverImages.length)];
 }
 
+// Parse drive file name formatted as "Title - Author (Saga #Number).ext"
+function parseDriveFileName(fileName) {
+  const base = fileName.replace(/\.[^/.]+$/, '');
+  const parsed = { title: base, author: 'Desconocido', sagaName: '', sagaNumber: 0 };
+  const fullMatch = base.match(/^(.+?)\s*-\s*(.+?)\s*\((.+?)\s*#(\d+)\)$/);
+  if (fullMatch) {
+    parsed.title = fullMatch[1].trim();
+    parsed.author = fullMatch[2].trim();
+    parsed.sagaName = fullMatch[3].trim();
+    parsed.sagaNumber = parseInt(fullMatch[4]) || 0;
+    return parsed;
+  }
+  const simpleMatch = base.match(/^(.+?)\s*-\s*(.+)$/);
+  if (simpleMatch) {
+    parsed.title = simpleMatch[1].trim();
+    parsed.author = simpleMatch[2].trim();
+  }
+  return parsed;
+}
+
+// Merge Google Books data into a book object without overwriting existing values
+function mergeGoogleDataIntoBook(book, data) {
+  if (!data) return false;
+  let updated = false;
+  const imageUrl = data.imageLinks?.thumbnail || data.imageLinks?.smallThumbnail || null;
+  if (!book.coverUrl && imageUrl) { book.coverUrl = imageUrl; updated = true; }
+  if (!book.imageLinks && data.imageLinks) { book.imageLinks = data.imageLinks; updated = true; }
+  if (!book.description && data.description) { book.description = data.description; updated = true; }
+  if (!book.publisher && data.publisher) { book.publisher = data.publisher; updated = true; }
+  if (!book.publishedDate && data.publishedDate) { book.publishedDate = data.publishedDate; updated = true; }
+  if (!book.pageCount && data.pageCount) { book.pageCount = data.pageCount; updated = true; }
+  if ((!book.categories || book.categories.length === 0) && data.categories) { book.categories = data.categories; updated = true; }
+  if (!book.language && data.language) { book.language = data.language; updated = true; }
+  if (book.averageRating == null && data.averageRating != null) { book.averageRating = data.averageRating; updated = true; }
+  if (!book.ratingsCount && data.ratingsCount) { book.ratingsCount = data.ratingsCount; updated = true; }
+  if (!book.previewLink && data.previewLink) { book.previewLink = data.previewLink; updated = true; }
+  return updated;
+}
+
 // Convertir Buffer en stream legible (para Google Drive API)
 function bufferToStream(buffer) {
   return Readable.from(buffer);
@@ -2311,37 +2350,42 @@ app.get('/api/sync-drive-metadata', async (req, res) => {
     let datosActualizados = 0;
 
     for (const file of allFiles) {
+      const parsed = parseDriveFileName(file.name);
       let book = bookMetadata.find(b => b.id === file.id);
       
       if (!book) {
-        // Libro nuevo del Drive - agregarlo
+        // Libro nuevo del Drive - usar datos parseados del nombre
         book = {
           id: file.id,
-          title: file.name.replace(/\.[^/.]+$/, ''),
-          author: 'Desconocido',
-          saga: { name: '', number: 0 }
+          driveFileId: file.id,
+          title: parsed.title,
+          author: parsed.author,
+          saga: { name: parsed.sagaName, number: parsed.sagaNumber },
+          createdTime: file.createdTime || new Date().toISOString()
         };
         bookMetadata.push(book);
         librosNuevos++;
-        console.log(`[SYNC] ➕ Nuevo libro: ${book.title}`);
+        console.log(`[SYNC] ➕ Nuevo libro: ${book.title} - ${book.author}`);
+      } else {
+        // Completar metadata básica con lo que venga del nombre de archivo
+        if (!book.title && parsed.title) book.title = parsed.title;
+        if (!book.author && parsed.author) book.author = parsed.author;
+        if (!book.saga) book.saga = { name: parsed.sagaName, number: parsed.sagaNumber };
+        if (book.saga && !book.saga.name && parsed.sagaName) book.saga.name = parsed.sagaName;
+        if (book.saga && (!book.saga.number || book.saga.number === 0) && parsed.sagaNumber) book.saga.number = parsed.sagaNumber;
+        if (!book.createdTime) book.createdTime = file.createdTime || new Date().toISOString();
       }
 
-      // Buscar datos en Google Books si no los tiene
-      if (!book.description || !book.averageRating) {
+      // Buscar datos en Google Books si faltan campos relevantes
+      const needsGoogle = !book.description || !book.coverUrl || !book.pageCount || !book.categories || book.categories.length === 0 || !book.language || !book.publisher || !book.previewLink || book.averageRating == null;
+      if (needsGoogle) {
         const data = await fetchGoogleBooksData(book.title, book.author);
-        
-        if (data) {
-          book.coverUrl = data.imageLinks?.thumbnail || data.imageLinks?.smallThumbnail || null;
-          book.description = data.description || null;
-          book.publisher = data.publisher || null;
-          book.publishedDate = data.publishedDate || null;
-          book.pageCount = data.pageCount || null;
-          book.categories = data.categories || [];
-          book.language = data.language || null;
-          book.averageRating = data.averageRating || null;
-          book.ratingsCount = data.ratingsCount || 0;
-          book.previewLink = data.previewLink || null;
-          book.imageLinks = data.imageLinks || null;
+        const updated = mergeGoogleDataIntoBook(book, data);
+        if (!book.coverUrl) {
+          const fallback = getRandomCoverImage();
+          if (fallback) { book.coverUrl = fallback; }
+        }
+        if (updated) {
           datosActualizados++;
           console.log(`[SYNC] 📚 Metadatos actualizados: ${book.title}`);
         }
@@ -2756,30 +2800,39 @@ app.post('/api/upload-to-drive', upload.single('file'), async (req, res) => {
       console.log(`[UPLOAD] ⚠️ No se encontraron datos en Google Books`);
     }
 
-    // Preparar libro: PRIORIZAR datos del formulario, solo completar vacíos con Google Books
+    // Preparar libro: usar datos del formulario y enriquecer con Google Books sin sobreescribir lo ya enviado
     const book = {
       id: driveFileId,
       driveFileId,
-      title: title, // Siempre usar el del formulario
-      author: author, // Siempre usar el del formulario
+      title,
+      author,
       saga: {
-        name: saga, // Siempre usar el del formulario
+        name: saga,
         number: parseInt(sagaNumber) || 1
       },
-      description: description || googleBooksData?.description || null,
-      publisher: googleBooksData?.publisher || null,
-      publishedDate: googleBooksData?.publishedDate || new Date().toISOString().split('T')[0],
-      pageCount: googleBooksData?.pageCount || null,
-      categories: googleBooksData?.categories || [],
-      language: googleBooksData?.language || 'es',
-      averageRating: googleBooksData?.averageRating || null,
-      ratingsCount: googleBooksData?.ratingsCount || null,
-      imageLinks: googleBooksData?.imageLinks || null,
-      previewLink: googleBooksData?.previewLink || null,
-      coverUrl: googleBooksData?.imageLinks?.thumbnail || getRandomCoverImage() || null,
+      description: description || null,
+      publisher: null,
+      publishedDate: new Date().toISOString().split('T')[0],
+      pageCount: null,
+      categories: [],
+      language: 'es',
+      averageRating: null,
+      ratingsCount: null,
+      imageLinks: null,
+      previewLink: null,
+      coverUrl: null,
       uploadDate: new Date().toISOString(),
       createdTime: driveCreatedTime
     };
+
+    const merged = mergeGoogleDataIntoBook(book, googleBooksData);
+    if (!book.coverUrl) {
+      const fallback = getRandomCoverImage();
+      if (fallback) book.coverUrl = fallback;
+    }
+    if (!book.categories) book.categories = [];
+    if (!book.language) book.language = 'es';
+    console.log(`[UPLOAD] 📚 Libro enriquecido: ${merged ? '✅ Google Books' : '⚠️ Sin datos de Google (fallback)'}`);
 
     // Reemplazar si ya existe el ID en memoria
     bookMetadata = bookMetadata.filter(b => b.id !== driveFileId);

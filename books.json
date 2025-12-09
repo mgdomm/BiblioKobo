@@ -22,7 +22,8 @@
     "imageLinks": {
       "smallThumbnail": "http://books.google.com/books/content?id=-4XZDAAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
       "thumbnail": "http://books.google.com/books/content?id=-4XZDAAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
-    }
+    },
+    "createdTime": "2025-11-26T18:10:57.624Z"
   },
   {
     "id": "1x6S0NH3xP_fQWCZrQfgnfasr-TCUerJm",
@@ -41,7 +42,12 @@
       "Young Adult Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=4SJZEQAAQBAJ&printsec=frontcover&dq=intitle:M%C3%A1s+alto+que+el+deseo+inauthor:Rebecca+Yarros&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=4SJZEQAAQBAJ&printsec=frontcover&dq=intitle:M%C3%A1s+alto+que+el+deseo+inauthor:Rebecca+Yarros&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-11-26T18:10:28.580Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=4SJZEQAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=4SJZEQAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+    }
   },
   {
     "id": "1umZrMTvSUxEVCic_9CSpuNcscZ1O1G1L",
@@ -60,7 +66,12 @@
       "Young Adult Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=GHU7EQAAQBAJ&printsec=frontcover&dq=intitle:M%C3%A1s+fuerte+que+el+peligro+inauthor:Rebecca+Yarros&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=GHU7EQAAQBAJ&printsec=frontcover&dq=intitle:M%C3%A1s+fuerte+que+el+peligro+inauthor:Rebecca+Yarros&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-11-26T18:10:26.201Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=GHU7EQAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=GHU7EQAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+    }
   },
   {
     "id": "106lic5gds3CWGRmUy4uYuSfEAnv9srRY",
@@ -79,7 +90,8 @@
       "Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=C82NEQAAQBAJ&printsec=frontcover&dq=intitle:Mas+intenso+que+el+placer+inauthor:Rebecca+Yarros&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=C82NEQAAQBAJ&printsec=frontcover&dq=intitle:Mas+intenso+que+el+placer+inauthor:Rebecca+Yarros&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-11-26T18:10:23.645Z"
   },
   {
     "id": "1GLdLBbXd-Zti27RHBLG4eRFBlY4bh0y1",
@@ -98,7 +110,12 @@
       "Juvenile Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=pWLNEAAAQBAJ&printsec=frontcover&dq=intitle:Un+laberinto+de+traiciones+oscuras+inauthor:Lexi+Ryan&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=pWLNEAAAQBAJ&printsec=frontcover&dq=intitle:Un+laberinto+de+traiciones+oscuras+inauthor:Lexi+Ryan&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-11-26T18:10:47.171Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=R--6EAAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=R--6EAAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+    }
   },
   {
     "id": "1ZGhbVgdPt9XNaaTV80ffmgU8bBxzeRHq",
@@ -117,7 +134,12 @@
       "Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=w2KOEAAAQBAJ&printsec=frontcover&dq=intitle:Un+Reino+De+Promesas+Malditas+inauthor:Lexi+Ryan&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=w2KOEAAAQBAJ&printsec=frontcover&dq=intitle:Un+Reino+De+Promesas+Malditas+inauthor:Lexi+Ryan&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-11-26T18:10:42.398Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=w2KOEAAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=w2KOEAAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+    }
   },
   {
     "id": "1FMQ_X0coWT-naS_bx43PNz5vPTWn0YT7",
@@ -131,7 +153,8 @@
     "categories": [],
     "language": "es",
     "previewLink": "http://books.google.es/books?id=2Fac0QEACAAJ&dq=intitle:Un+destino+te%C3%B1ido+de+sangre+inauthor:Danielle+L.+Jensen&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
-    "coverUrl": "https://frikimon.es/wp-content/uploads/2024/11/un-destino-tenido-de-sangre-libro-edicion-especial-limitada.jpg"
+    "coverUrl": "https://frikimon.es/wp-content/uploads/2024/11/un-destino-tenido-de-sangre-libro-edicion-especial-limitada.jpg",
+    "createdTime": "2025-11-26T18:10:52.436Z"
   },
   {
     "id": "1y16fIFjEWyBA1aUrun2xhuJoXkjehx0R",
@@ -150,7 +173,12 @@
       "Juvenile Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=Q7etEAAAQBAJ&printsec=frontcover&dq=intitle:El+reino+del+puente+inauthor:Danielle+L.+Jensen&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=Q7etEAAAQBAJ&printsec=frontcover&dq=intitle:El+reino+del+puente+inauthor:Danielle+L.+Jensen&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-11-26T18:10:38.848Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=Q7etEAAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=Q7etEAAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+    }
   },
   {
     "id": "1-xQl4uhRXygflxvJT2u77BCrMyd1pnQJ",
@@ -168,7 +196,12 @@
       "Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=e5u90AEACAAJ&dq=intitle:Novia+inauthor:Ali+Hazelwood&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=e5u90AEACAAJ&dq=intitle:Novia+inauthor:Ali+Hazelwood&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-11-26T18:10:36.580Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=e5u90AEACAAJ&printsec=frontcover&img=1&zoom=5&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=e5u90AEACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api"
+    }
   },
   {
     "id": "1mrit8I2aXK34phaFF5vkHoXJXYTZjAZa",
@@ -187,7 +220,8 @@
       "Performing Arts"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=M0CWEQAAQBAJ&pg=PT2&dq=intitle:Las+chicas+Gilmore+inauthor:Cathy+East+Dubowsky&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=M0CWEQAAQBAJ&pg=PT2&dq=intitle:Las+chicas+Gilmore+inauthor:Cathy+East+Dubowsky&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-11-26T18:10:31.780Z"
   },
   {
     "id": "1WCFJhEnS8pp25TJbxRutwIxE9gG4PL2P",
@@ -206,7 +240,12 @@
       "Fiction"
     ],
     "language": "it",
-    "previewLink": "http://books.google.es/books?id=zInLDAAAQBAJ&printsec=frontcover&dq=intitle:Arianne+inauthor:George+R+R+Martin&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=zInLDAAAQBAJ&printsec=frontcover&dq=intitle:Arianne+inauthor:George+R+R+Martin&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-11-26T18:10:21.099Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=zInLDAAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=zInLDAAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+    }
   },
   {
     "id": "11OFXKr4oOZXQuu8d1PGHovlcp34ydQEJ",
@@ -227,7 +266,8 @@
     "language": "es",
     "averageRating": 5,
     "ratingsCount": 2,
-    "previewLink": "http://books.google.es/books?id=NDxlDwAAQBAJ&printsec=frontcover&dq=intitle:Fuego+y+sangre+inauthor:George+R+R+Martin&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=NDxlDwAAQBAJ&printsec=frontcover&dq=intitle:Fuego+y+sangre+inauthor:George+R+R+Martin&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:39.424Z"
   },
   {
     "id": "13ccHohC0D9yk-QSMAhC09OSt3T6YKXqO",
@@ -246,7 +286,12 @@
       "Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=l849AwAAQBAJ&printsec=frontcover&dq=intitle:Danza+de+dragones+inauthor:George+R+R+Martin&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=l849AwAAQBAJ&printsec=frontcover&dq=intitle:Danza+de+dragones+inauthor:George+R+R+Martin&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:40.680Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=l849AwAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=l849AwAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+    }
   },
   {
     "id": "13cK7d2Azv_bxc5ezsdy0w-j7ncoMiTjQ",
@@ -267,7 +312,8 @@
     "language": "es",
     "averageRating": 4,
     "ratingsCount": 1,
-    "previewLink": "http://books.google.es/books?id=tM82AwAAQBAJ&printsec=frontcover&dq=intitle:Fest%C3%ADn+de+cuervos+inauthor:George+R+R+Martin&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=tM82AwAAQBAJ&printsec=frontcover&dq=intitle:Fest%C3%ADn+de+cuervos+inauthor:George+R+R+Martin&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:40.920Z"
   },
   {
     "id": "13VjxpzfEBbnQU6ItFSs1hkqu2ZHVrxbx",
@@ -286,7 +332,8 @@
       "Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=i79vEAAAQBAJ&printsec=frontcover&dq=intitle:Tormenta+de+espadas+Ed.+ilustrada+inauthor:George+R+R+Martin&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=i79vEAAAQBAJ&printsec=frontcover&dq=intitle:Tormenta+de+espadas+Ed.+ilustrada+inauthor:George+R+R+Martin&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:41.062Z"
   },
   {
     "id": "1413NYJCLGdqwLaOXtmrtaOX_wW_bK1z5",
@@ -301,7 +348,8 @@
     "categories": [],
     "language": "es",
     "previewLink": "http://books.google.es/books?id=DYRwmwEACAAJ&dq=intitle:Choque+de+reyes+Ed.+ilustrada+inauthor:George+R+R+Martin&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
-    "coverUrl": "https://www.elbazardelibro.com.mx/imagenes/9786073/978607312884.JPG"
+    "coverUrl": "https://www.elbazardelibro.com.mx/imagenes/9786073/978607312884.JPG",
+    "createdTime": "2025-05-03T08:59:44.137Z"
   },
   {
     "id": "14DpX0vQlHlIW98NYX-L9RMy5f1-2cTM2",
@@ -322,7 +370,8 @@
     "language": "es",
     "averageRating": 5,
     "ratingsCount": 3,
-    "previewLink": "http://books.google.es/books?id=-c02AwAAQBAJ&printsec=frontcover&dq=intitle:Juego+de+tronos+Ed.+ilustrada+inauthor:George+R+R+Martin&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=-c02AwAAQBAJ&printsec=frontcover&dq=intitle:Juego+de+tronos+Ed.+ilustrada+inauthor:George+R+R+Martin&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:45.939Z"
   },
   {
     "id": "1-vB2bI9XHlJDzDFU7n8FRQSGy-8tyv05",
@@ -341,7 +390,8 @@
       "Literatura fantástica"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books/edition/Imperio_de_fuego_azul_Saga_F%C3%A9nix_Drag%C3%B3/Y9FUEQAAQBAJ?hl=es&gbpv=0"
+    "previewLink": "http://books.google.es/books/edition/Imperio_de_fuego_azul_Saga_F%C3%A9nix_Drag%C3%B3/Y9FUEQAAQBAJ?hl=es&gbpv=0",
+    "createdTime": "2025-05-03T08:59:30.084Z"
   },
   {
     "id": "1-n75YakYuj0km8uEFTPmHLj45B8FvY12",
@@ -362,7 +412,8 @@
     "language": "es",
     "averageRating": 4.5,
     "ratingsCount": 10,
-    "previewLink": "http://books.google.es/books?id=CQg0bh6rhxcC&printsec=frontcover&dq=intitle:El+verano+en+que+me+enamor%C3%A9+inauthor:Jenny+Han&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=CQg0bh6rhxcC&printsec=frontcover&dq=intitle:El+verano+en+que+me+enamor%C3%A9+inauthor:Jenny+Han&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:30.342Z"
   },
   {
     "id": "1-guua-FczhYcaG9NClMi2ROCa45YoNv-",
@@ -381,7 +432,12 @@
       "Juvenile Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=s3fzGzJ2cNYC&printsec=frontcover&dq=intitle:Siempre+nos+quedar%C3%A1+el+verano+inauthor:Jenny+Han&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=s3fzGzJ2cNYC&printsec=frontcover&dq=intitle:Siempre+nos+quedar%C3%A1+el+verano+inauthor:Jenny+Han&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:30.498Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=s3fzGzJ2cNYC&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=s3fzGzJ2cNYC&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+    }
   },
   {
     "id": "1-XgP6SfX-neTbC9VvvoKW_9weLhfHzMH",
@@ -400,7 +456,12 @@
       "Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=1IbCEAAAQBAJ&printsec=frontcover&dq=intitle:La+letra+escarlata+inauthor:Nathaniel+Hawthorne&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=1IbCEAAAQBAJ&printsec=frontcover&dq=intitle:La+letra+escarlata+inauthor:Nathaniel+Hawthorne&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:30.965Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=lSQdEQAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=lSQdEQAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+    }
   },
   {
     "id": "1-PtiaxrzreNh2AvX_gbyDUSlc-16B8pv",
@@ -418,7 +479,12 @@
       "Fiction"
     ],
     "language": "en",
-    "previewLink": "http://books.google.es/books?id=yT9aAAAAMAAJ&printsec=frontcover&dq=intitle:The+Wonderful+Wizard+of+Oz+inauthor:Lyman+Frank+Baum&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=yT9aAAAAMAAJ&printsec=frontcover&dq=intitle:The+Wonderful+Wizard+of+Oz+inauthor:Lyman+Frank+Baum&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:31.108Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=yT9aAAAAMAAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=yT9aAAAAMAAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+    }
   },
   {
     "id": "10-rtMRfdNRTRDJD6uuyXb6J5AyOgL3wU",
@@ -437,7 +503,12 @@
       "Fiction"
     ],
     "language": "en",
-    "previewLink": "http://books.google.es/books?id=FUo6EAAAQBAJ&printsec=frontcover&dq=intitle:The+Emerald+City+of+Oz+inauthor:Lyman+Frank+Baum&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=FUo6EAAAQBAJ&printsec=frontcover&dq=intitle:The+Emerald+City+of+Oz+inauthor:Lyman+Frank+Baum&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:31.186Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=FUo6EAAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=FUo6EAAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+    }
   },
   {
     "id": "1-JRxNHOFFw2rMT4O8rV9R3bSBlxpqHmd",
@@ -455,7 +526,9 @@
       "Oz (Imaginary place)"
     ],
     "language": "en",
-    "previewLink": "http://books.google.es/books?id=_e7szgEACAAJ&dq=intitle:Ozma+de+Oz+inauthor:Lyman+Frank+Baum&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=_e7szgEACAAJ&dq=intitle:Ozma+de+Oz+inauthor:Lyman+Frank+Baum&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:31.538Z",
+    "pageCount": 207
   },
   {
     "id": "1-GXmS7AjYU73RFHzPdgV7O1gae8_4t9k",
@@ -474,7 +547,12 @@
       "Juvenile Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=ckUXEAAAQBAJ&printsec=frontcover&dq=intitle:El+Pa%C3%ADs+de+Oz+inauthor:Lyman+Frank+Baum&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=ckUXEAAAQBAJ&printsec=frontcover&dq=intitle:El+Pa%C3%ADs+de+Oz+inauthor:Lyman+Frank+Baum&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:31.670Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=ckUXEAAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=ckUXEAAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+    }
   },
   {
     "id": "10KdsInd-9zf0LtLijf_CQ0yOQA_XCj1U",
@@ -493,7 +571,8 @@
       "Art"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=eUHxEAAAQBAJ&printsec=frontcover&dq=intitle:El+Mago+de+Oz+Ilustrado+inauthor:Lyman+Frank+Baum&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=eUHxEAAAQBAJ&printsec=frontcover&dq=intitle:El+Mago+de+Oz+Ilustrado+inauthor:Lyman+Frank+Baum&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:31.881Z"
   },
   {
     "id": "10BqR84yihK4mzTlsAPb42nCE43VplgUx",
@@ -512,7 +591,12 @@
       "Juvenile Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=wtL8EAAAQBAJ&printsec=frontcover&dq=intitle:Visiones+de+Carne+y+Sangre+inauthor:Jennifer+L+Armentrout&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=wtL8EAAAQBAJ&printsec=frontcover&dq=intitle:Visiones+de+Carne+y+Sangre+inauthor:Jennifer+L+Armentrout&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:32.055Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=jqe00AEACAAJ&printsec=frontcover&img=1&zoom=5&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=jqe00AEACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api"
+    }
   },
   {
     "id": "1-D468bUq-BeF36PyZEjjkviDTeECX2Rt",
@@ -531,7 +615,12 @@
       "Juvenile Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=bmLlEAAAQBAJ&printsec=frontcover&dq=intitle:Un+alma+de+ceniza+y+sangre+inauthor:Jennifer+L+Armentrout&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=bmLlEAAAQBAJ&printsec=frontcover&dq=intitle:Un+alma+de+ceniza+y+sangre+inauthor:Jennifer+L+Armentrout&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:32.191Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=Aq060AEACAAJ&printsec=frontcover&img=1&zoom=5&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=Aq060AEACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api"
+    }
   },
   {
     "id": "1-zoa_qKuVaN086OVio713kxrZSNM29_L",
@@ -550,7 +639,12 @@
       "Juvenile Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=IJ3QEAAAQBAJ&printsec=frontcover&dq=intitle:La+guerra+de+las+dos+reinas+inauthor:Jennifer+L+Armentrout&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=IJ3QEAAAQBAJ&printsec=frontcover&dq=intitle:La+guerra+de+las+dos+reinas+inauthor:Jennifer+L+Armentrout&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:32.373Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=IJ3QEAAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=IJ3QEAAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+    }
   },
   {
     "id": "1-wqGSt7OhoAoTraMMXiuy-hzcqCjJjYi",
@@ -569,7 +663,12 @@
       "Juvenile Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=c5zQEAAAQBAJ&printsec=frontcover&dq=intitle:Una+corona+de+huesos+dorados+inauthor:Jennifer+L+Armentrout&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=c5zQEAAAQBAJ&printsec=frontcover&dq=intitle:Una+corona+de+huesos+dorados+inauthor:Jennifer+L+Armentrout&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:32.453Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=c5zQEAAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=c5zQEAAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+    }
   },
   {
     "id": "1-wS9j1pFAfib6u2R-ouwemNvtxvlXUEJ",
@@ -588,7 +687,12 @@
       "Juvenile Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=15bQEAAAQBAJ&printsec=frontcover&dq=intitle:Un+reino+de+carne+y+fuego+inauthor:Jennifer+L+Armentrout&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=15bQEAAAQBAJ&printsec=frontcover&dq=intitle:Un+reino+de+carne+y+fuego+inauthor:Jennifer+L+Armentrout&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:32.546Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=15bQEAAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=15bQEAAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+    }
   },
   {
     "id": "109JdTQshSFHtDKFNxRtPHU3akyDc85pO",
@@ -607,7 +711,12 @@
       "Juvenile Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=T5zQEAAAQBAJ&printsec=frontcover&dq=intitle:De+Sangre+y+Cenizas+inauthor:Jennifer+L+Armentrout&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=T5zQEAAAQBAJ&printsec=frontcover&dq=intitle:De+Sangre+y+Cenizas+inauthor:Jennifer+L+Armentrout&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:32.686Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=T5zQEAAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=T5zQEAAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+    }
   },
   {
     "id": "106YoD2LGfHbYXcoGpR837IMtuojakWPZ",
@@ -626,7 +735,12 @@
       "Fiction"
     ],
     "language": "en",
-    "previewLink": "http://books.google.es/books?id=f0sbEQAAQBAJ&printsec=frontcover&dq=intitle:Quicksilver+inauthor:Callie+Hart&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=f0sbEQAAQBAJ&printsec=frontcover&dq=intitle:Quicksilver+inauthor:Callie+Hart&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:32.831Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=f0sbEQAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=f0sbEQAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+    }
   },
   {
     "id": "10hb1vtz20Zzj5T0einbsRLb13oRNu2aB",
@@ -647,7 +761,8 @@
     "language": "es",
     "averageRating": 5,
     "ratingsCount": 1,
-    "previewLink": "http://books.google.es/books?id=su_lDwAAQBAJ&printsec=frontcover&dq=intitle:La+sexta+trampa+inauthor:J+D+Barker&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=su_lDwAAQBAJ&printsec=frontcover&dq=intitle:La+sexta+trampa+inauthor:J+D+Barker&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:33.438Z"
   },
   {
     "id": "10fEK_6W8a6v-rvCnt0Z_KHrHg6YzrKPK",
@@ -668,7 +783,8 @@
     "language": "es",
     "averageRating": 5,
     "ratingsCount": 1,
-    "previewLink": "http://books.google.es/books?id=w3SQDwAAQBAJ&printsec=frontcover&dq=intitle:La+quinta+v%C3%ADctima+inauthor:J+D+Barker&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=w3SQDwAAQBAJ&printsec=frontcover&dq=intitle:La+quinta+v%C3%ADctima+inauthor:J+D+Barker&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:33.520Z"
   },
   {
     "id": "10e8FXg7LBjLlGqMtYnCp-fTqiDJ2C_W7",
@@ -689,7 +805,8 @@
     "language": "es",
     "averageRating": 3,
     "ratingsCount": 1,
-    "previewLink": "http://books.google.es/books?id=ZJZXDwAAQBAJ&printsec=frontcover&dq=intitle:El+Cuarto+Mono+inauthor:J+D+Barker&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=ZJZXDwAAQBAJ&printsec=frontcover&dq=intitle:El+Cuarto+Mono+inauthor:J+D+Barker&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:33.602Z"
   },
   {
     "id": "10WuoKM4VBD5BS7DO2RRCX4bNO5rir4yY",
@@ -708,7 +825,12 @@
       "Juvenile Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=TS3EDwAAQBAJ&dq=intitle:Y+todo+arde+inauthor:Kiersten+White&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=TS3EDwAAQBAJ&dq=intitle:Y+todo+arde+inauthor:Kiersten+White&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:33.686Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=TS3EDwAAQBAJ&printsec=frontcover&img=1&zoom=5&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=TS3EDwAAQBAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api"
+    }
   },
   {
     "id": "10S0nQESg8hoGUnSn3FyTfllLjF4EQvJY",
@@ -727,7 +849,12 @@
       "Juvenile Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=j5vQEAAAQBAJ&printsec=frontcover&dq=intitle:Renace+de+las+sombras+inauthor:Kiersten+White&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=j5vQEAAAQBAJ&printsec=frontcover&dq=intitle:Renace+de+las+sombras+inauthor:Kiersten+White&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:33.921Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=j5vQEAAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=j5vQEAAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+    }
   },
   {
     "id": "10PzA44OY4Ji_Pdsz91Pvs9HnIbmy-bOI",
@@ -745,7 +872,8 @@
     ],
     "language": "es",
     "previewLink": "http://books.google.es/books?id=VviOtAEACAAJ&dq=intitle:Hija-De-Las-Tinieblas+inauthor:Kiersten+White&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
-    "coverUrl": "https://www.machadolibros.com/media/products/images/544612_medium.jpeg"
+    "coverUrl": "https://www.machadolibros.com/media/products/images/544612_medium.jpeg",
+    "createdTime": "2025-05-03T08:59:34.110Z"
   },
   {
     "id": "10s2ntlDvX1Kmdk18PKxX_F9_BgSLMncT",
@@ -756,7 +884,9 @@
       "number": 2
     },
     "publishedDate": "2020",
-    "categories": [],
+    "categories": [
+      "Juvenile Fiction"
+    ],
     "language": "es",
     "previewLink": "http://books.google.es/books?id=aCyL0AEACAAJ&dq=intitle:Los+hijos+del+rey+inauthor:Shelby+Mahurin&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
     "coverUrl": "https://books.google.es/books/publisher/content/images/frontcover/XZbQEAAAQBAJ?fife=w400-h600",
@@ -764,7 +894,10 @@
     "imageLinks": {
       "smallThumbnail": "http://books.google.com/books/content?id=XZbQEAAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
       "thumbnail": "http://books.google.com/books/content?id=XZbQEAAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
-    }
+    },
+    "createdTime": "2025-05-03T08:59:34.231Z",
+    "publisher": "EDICIONES URANO",
+    "pageCount": 395
   },
   {
     "id": "10rbn81M6ZjLAVgVaEzJnzDbKugfEON_b",
@@ -783,7 +916,12 @@
       "Juvenile Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=sZvQEAAAQBAJ&printsec=frontcover&dq=intitle:Bruja+Blanca+inauthor:Shelby+Mahurin&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=sZvQEAAAQBAJ&printsec=frontcover&dq=intitle:Bruja+Blanca+inauthor:Shelby+Mahurin&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:34.464Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=sZvQEAAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=sZvQEAAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+    }
   },
   {
     "id": "10rI2KwMMChhuBUBoTGWbeoYMvxRLmlmV",
@@ -795,14 +933,19 @@
     },
     "coverUrl": "http://books.google.com/books/content?id=w4mz0AEACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
     "publishedDate": "2024",
-    "categories": [],
+    "categories": [
+      "Young Adult Fiction"
+    ],
     "language": "es",
     "previewLink": "http://books.google.es/books?id=w4mz0AEACAAJ&dq=intitle:Reino+de+cenizas+inauthor:Sarah+J+Maas&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
     "description": "LA EXPLOSIVA CULMINACIÓN DE LA SERIE BESTSELLER DE THE NEW YORK TIMES, EN LA QUE AELIN LUCHARÁ POR SALVARSE A SÍ MISMA... Y POR LA PROMESA DE UN MUNDO MEJOR. LA BATALLA FINAL HA LLEGADO. Aelin Galathynius juró salvar a su pueblo... pero a un costo altísimo. Encerrada en un ataúd de metal por la reina de las hadas, Aelin debe reunir toda su voluntad para soportar meses de tortura. Saber que rendirse ante Maeve condenaría a todos a los que ama es lo único que la mantiene firme, pero su determinación se desvanece poco a poco con cada día que transcurre. Con Aelin capturada, sus amigos y aliados se dispersan por caminos distintos. Algunos lazos se volverán más fuertes, mientras que otros se romperán para siempre. Cuando los destinos se reúnan en el final, todos deberán luchar si desean que Erilea tenga alguna esperanza de salvación...",
     "imageLinks": {
       "smallThumbnail": "http://books.google.com/books/content?id=cCcMEAAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
       "thumbnail": "http://books.google.com/books/content?id=cCcMEAAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
-    }
+    },
+    "createdTime": "2025-05-03T08:59:34.911Z",
+    "publisher": "ALFAGUARA INFANTIL",
+    "pageCount": 1101
   },
   {
     "id": "10jvSWPaey8MiOfInREG7O-xnW0PowlOU",
@@ -821,7 +964,12 @@
       "Young Adult Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=uLByDwAAQBAJ&printsec=frontcover&dq=intitle:Torre+del+alba+inauthor:Sarah+J+Maas&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=uLByDwAAQBAJ&printsec=frontcover&dq=intitle:Torre+del+alba+inauthor:Sarah+J+Maas&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:35.037Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=ZFSREAAAQBAJ&printsec=frontcover&img=1&zoom=5&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=ZFSREAAAQBAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api"
+    }
   },
   {
     "id": "10sAMwdE2MOliNubpQ53iJA1spMOa4q6o",
@@ -842,7 +990,8 @@
     "language": "es",
     "averageRating": 4,
     "ratingsCount": 1,
-    "previewLink": "http://books.google.es/books?id=VQQoDwAAQBAJ&printsec=frontcover&dq=intitle:Imperio+de+tormentas+inauthor:Sarah+J+Maas&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=VQQoDwAAQBAJ&printsec=frontcover&dq=intitle:Imperio+de+tormentas+inauthor:Sarah+J+Maas&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:35.140Z"
   },
   {
     "id": "11NIG2yngnErKMwqtdnbn_4FUDmAfaz4O",
@@ -863,7 +1012,8 @@
     "language": "es",
     "averageRating": 5,
     "ratingsCount": 1,
-    "previewLink": "http://books.google.es/books?id=D6tRDgAAQBAJ&printsec=frontcover&dq=intitle:Reina+de+sombras+inauthor:Sarah+J+Maas&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=D6tRDgAAQBAJ&printsec=frontcover&dq=intitle:Reina+de+sombras+inauthor:Sarah+J+Maas&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:35.238Z"
   },
   {
     "id": "11MtXPacgBt_7sRF5e1Keb2fRORMsEci1",
@@ -882,7 +1032,12 @@
       "Young Adult Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=0yXPCwAAQBAJ&printsec=frontcover&dq=intitle:Heredera+de+fuego+inauthor:Sarah+J+Maas&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=0yXPCwAAQBAJ&printsec=frontcover&dq=intitle:Heredera+de+fuego+inauthor:Sarah+J+Maas&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:35.351Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=0yXPCwAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=0yXPCwAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+    }
   },
   {
     "id": "11M-ElOd20G_m1mr3eWg2PNKg9GQ4NZFl",
@@ -901,7 +1056,12 @@
       "Young Adult Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=dmJwEAAAQBAJ&printsec=frontcover&dq=intitle:Corona+de+medianoche+inauthor:Sarah+J+Maas&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=dmJwEAAAQBAJ&printsec=frontcover&dq=intitle:Corona+de+medianoche+inauthor:Sarah+J+Maas&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:35.474Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=dmJwEAAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=dmJwEAAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+    }
   },
   {
     "id": "11Iaauo4ENUv-j99heDJwHytGQs6AxvsR",
@@ -920,7 +1080,12 @@
       "Young Adult Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=y9dyEAAAQBAJ&printsec=frontcover&dq=intitle:La+espada+de+la+asesina+inauthor:Sarah+J+Maas&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=y9dyEAAAQBAJ&printsec=frontcover&dq=intitle:La+espada+de+la+asesina+inauthor:Sarah+J+Maas&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:35.567Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=y9dyEAAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=y9dyEAAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+    }
   },
   {
     "id": "11ETXy8yJs5YgijqnPl3fx5lGudq2sB2W",
@@ -939,7 +1104,12 @@
       "Young Adult Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=vXRuEAAAQBAJ&printsec=frontcover&dq=intitle:Trono+de+cristal+inauthor:Sarah+J+Maas&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=vXRuEAAAQBAJ&printsec=frontcover&dq=intitle:Trono+de+cristal+inauthor:Sarah+J+Maas&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:35.694Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=vXRuEAAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=vXRuEAAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+    }
   },
   {
     "id": "117hpINZ--We3ORaS21Wl8P6PvU-qS6sh",
@@ -951,7 +1121,8 @@
     },
     "coverUrl": "/cover/23.png",
     "description": "Fantasía épica de Raisa Martin Espinosa.",
-    "language": "es"
+    "language": "es",
+    "createdTime": "2025-05-03T08:59:35.786Z"
   },
   {
     "id": "1166pUTkkMH3kPLmQ_lfXNwdjyyM345Rz",
@@ -970,7 +1141,12 @@
       "Juvenile Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=hbcKEQAAQBAJ&printsec=frontcover&dq=intitle:El+despertar+del+Fuegoeterno+inauthor:Penn+Cole&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=hbcKEQAAQBAJ&printsec=frontcover&dq=intitle:El+despertar+del+Fuegoeterno+inauthor:Penn+Cole&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:35.909Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=hbcKEQAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=hbcKEQAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+    }
   },
   {
     "id": "1126mmBhZs0CiUUg5F1s2ii60aZoyT0o_",
@@ -989,7 +1165,12 @@
       "Juvenile Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=EdsxEQAAQBAJ&printsec=frontcover&dq=intitle:El+Resplandor+del+Fuegoeterno+inauthor:Penn+Cole&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=EdsxEQAAQBAJ&printsec=frontcover&dq=intitle:El+Resplandor+del+Fuegoeterno+inauthor:Penn+Cole&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:36.077Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=EdsxEQAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=EdsxEQAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+    }
   },
   {
     "id": "111EyOUR5gR-zCCtHoP_dIJXUo2oGzKqn",
@@ -1008,7 +1189,12 @@
       "Juvenile Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=yyNTEQAAQBAJ&printsec=frontcover&dq=intitle:La+llama+del+Fuegoeterno+inauthor:Penn+Cole&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=yyNTEQAAQBAJ&printsec=frontcover&dq=intitle:La+llama+del+Fuegoeterno+inauthor:Penn+Cole&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:36.270Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=yyNTEQAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=yyNTEQAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+    }
   },
   {
     "id": "13RFDrYJsMFgmFBt8P-u1Vk-HzZJhz1Bf",
@@ -1027,7 +1213,12 @@
       "Juvenile Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=9TJGEQAAQBAJ&printsec=frontcover&dq=intitle:Ocaso+inauthor:Nerea+Llanes&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=9TJGEQAAQBAJ&printsec=frontcover&dq=intitle:Ocaso+inauthor:Nerea+Llanes&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:36.461Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=9TJGEQAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=9TJGEQAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+    }
   },
   {
     "id": "11-A-T9ELvebO4Y48fKMbM9k9mRF9u_qH",
@@ -1046,7 +1237,12 @@
       "Juvenile Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=TtUyEQAAQBAJ&printsec=frontcover&dq=intitle:La+Ca%C3%ADda+Del+Rey+inauthor:Marie+Niehoff&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=TtUyEQAAQBAJ&printsec=frontcover&dq=intitle:La+Ca%C3%ADda+Del+Rey+inauthor:Marie+Niehoff&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:36.643Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=TtUyEQAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=TtUyEQAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+    }
   },
   {
     "id": "13IMWhX2KessLw6Ss8he9DYzCLnqE1iYF",
@@ -1058,7 +1254,8 @@
     },
     "coverUrl": "/cover/12.png",
     "description": "Fantasía épica de Raisa Martin Espinosa.",
-    "language": "es"
+    "language": "es",
+    "createdTime": "2025-05-03T08:59:36.727Z"
   },
   {
     "id": "13A57JQney9wAY6SUVsnzaIGMeqt42fLP",
@@ -1070,7 +1267,9 @@
     },
     "publishedDate": "2007",
     "pageCount": 831,
-    "categories": [],
+    "categories": [
+      "Fiction"
+    ],
     "language": "es",
     "previewLink": "http://books.google.es/books?id=QjU1ywEACAAJ&dq=intitle:La+b%C3%BAsqueda+del+asesino+inauthor:Robin+Hobb&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
     "coverUrl": "https://books.google.es/books/publisher/content/images/frontcover/jfRnEQAAQBAJ?fife=w400-h600",
@@ -1078,7 +1277,9 @@
     "imageLinks": {
       "smallThumbnail": "http://books.google.com/books/content?id=jfRnEQAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
       "thumbnail": "http://books.google.com/books/content?id=jfRnEQAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
-    }
+    },
+    "createdTime": "2025-05-03T08:59:36.841Z",
+    "publisher": "NOCTURNA"
   },
   {
     "id": "137NLoRtID8p7I0uoOJJOkg5p4bASNakw",
@@ -1097,7 +1298,12 @@
       "Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=M_JnEQAAQBAJ&printsec=frontcover&dq=intitle:Asesino+Real+inauthor:Robin+Hobb&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=M_JnEQAAQBAJ&printsec=frontcover&dq=intitle:Asesino+Real+inauthor:Robin+Hobb&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:36.970Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=M_JnEQAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=M_JnEQAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+    }
   },
   {
     "id": "136p41oyXcBPDjEK7RnOeWyf1a0Y7D7ma",
@@ -1109,7 +1315,9 @@
     },
     "publishedDate": "2014",
     "pageCount": 391,
-    "categories": [],
+    "categories": [
+      "Fiction"
+    ],
     "language": "es",
     "previewLink": "http://books.google.es/books?id=QbSkAQAACAAJ&dq=intitle:Aprendiz+de+asesino+inauthor:Robin+Hobb&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
     "coverUrl": "https://books.google.es/books/publisher/content/images/frontcover/RfRnEQAAQBAJ?fife=w400-h600",
@@ -1119,7 +1327,9 @@
       "thumbnail": "http://books.google.com/books/content?id=ElCZAwAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
     },
     "averageRating": 5,
-    "ratingsCount": 1
+    "ratingsCount": 1,
+    "createdTime": "2025-05-03T08:59:37.127Z",
+    "publisher": "PLAZA JANÉS"
   },
   {
     "id": "133qydoo4dKAzyr8_Wwj7D2q4ToEpsqV6",
@@ -1138,7 +1348,12 @@
       "Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=rNTDDwAAQBAJ&printsec=frontcover&dq=intitle:El+drag%C3%B3n+renacido+inauthor:Robert+Jordan&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=rNTDDwAAQBAJ&printsec=frontcover&dq=intitle:El+drag%C3%B3n+renacido+inauthor:Robert+Jordan&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:37.298Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=rNTDDwAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=rNTDDwAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+    }
   },
   {
     "id": "12r2o6Ai413FbelvtzAZXoRPb-frQL0wy",
@@ -1155,7 +1370,9 @@
     ],
     "language": "es",
     "previewLink": "http://books.google.es/books?id=bkaDQgAACAAJ&dq=intitle:El+despertar+de+los+h%C3%A9roes+inauthor:Robert+Jordan&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
-    "coverUrl": "https://img-static.ivoox.com/index.php?w=175&url=https://static-1.ivoox.com/audios/3/0/7/7/4681631807703_XXL.jpg&f=webp"
+    "coverUrl": "https://img-static.ivoox.com/index.php?w=175&url=https://static-1.ivoox.com/audios/3/0/7/7/4681631807703_XXL.jpg&f=webp",
+    "createdTime": "2025-05-03T08:59:37.477Z",
+    "pageCount": 558
   },
   {
     "id": "12pNpEV9u1jsNMdO-yaxOpvGgyGl6Tnre",
@@ -1174,7 +1391,12 @@
       "Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=ddwxAAAAQBAJ&printsec=frontcover&dq=intitle:Un+recuerdo+de+luz+inauthor:Robert+Jordan&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=ddwxAAAAQBAJ&printsec=frontcover&dq=intitle:Un+recuerdo+de+luz+inauthor:Robert+Jordan&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:37.660Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=ddwxAAAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=ddwxAAAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+    }
   },
   {
     "id": "12_uXmU9GehD7s8zEfEe-8Fnev_GFwZ9U",
@@ -1192,7 +1414,12 @@
       "Education"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=ir0YywAACAAJ&dq=intitle:Torres+de+medianoche+inauthor:Robert+Jordan&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=ir0YywAACAAJ&dq=intitle:Torres+de+medianoche+inauthor:Robert+Jordan&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:37.794Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=ir0YywAACAAJ&printsec=frontcover&img=1&zoom=5&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=ir0YywAACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api"
+    }
   },
   {
     "id": "12_IH2qDFv52F9dG726rSt5D9VMb596eQ",
@@ -1211,7 +1438,12 @@
       "Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=Iw4t9QJHv_IC&printsec=frontcover&dq=intitle:La+tormenta+inauthor:Robert+Jordan&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=Iw4t9QJHv_IC&printsec=frontcover&dq=intitle:La+tormenta+inauthor:Robert+Jordan&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:37.913Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=Iw4t9QJHv_IC&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=Iw4t9QJHv_IC&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+    }
   },
   {
     "id": "12Pv_mpk8dOC4ypvox2-iqH00DcdLESyg",
@@ -1230,7 +1462,12 @@
       "Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=wAz3nlp5cf4C&printsec=frontcover&dq=intitle:Cuchillo+de+sue%C3%B1os+inauthor:Robert+Jordan&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=wAz3nlp5cf4C&printsec=frontcover&dq=intitle:Cuchillo+de+sue%C3%B1os+inauthor:Robert+Jordan&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:38.042Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=wAz3nlp5cf4C&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=wAz3nlp5cf4C&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+    }
   },
   {
     "id": "12NJmpPPKyCMp6ZPRp8nk8rs5SEbIzO_h",
@@ -1248,7 +1485,12 @@
       "Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=jaJgSQAACAAJ&dq=intitle:Encrucijada+en+el+crep%C3%BAsculo+inauthor:Robert+Jordan&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=jaJgSQAACAAJ&dq=intitle:Encrucijada+en+el+crep%C3%BAsculo+inauthor:Robert+Jordan&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:38.161Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=jaJgSQAACAAJ&printsec=frontcover&img=1&zoom=5&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=jaJgSQAACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api"
+    }
   },
   {
     "id": "12BTUq7e1EzYY0cwZwuSwfYmxLzjKMFbC",
@@ -1266,7 +1508,12 @@
       "Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=tfgxSQAACAAJ&dq=intitle:El+coraz%C3%B3n+del+invierno+inauthor:Robert+Jordan&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=tfgxSQAACAAJ&dq=intitle:El+coraz%C3%B3n+del+invierno+inauthor:Robert+Jordan&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:38.253Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=tfgxSQAACAAJ&printsec=frontcover&img=1&zoom=5&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=tfgxSQAACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api"
+    }
   },
   {
     "id": "1279OXQiuqkiQ3DrZ6oJZY4g9K1j63rFN",
@@ -1284,7 +1531,12 @@
       "Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=nKJBAwAACAAJ&dq=intitle:El+camino+de+dagas+inauthor:Robert+Jordan&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=nKJBAwAACAAJ&dq=intitle:El+camino+de+dagas+inauthor:Robert+Jordan&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:38.368Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=nKJBAwAACAAJ&printsec=frontcover&img=1&zoom=5&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=nKJBAwAACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api"
+    }
   },
   {
     "id": "126zek3I19hsA-QGm3KU2Zdr1bqDe3wow",
@@ -1303,7 +1555,12 @@
       "Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=CUC0-D9B0ZIC&printsec=frontcover&dq=intitle:La+corona+de+espadas+inauthor:Robert+Jordan&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=CUC0-D9B0ZIC&printsec=frontcover&dq=intitle:La+corona+de+espadas+inauthor:Robert+Jordan&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:38.465Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=gh8xuQAACAAJ&printsec=frontcover&img=1&zoom=5&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=gh8xuQAACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api"
+    }
   },
   {
     "id": "125To_xl-FG-xdBFLD_6W9OyIhwOGlB-n",
@@ -1322,7 +1579,12 @@
       "Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=oKMZAakevaIC&printsec=frontcover&dq=intitle:El+se%C3%B1or+del+caos+inauthor:Robert+Jordan&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=oKMZAakevaIC&printsec=frontcover&dq=intitle:El+se%C3%B1or+del+caos+inauthor:Robert+Jordan&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:38.682Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=oKMZAakevaIC&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=oKMZAakevaIC&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+    }
   },
   {
     "id": "11ln9ZDmUIFm5zHI1owz7PQLeUyxGGjeo",
@@ -1343,7 +1605,8 @@
     "language": "es",
     "averageRating": 5,
     "ratingsCount": 1,
-    "previewLink": "http://books.google.es/books?id=dZR_GRfKxgYC&printsec=frontcover&dq=intitle:Cielo+en+llamas+inauthor:Robert+Jordan&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=dZR_GRfKxgYC&printsec=frontcover&dq=intitle:Cielo+en+llamas+inauthor:Robert+Jordan&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:38.902Z"
   },
   {
     "id": "11j6OnmxnTjgGeewBdbblWs0ltiG96KLO",
@@ -1368,7 +1631,8 @@
     "imageLinks": {
       "smallThumbnail": "http://books.google.com/books/content?id=C__RDwAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
       "thumbnail": "http://books.google.com/books/content?id=C__RDwAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
-    }
+    },
+    "createdTime": "2025-05-03T08:59:39.066Z"
   },
   {
     "id": "11dyrKk6uJK3dhQxcHpIE51EPE_E9tbZ3",
@@ -1383,9 +1647,16 @@
     "publisher": "Planeta Publishing",
     "publishedDate": "2022-03-22",
     "pageCount": 832,
-    "categories": [],
+    "categories": [
+      "Fiction"
+    ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=dnvwzgEACAAJ&dq=intitle:El+ojo+del+mundo+inauthor:Robert+Jordan&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=dnvwzgEACAAJ&dq=intitle:El+ojo+del+mundo+inauthor:Robert+Jordan&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:39.216Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=w_a2DwAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=w_a2DwAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+    }
   },
   {
     "id": "12ADMLHLOJ0EUAVlht0aakMwdj04_oj_r",
@@ -1406,7 +1677,8 @@
     "language": "es",
     "averageRating": 1,
     "ratingsCount": 1,
-    "previewLink": "http://books.google.es/books?id=eHgnWeJYJRcC&printsec=frontcover&dq=intitle:Nueva+primavera+inauthor:Robert+Jordan&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=eHgnWeJYJRcC&printsec=frontcover&dq=intitle:Nueva+primavera+inauthor:Robert+Jordan&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:39.334Z"
   },
   {
     "id": "11XS5XEO7DFDZaZn9f5D_Uk_GPvgvphYq",
@@ -1425,7 +1697,12 @@
       "Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=wW5iDwAAQBAJ&printsec=frontcover&dq=intitle:El+caballero+misterioso+inauthor:George+R+R+Martin&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=wW5iDwAAQBAJ&printsec=frontcover&dq=intitle:El+caballero+misterioso+inauthor:George+R+R+Martin&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:40.010Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=wW5iDwAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=wW5iDwAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+    }
   },
   {
     "id": "14-nbWJ4sCQoGllzc-jdrzlH5rX9qccgJ",
@@ -1446,7 +1723,8 @@
     "imageLinks": {
       "smallThumbnail": "http://books.google.com/books/content?id=OGOqpwAACAAJ&printsec=frontcover&img=1&zoom=5&source=gbs_api",
       "thumbnail": "http://books.google.com/books/content?id=OGOqpwAACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api"
-    }
+    },
+    "createdTime": "2025-05-03T08:59:40.211Z"
   },
   {
     "id": "13xbY4Cvqx7XtoYTCINqMc9Wk4LMp-NVQ",
@@ -1468,7 +1746,8 @@
     "imageLinks": {
       "smallThumbnail": "http://books.google.com/books/content?id=BqaTkQEACAAJ&printsec=frontcover&img=1&zoom=5&source=gbs_api",
       "thumbnail": "http://books.google.com/books/content?id=BqaTkQEACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api"
-    }
+    },
+    "createdTime": "2025-05-03T08:59:40.380Z"
   },
   {
     "id": "13neB5_2sTGMedbUijZEdQESuOB4nUwb0",
@@ -1487,7 +1766,12 @@
       "Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=7iJZEQAAQBAJ&printsec=frontcover&dq=intitle:El+caballero+de+los+Siete+Reinos+inauthor:George+R+R+Martin&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=7iJZEQAAQBAJ&printsec=frontcover&dq=intitle:El+caballero+de+los+Siete+Reinos+inauthor:George+R+R+Martin&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:40.461Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=7iJZEQAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=7iJZEQAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+    }
   },
   {
     "id": "14ett6ZzMGggdvtESPdChkT4zvS0gSiLe",
@@ -1504,7 +1788,8 @@
       "Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=1kDAcQAACAAJ&dq=intitle:La+dama+del+lago+inauthor:Andrzej+Sapkowski&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=1kDAcQAACAAJ&dq=intitle:La+dama+del+lago+inauthor:Andrzej+Sapkowski&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:47.782Z"
   },
   {
     "id": "14e7P_JrArp4oZp05GgXieGImJIJbG6RD",
@@ -1525,7 +1810,8 @@
     "imageLinks": {
       "smallThumbnail": "http://books.google.com/books/content?id=lnNpQwAACAAJ&printsec=frontcover&img=1&zoom=5&source=gbs_api",
       "thumbnail": "http://books.google.com/books/content?id=lnNpQwAACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api"
-    }
+    },
+    "createdTime": "2025-05-03T08:59:47.938Z"
   },
   {
     "id": "14dvOJC6V3fvuybXJuUhA3kKF9347hK4w",
@@ -1546,7 +1832,8 @@
     "imageLinks": {
       "smallThumbnail": "http://books.google.com/books/content?id=-_9mcgAACAAJ&printsec=frontcover&img=1&zoom=5&source=gbs_api",
       "thumbnail": "http://books.google.com/books/content?id=-_9mcgAACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api"
-    }
+    },
+    "createdTime": "2025-05-03T08:59:48.065Z"
   },
   {
     "id": "14UxX-l-U7gY_v-SAvsv59dMcyopG5bWW",
@@ -1569,7 +1856,8 @@
       "thumbnail": "http://books.google.com/books/content?id=EvjYQgAACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api"
     },
     "averageRating": 5,
-    "ratingsCount": 1
+    "ratingsCount": 1,
+    "createdTime": "2025-05-03T08:59:48.243Z"
   },
   {
     "id": "14PoKbvVH39KLFfA7Oa4DbMDvbsvkzp_6",
@@ -1592,7 +1880,8 @@
     "imageLinks": {
       "smallThumbnail": "http://books.google.com/books/content?id=KXxuQwAACAAJ&printsec=frontcover&img=1&zoom=5&source=gbs_api",
       "thumbnail": "http://books.google.com/books/content?id=KXxuQwAACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api"
-    }
+    },
+    "createdTime": "2025-05-03T08:59:48.487Z"
   },
   {
     "id": "14P2Kh10FlEury8FoXYmBlim63R70XNBD",
@@ -1604,10 +1893,13 @@
     },
     "publishedDate": "2010",
     "pageCount": 634,
-    "categories": [],
+    "categories": [
+      "Fiction"
+    ],
     "language": "es",
     "previewLink": "http://books.google.es/books?id=0r11MwEACAAJ&dq=intitle:La+espada+del+destino+inauthor:Andrzej+Sapkowski&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
-    "coverUrl": "https://books.google.es/books/publisher/content/images/frontcover/2czaDwAAQBAJ?fife=w400-h600"
+    "coverUrl": "https://books.google.es/books/publisher/content/images/frontcover/2czaDwAAQBAJ?fife=w400-h600",
+    "createdTime": "2025-05-03T08:59:48.657Z"
   },
   {
     "id": "14MOl0m9QBnKn5gnfP40Hg3b-ETdhxhPG",
@@ -1624,7 +1916,8 @@
     ],
     "language": "es",
     "previewLink": "http://books.google.es/books?id=tGlZtwAACAAJ&dq=intitle:El+%C3%BAltimo+deseo+inauthor:Andrzej+Sapkowski&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
-    "coverUrl": "https://img-static.ivoox.com/index.php?w=175&url=https://static-1.ivoox.com/canales/1/8/7/9/7351463739781_XXL.jpg&f=webp"
+    "coverUrl": "https://img-static.ivoox.com/index.php?w=175&url=https://static-1.ivoox.com/canales/1/8/7/9/7351463739781_XXL.jpg&f=webp",
+    "createdTime": "2025-05-03T08:59:48.828Z"
   },
   {
     "id": "14KwG31anHnbi8QrcG9Y9sZFhls2p_GuQ",
@@ -1640,7 +1933,8 @@
     ],
     "language": "es",
     "previewLink": "http://books.google.es/books?id=iBbDsgEACAAJ&dq=intitle:Estaci%C3%B3n+de+tormentas+inauthor:Andrzej+Sapkowski&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
-    "coverUrl": "https://books.google.es/books/publisher/content/images/frontcover/n7I0zwEACAAJ?fife=w400-h600"
+    "coverUrl": "https://books.google.es/books/publisher/content/images/frontcover/n7I0zwEACAAJ?fife=w400-h600",
+    "createdTime": "2025-05-03T08:59:49.221Z"
   },
   {
     "id": "14JL7EG2U0NeSol6d7rzctDRDcFrB7o8y",
@@ -1652,7 +1946,8 @@
     },
     "coverUrl": "/cover/31.png",
     "description": "Fantasía épica.",
-    "language": "es"
+    "language": "es",
+    "createdTime": "2025-05-03T08:59:49.671Z"
   },
   {
     "id": "15BH0pz-0Ai0FCH_lX07VXriIFt5zjOBe",
@@ -1670,7 +1965,12 @@
       "Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=Hl-REAAAQBAJ&dq=intitle:El+cielo+de+piedra+inauthor:N+K+Jemisin&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=Hl-REAAAQBAJ&dq=intitle:El+cielo+de+piedra+inauthor:N+K+Jemisin&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:50.296Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=Hl-REAAAQBAJ&printsec=frontcover&img=1&zoom=5&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=Hl-REAAAQBAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api"
+    }
   },
   {
     "id": "154QC5lf88SCV5Zr4usqyDVO_iU_AY3rh",
@@ -1691,7 +1991,8 @@
     "language": "es",
     "averageRating": 2,
     "ratingsCount": 1,
-    "previewLink": "http://books.google.es/books?id=-aFBDwAAQBAJ&printsec=frontcover&dq=intitle:El+Portal+de+los+Obeliscos+inauthor:N+K+Jemisin&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=-aFBDwAAQBAJ&printsec=frontcover&dq=intitle:El+Portal+de+los+Obeliscos+inauthor:N+K+Jemisin&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:50.631Z"
   },
   {
     "id": "153jJVRlPeOkGZpwbkYFf_aih6WRhMT2_",
@@ -1712,7 +2013,8 @@
     "language": "es",
     "averageRating": 3,
     "ratingsCount": 1,
-    "previewLink": "http://books.google.es/books?id=8k_ODgAAQBAJ&printsec=frontcover&dq=intitle:La+quinta+estaci%C3%B3n+inauthor:N+K+Jemisin&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=8k_ODgAAQBAJ&printsec=frontcover&dq=intitle:La+quinta+estaci%C3%B3n+inauthor:N+K+Jemisin&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:50.808Z"
   },
   {
     "id": "152_QP0-e-RfRP1i-AkSyYVTEkFVfFU7W",
@@ -1731,7 +2033,12 @@
       "Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=Y3tbEAAAQBAJ&dq=intitle:La+sabidur%C3%ADa+de+las+multitudes+inauthor:Joe+Abercrombie&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=Y3tbEAAAQBAJ&dq=intitle:La+sabidur%C3%ADa+de+las+multitudes+inauthor:Joe+Abercrombie&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:51.005Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=Y3tbEAAAQBAJ&printsec=frontcover&img=1&zoom=5&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=Y3tbEAAAQBAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api"
+    }
   },
   {
     "id": "150oFZ6eJ3Mb1UddVsZ-aCCImVSFpNrYk",
@@ -1744,7 +2051,8 @@
     "coverUrl": "http://books.google.com/books/content?id=snPdDgAAQBAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
     "categories": [],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=vTED0AEACAAJ&dq=intitle:El+problema+de+la+paz+inauthor:Joe+Abercrombie&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=vTED0AEACAAJ&dq=intitle:El+problema+de+la+paz+inauthor:Joe+Abercrombie&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:51.342Z"
   },
   {
     "id": "14zBo3svS8WIbb9AnECHBm5Ee6BNIEuTd",
@@ -1763,7 +2071,12 @@
       "Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=NnHJDwAAQBAJ&dq=intitle:Un+poco+de+odio+inauthor:Joe+Abercrombie&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=NnHJDwAAQBAJ&dq=intitle:Un+poco+de+odio+inauthor:Joe+Abercrombie&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:51.935Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=NnHJDwAAQBAJ&printsec=frontcover&img=1&zoom=5&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=NnHJDwAAQBAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api"
+    }
   },
   {
     "id": "14oylNI4lMaOO7ChRUYzZ3KsfmMbzsT9k",
@@ -1782,7 +2095,8 @@
       "Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=J3ZvAgAAQBAJ&printsec=frontcover&dq=intitle:En+el+otro+viento+inauthor:Ursula+K+Le+Guin&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=J3ZvAgAAQBAJ&printsec=frontcover&dq=intitle:En+el+otro+viento+inauthor:Ursula+K+Le+Guin&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:52.267Z"
   },
   {
     "id": "14kviIG4BGYV_IQLOYcczMC6BtgyryiZ0",
@@ -1801,7 +2115,12 @@
       "Fiction"
     ],
     "language": "en",
-    "previewLink": "http://books.google.es/books?id=CRRAswEACAAJ&dq=intitle:Historias+de+Terramar+inauthor:Ursula+K+Le+Guin&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=CRRAswEACAAJ&dq=intitle:Historias+de+Terramar+inauthor:Ursula+K+Le+Guin&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:52.486Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=2sOZ0AEACAAJ&printsec=frontcover&img=1&zoom=5&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=2sOZ0AEACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api"
+    }
   },
   {
     "id": "14iM77wJDytkqth9KBL9SUVmgMmg5DtD3",
@@ -1818,7 +2137,8 @@
       "Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=x2jhPwAACAAJ&dq=intitle:Cuentos+de+Terramar+II+inauthor:Ursula+K+Le+Guin&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=x2jhPwAACAAJ&dq=intitle:Cuentos+de+Terramar+II+inauthor:Ursula+K+Le+Guin&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:52.812Z"
   },
   {
     "id": "15JRDb1N9JKfVHxl1M613YwcDkpuhtHPx",
@@ -1836,7 +2156,8 @@
     "language": "es",
     "averageRating": 2,
     "ratingsCount": 1,
-    "previewLink": "http://books.google.es/books?id=TlbPAgAAQBAJ&printsec=frontcover&dq=intitle:Cuentos+de+Terramar+I+inauthor:Ursula+K+Le+Guin&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=TlbPAgAAQBAJ&printsec=frontcover&dq=intitle:Cuentos+de+Terramar+I+inauthor:Ursula+K+Le+Guin&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:53.010Z"
   },
   {
     "id": "15Hd9JZfLUc-uJmjRBYyEIm-g0d2r5qWz",
@@ -1852,7 +2173,8 @@
     ],
     "language": "es",
     "previewLink": "http://books.google.es/books?id=1VEnjwEACAAJ&dq=intitle:Ruina+y+ascenso+inauthor:Leigh+Bardugo&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
-    "coverUrl": "https://m.media-amazon.com/images/I/71Ue94rpicL._SY466_.jpg"
+    "coverUrl": "https://m.media-amazon.com/images/I/71Ue94rpicL._SY466_.jpg",
+    "createdTime": "2025-05-03T08:59:53.321Z"
   },
   {
     "id": "15CS7j5_LEx8qko3_uO3PtlIPmRqgsZvb",
@@ -1871,7 +2193,12 @@
     "language": "es",
     "averageRating": 5,
     "ratingsCount": 1,
-    "previewLink": "http://books.google.es/books?id=ViaNzQEACAAJ&dq=intitle:Asedio+y+tormenta+inauthor:Leigh+Bardugo&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=ViaNzQEACAAJ&dq=intitle:Asedio+y+tormenta+inauthor:Leigh+Bardugo&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:53.700Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=ViaNzQEACAAJ&printsec=frontcover&img=1&zoom=5&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=ViaNzQEACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api"
+    }
   },
   {
     "id": "15PEKLtonkP4Br9nnDbN_4yNVw0os-XRb",
@@ -1890,7 +2217,12 @@
     "language": "es",
     "averageRating": 5,
     "ratingsCount": 1,
-    "previewLink": "http://books.google.es/books?id=oWWNzQEACAAJ&dq=intitle:Sombra+y+hueso+inauthor:Leigh+Bardugo&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=oWWNzQEACAAJ&dq=intitle:Sombra+y+hueso+inauthor:Leigh+Bardugo&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:54.147Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=oWWNzQEACAAJ&printsec=frontcover&img=1&zoom=5&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=oWWNzQEACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api"
+    }
   },
   {
     "id": "15PBSUvAPWjLF6PSzdobdO_aF757yCuq3",
@@ -1908,7 +2240,13 @@
       "Young Adult Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=eLsm0QEACAAJ&dq=intitle:Fearless+inauthor:Lauren+Roberts&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=eLsm0QEACAAJ&dq=intitle:Fearless+inauthor:Lauren+Roberts&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:55.199Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=7pJmEQAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=7pJmEQAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+    },
+    "pageCount": 1748
   },
   {
     "id": "15WkNPXTnNOoLTTenIq8VC-9x0ii6ba8k",
@@ -1927,7 +2265,12 @@
       "Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=lLejEAAAQBAJ&dq=intitle:Haunting+Adeline+inauthor:H+D+Carlton&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=lLejEAAAQBAJ&dq=intitle:Haunting+Adeline+inauthor:H+D+Carlton&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:55.838Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=lLejEAAAQBAJ&printsec=frontcover&img=1&zoom=5&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=lLejEAAAQBAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api"
+    }
   },
   {
     "id": "15WQU_6vXEZbkg-ZgJNPaI-m4i6ZWhtuy",
@@ -1941,9 +2284,17 @@
     "description": "Después del éxito de Haunting Adeline, llega el final de la bilogía dark romance más deseada en TikTok: el juego del gato y el ratón acaba en Te encontraré Hunting Adeline. El diamante La muerte camina junto a mí, pero la Parca no es un rival para mí. Estoy encerrada en un mundo lleno de monstruos, vestidos con trajes de hombre, y de gente que no es lo que parece. No podrán retenerme para siempre. Ya no reconozco a la persona en la que me he convertido y lucho por hallar el camino que me lleve de vuelta junto a la bestia que me da caza por las noches. Me llaman el diamante, pero lo único que han creado es un ángel de la muerte. El cazador Nací siendo un depredador, con la crueldad incrustada en todos y cada uno de mis huesos. Y cuando, en mitad de la noche, me roban lo que me pertenece, como un diamante escondido dentro de una fortaleza, noto que ya no puedo retener a la bestia que hay en mí. La tierra se teñirá de sangre mientras destrozo este mundo para encontrarla. Y la devolveré al lugar al que pertenece. Nadie se librará de mi ira, especialmente aquellos que me hayan traicionado. Advertencia: este libro incluye contenido que puede herir la sensibilidad, escenas de maltrato y contenido sexual explícito. Recomendado para mayores de 18 años. Para más detalles, consultar la web de la autora y los trigger warnings al comienzo del libro. ENGLISH DESCRIPTION The conclusion to the Cat and Mouse Duet is here... The Diamond Death walks alongside me, But the reaper is no match for me. I'm trapped in a world full of monsters dressed as men, and those who aren't as they seem. They won't keep me forever. I no longer recognize the person I've become, And I'm fighting to find my way back to the beast who hunts me in the night. They call me a diamond, But they've only created an angel of death. The Hunter I was born a predator, With ruthlessness ingrained in my bones. When what's mine is stolen from me in the night, Like a diamond hidden within a fortress, I find that I can no longer contain the beast. Blood will paint the ground as I tear apart this world to find her. And bring her back to where she belongs. No one will escape my wrath, Especially not those who have betrayed me. Warning: This is the second and final installment to the Duet. You must read Haunting Adeline first.",
     "publisher": "Montena",
     "publishedDate": "2024-03-05",
-    "categories": [],
+    "categories": [
+      "Fiction"
+    ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=J6Im0AEACAAJ&dq=intitle:Te+encontrar%C3%A9+inauthor:H+D+Carlton&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=J6Im0AEACAAJ&dq=intitle:Te+encontrar%C3%A9+inauthor:H+D+Carlton&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:56.132Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=T_3JEAAAQBAJ&printsec=frontcover&img=1&zoom=5&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=T_3JEAAAQBAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api"
+    },
+    "pageCount": 740
   },
   {
     "id": "16eEJl2wWGPDWD7X9Y1Ioo2mJjZfKsxcV",
@@ -1961,7 +2312,12 @@
       "Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=AXhAXwAACAAJ&dq=intitle:Cenizas+de+Medianoche+inauthor:Lara+Adrian&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=AXhAXwAACAAJ&dq=intitle:Cenizas+de+Medianoche+inauthor:Lara+Adrian&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:56.523Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=1l_BngEACAAJ&printsec=frontcover&img=1&zoom=5&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=1l_BngEACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api"
+    }
   },
   {
     "id": "16UW2wdWM3rpP4OQf4hPM09I3acySm38U",
@@ -1980,7 +2336,12 @@
     "language": "es",
     "averageRating": 5,
     "ratingsCount": 1,
-    "previewLink": "http://books.google.es/books?id=gk5bPgAACAAJ&dq=intitle:El+Beso+de+Medianoche+inauthor:Lara+Adrian&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=gk5bPgAACAAJ&dq=intitle:El+Beso+de+Medianoche+inauthor:Lara+Adrian&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:56.780Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=_TdfNAAACAAJ&printsec=frontcover&img=1&zoom=5&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=_TdfNAAACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api"
+    }
   },
   {
     "id": "16SXr5uM56nk2T8Bi7nW_7YST6XsCdGBL",
@@ -1997,7 +2358,12 @@
       "Fantasy fiction, Spanish"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=-iZmngEACAAJ&dq=intitle:Profundidad+de+la+Medianoche+inauthor:Lara+Adrian&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=-iZmngEACAAJ&dq=intitle:Profundidad+de+la+Medianoche+inauthor:Lara+Adrian&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:56.942Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=-iZmngEACAAJ&printsec=frontcover&img=1&zoom=5&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=-iZmngEACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api"
+    }
   },
   {
     "id": "161qWLwhNn1CuDJpJtbQgJYcxsnAdj1z8",
@@ -2016,7 +2382,12 @@
       "Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=uldxQeXXcD0C&printsec=frontcover&dq=intitle:Rebeli%C3%B3n+a+Medianoche+inauthor:Lara+Adrian&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=uldxQeXXcD0C&printsec=frontcover&dq=intitle:Rebeli%C3%B3n+a+Medianoche+inauthor:Lara+Adrian&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:57.084Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=uldxQeXXcD0C&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=uldxQeXXcD0C&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+    }
   },
   {
     "id": "16-34yih7wxKOSlvGqzqSAPQJGzs3FgvZ",
@@ -2034,7 +2405,12 @@
       "Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=hkbOygAACAAJ&dq=intitle:Sombras+de+Medianoche+inauthor:Lara+Adrian&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=hkbOygAACAAJ&dq=intitle:Sombras+de+Medianoche+inauthor:Lara+Adrian&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:57.263Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=hkbOygAACAAJ&printsec=frontcover&img=1&zoom=5&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=hkbOygAACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api"
+    }
   },
   {
     "id": "15v-t_Pu46hUkBp7RJwPKJOpyGs6PdrBs",
@@ -2053,7 +2429,12 @@
     "language": "es",
     "averageRating": 5,
     "ratingsCount": 1,
-    "previewLink": "http://books.google.es/books?id=gk5bPgAACAAJ&dq=intitle:El+Beso+Carmes%C3%AD+inauthor:Lara+Adrian&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=gk5bPgAACAAJ&dq=intitle:El+Beso+Carmes%C3%AD+inauthor:Lara+Adrian&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:58.400Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=gk5bPgAACAAJ&printsec=frontcover&img=1&zoom=5&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=gk5bPgAACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api"
+    }
   },
   {
     "id": "15u8q9yy088NUAHaNAQpeImCNG-AbqCdC",
@@ -2070,7 +2451,12 @@
       "Man-woman relationships"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=i0DunQEACAAJ&dq=intitle:Bruma+de+Medianoche+inauthor:Lara+Adrian&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=i0DunQEACAAJ&dq=intitle:Bruma+de+Medianoche+inauthor:Lara+Adrian&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:58.810Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=awpAYgEACAAJ&printsec=frontcover&img=1&zoom=5&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=awpAYgEACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api"
+    }
   },
   {
     "id": "15rVqWDYfqEHWYlT7F9-ILtwChvsTHNrd",
@@ -2087,7 +2473,12 @@
       "Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=CxNZLwEACAAJ&dq=intitle:Las+Puertas+de+la+Medianoche+inauthor:Lara+Adrian&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=CxNZLwEACAAJ&dq=intitle:Las+Puertas+de+la+Medianoche+inauthor:Lara+Adrian&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:58.952Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=CxNZLwEACAAJ&printsec=frontcover&img=1&zoom=5&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=CxNZLwEACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api"
+    }
   },
   {
     "id": "15n83NuT37VqQ26D-9N2xhovQE6TUd1cM",
@@ -2108,7 +2499,8 @@
     "language": "es",
     "averageRating": 5,
     "ratingsCount": 1,
-    "previewLink": "http://books.google.es/books?id=2iRxoHqiayYC&printsec=frontcover&dq=intitle:El+Despertar+de+la+Medianoche+inauthor:Lara+Adrian&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=2iRxoHqiayYC&printsec=frontcover&dq=intitle:El+Despertar+de+la+Medianoche+inauthor:Lara+Adrian&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:59.130Z"
   },
   {
     "id": "15iSiJalin2pJVwxjRMzLQcoKAyG0r3Xv",
@@ -2127,7 +2519,8 @@
       "Young Adult Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=vXRuEAAAQBAJ&printsec=frontcover&dq=intitle:Trono+de+Cristal+-+TOG+Bonus+Scenes+and+Chapters+inauthor:Sarah+J+Maas&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=vXRuEAAAQBAJ&printsec=frontcover&dq=intitle:Trono+de+Cristal+-+TOG+Bonus+Scenes+and+Chapters+inauthor:Sarah+J+Maas&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:59.264Z"
   },
   {
     "id": "15c8Gv_eElBwVFzuSyl77-oq0lwUQ17Nb",
@@ -2146,7 +2539,8 @@
       "Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=of6VEAAAQBAJ&printsec=frontcover&dq=intitle:La+prisionera+de+oro+inauthor:Raven+Kenedy&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=of6VEAAAQBAJ&printsec=frontcover&dq=intitle:La+prisionera+de+oro+inauthor:Raven+Kenedy&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:59.575Z"
   },
   {
     "id": "15bJcnfO_KZhw6gOehgCvUwMc_3D3PFFN",
@@ -2165,7 +2559,8 @@
       "Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=RB6rEAAAQBAJ&printsec=frontcover&dq=intitle:Brillo+inauthor:Raven+Kenedy&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=RB6rEAAAQBAJ&printsec=frontcover&dq=intitle:Brillo+inauthor:Raven+Kenedy&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:59.833Z"
   },
   {
     "id": "15_fHl9wT1YlaHyMaBuT1S1dQF9og8gBu",
@@ -2184,7 +2579,8 @@
       "Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=of6VEAAAQBAJ&printsec=frontcover&dq=intitle:Destello+inauthor:Raven+Kenedy&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=of6VEAAAQBAJ&printsec=frontcover&dq=intitle:Destello+inauthor:Raven+Kenedy&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T08:59:59.997Z"
   },
   {
     "id": "15ZLWCdy-UC3pXfVaocH_jMpfJepvhs4-",
@@ -2201,7 +2597,16 @@
     ],
     "language": "es",
     "previewLink": "http://books.google.es/books?id=xtEC0AEACAAJ&dq=intitle:Harry+Potter+y+El+Legado+Maldito+inauthor:J+K+Rowling&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
-    "coverUrl": "https://books.google.es/books/publisher/content/images/frontcover/B72rDAEACAAJ?fife=w400-h600"
+    "coverUrl": "https://books.google.es/books/publisher/content/images/frontcover/B72rDAEACAAJ?fife=w400-h600",
+    "createdTime": "2025-05-03T09:00:00.242Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=bftNDwAAQBAJ&printsec=frontcover&img=1&zoom=5&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=bftNDwAAQBAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api"
+    },
+    "publisher": "Pottermore Publishing",
+    "pageCount": 355,
+    "averageRating": 5,
+    "ratingsCount": 1
   },
   {
     "id": "16nm9Zl3J70ERmAORm41e41GTP-UWhHuc",
@@ -2219,7 +2624,8 @@
     "imageLinks": {
       "smallThumbnail": "http://books.google.com/books/content?id=U8k90AEACAAJ&printsec=frontcover&img=1&zoom=5&source=gbs_api",
       "thumbnail": "http://books.google.com/books/content?id=U8k90AEACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api"
-    }
+    },
+    "createdTime": "2025-05-03T09:00:01.415Z"
   },
   {
     "id": "16ieJ2W9syhma1saoD3rGsM0vNqbD7W2Y",
@@ -2237,7 +2643,8 @@
     "imageLinks": {
       "smallThumbnail": "http://books.google.com/books/content?id=9E4-0AEACAAJ&printsec=frontcover&img=1&zoom=5&source=gbs_api",
       "thumbnail": "http://books.google.com/books/content?id=9E4-0AEACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api"
-    }
+    },
+    "createdTime": "2025-05-03T09:00:01.898Z"
   },
   {
     "id": "177lw8Z3Clz4nu8cDtrTgRfNz1sMLVQAT",
@@ -2256,7 +2663,8 @@
     "imageLinks": {
       "smallThumbnail": "http://books.google.com/books/content?id=R0KfzwEACAAJ&printsec=frontcover&img=1&zoom=5&source=gbs_api",
       "thumbnail": "http://books.google.com/books/content?id=R0KfzwEACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api"
-    }
+    },
+    "createdTime": "2025-05-03T09:00:03.079Z"
   },
   {
     "id": "174cz1_jyYGpzo3lY1zKp2c9sw-KwyyLJ",
@@ -2271,7 +2679,8 @@
     "categories": [],
     "language": "es",
     "previewLink": "http://books.google.es/books?id=VDe4AQAACAAJ&dq=intitle:Hogwarts+una+guia+incompleta+y+poco+fiable+inauthor:J+K+Rowling&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
-    "coverUrl": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEh8NIWt9pRqKM4jVAVbUHVZ6AenDJiuTUVNCetrSSgNm1_tWhuZm98PLHWRjxK4xvELm-cAnTEjQhF3yguzDIb3cZlhj59tk6M-FI-V-Wj87WIutfCYuxqNjdOTyIL0wvh6ar_2zObtJ-E/s659/Hogwarts+03+%2528ESP%2529_001_.jpg"
+    "coverUrl": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEh8NIWt9pRqKM4jVAVbUHVZ6AenDJiuTUVNCetrSSgNm1_tWhuZm98PLHWRjxK4xvELm-cAnTEjQhF3yguzDIb3cZlhj59tk6M-FI-V-Wj87WIutfCYuxqNjdOTyIL0wvh6ar_2zObtJ-E/s659/Hogwarts+03+%2528ESP%2529_001_.jpg",
+    "createdTime": "2025-05-03T09:00:03.508Z"
   },
   {
     "id": "173flml08xrCPX96MIiRrebXWp_-_LzyF",
@@ -2288,7 +2697,16 @@
     ],
     "language": "es",
     "previewLink": "http://books.google.es/books?id=n-Ks0AEACAAJ&dq=intitle:Harry+Potter+y+Las+Reliquias+de+la+Muerte+inauthor:J+K+Rowling&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
-    "coverUrl": "https://books.google.es/books/publisher/content/images/frontcover/dHRnzQEACAAJ?fife=w400-h600"
+    "coverUrl": "https://books.google.es/books/publisher/content/images/frontcover/dHRnzQEACAAJ?fife=w400-h600",
+    "createdTime": "2025-05-03T09:00:03.996Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=Pd4Hy4Y-d9MC&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=Pd4Hy4Y-d9MC&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+    },
+    "publisher": "Pottermore Publishing",
+    "pageCount": 787,
+    "averageRating": 4,
+    "ratingsCount": 32
   },
   {
     "id": "172Pvwfr-EpP5bft1Xzu88rGlmNG1HgXQ",
@@ -2305,7 +2723,8 @@
     ],
     "language": "es",
     "previewLink": "http://books.google.es/books?id=6ij4zwEACAAJ&dq=intitle:Harry+Potter+y+El+Misterio+del+Pr%C3%ADncipe+inauthor:J+K+Rowling&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
-    "coverUrl": "https://books.google.es/books/publisher/content/images/frontcover/olaREAAAQBAJ?fife=w400-h600"
+    "coverUrl": "https://books.google.es/books/publisher/content/images/frontcover/olaREAAAQBAJ?fife=w400-h600",
+    "createdTime": "2025-05-03T09:00:04.983Z"
   },
   {
     "id": "16zFng7ySeEwv-Y5u-LmYBM3a_jqlx098",
@@ -2329,7 +2748,9 @@
       "thumbnail": "http://books.google.com/books/content?id=uUOBPgXQtvUC&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
     },
     "averageRating": 4,
-    "ratingsCount": 36
+    "ratingsCount": 36,
+    "createdTime": "2025-05-03T09:00:05.127Z",
+    "pageCount": 1040
   },
   {
     "id": "16r959BSKfSRxQCINayXpu2erxdiiTIig",
@@ -2347,7 +2768,12 @@
       "England"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=1qPTywEACAAJ&dq=intitle:Harry+Potter+y+El+C%C3%A1liz+de+Fuego+inauthor:J+K+Rowling&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=1qPTywEACAAJ&dq=intitle:Harry+Potter+y+El+C%C3%A1liz+de+Fuego+inauthor:J+K+Rowling&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T09:00:05.758Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=UKiQEAAAQBAJ&printsec=frontcover&img=1&zoom=5&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=UKiQEAAAQBAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api"
+    }
   },
   {
     "id": "17ChqZht8xBLhJ-XpwaA4nXl9NqkaLpeG",
@@ -2357,7 +2783,13 @@
       "name": "Harry Potter",
       "number": 3
     },
-    "coverUrl": "http://books.google.com/books/content?id=jLnv0AEACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api"
+    "coverUrl": "http://books.google.com/books/content?id=jLnv0AEACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
+    "createdTime": "2025-05-03T09:00:06.448Z",
+    "publishedDate": "2015-02",
+    "pageCount": 353,
+    "categories": [],
+    "language": "es",
+    "previewLink": "http://books.google.es/books?id=J1hJrgEACAAJ&dq=intitle:%22Harry+Potter+y+El+Prisionero+de+Azkaban%22+inauthor:%22J+K+Rowling%22&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
   },
   {
     "id": "178KsreY7HOVuk4-V5F6FWrR6XiSM_v1Z",
@@ -2374,7 +2806,13 @@
     ],
     "language": "es",
     "previewLink": "http://books.google.es/books?id=YIcA0AEACAAJ&dq=intitle:Harry+Potter+y+La+Camara+Secreta+inauthor:J+K+Rowling&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
-    "coverUrl": "https://books.google.es/books/publisher/content/images/frontcover/nlaREAAAQBAJ?fife=w400-h600"
+    "coverUrl": "https://books.google.es/books/publisher/content/images/frontcover/nlaREAAAQBAJ?fife=w400-h600",
+    "createdTime": "2025-05-03T09:00:06.813Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=tNg4zgEACAAJ&printsec=frontcover&img=1&zoom=5&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=tNg4zgEACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api"
+    },
+    "publisher": "Turtleback"
   },
   {
     "id": "177yZ-7z7SRIYZZv9PjomnIJhqiBeKA-H",
@@ -2391,7 +2829,16 @@
     ],
     "language": "es",
     "previewLink": "http://books.google.es/books?id=1TP1zwEACAAJ&dq=intitle:Harry+Potter+y+La+Piedra+Filosofal+inauthor:J+K+Rowling&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
-    "coverUrl": "https://books.google.es/books/publisher/content/images/frontcover/56cZPAAACAAJ?fife=w400-h600"
+    "coverUrl": "https://books.google.es/books/publisher/content/images/frontcover/56cZPAAACAAJ?fife=w400-h600",
+    "createdTime": "2025-05-03T09:00:07.133Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=4RENAQAAMAAJ&printsec=frontcover&img=1&zoom=5&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=4RENAQAAMAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api"
+    },
+    "publisher": "Turtleback",
+    "pageCount": 264,
+    "averageRating": 4,
+    "ratingsCount": 3
   },
   {
     "id": "16pCpqXRfM8lSgXTypH69oFyukfs16jep",
@@ -2412,7 +2859,8 @@
     "language": "es",
     "averageRating": 4.5,
     "ratingsCount": 28,
-    "previewLink": "http://books.google.es/books?id=2EaOj7-ozKgC&printsec=frontcover&dq=intitle:Harry+Potter+(La+Precuela)+inauthor:J+K+Rowling&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=2EaOj7-ozKgC&printsec=frontcover&dq=intitle:Harry+Potter+(La+Precuela)+inauthor:J+K+Rowling&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T09:00:07.444Z"
   },
   {
     "id": "17RfMbHShIX0l681IoXxexsJf9XxLcEHW",
@@ -2437,7 +2885,8 @@
     "imageLinks": {
       "smallThumbnail": "http://books.google.com/books/content?id=JEbMEAAAQBAJ&printsec=frontcover&img=1&zoom=5&source=gbs_api",
       "thumbnail": "http://books.google.com/books/content?id=JEbMEAAAQBAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api"
-    }
+    },
+    "createdTime": "2025-05-03T09:00:07.665Z"
   },
   {
     "id": "17OA6AkGtaVmX832jZZF1NpgWTic11RQ3",
@@ -2456,7 +2905,12 @@
       "Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=Ten5DwAAQBAJ&printsec=frontcover&dq=intitle:Casa+de+Tierra+y+Sangre+inauthor:Sarah+J+Maas&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=Ten5DwAAQBAJ&printsec=frontcover&dq=intitle:Casa+de+Tierra+y+Sangre+inauthor:Sarah+J+Maas&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T09:00:09.688Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=Ten5DwAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=Ten5DwAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+    }
   },
   {
     "id": "17gXalK285hXHF4ud_bVhBKxArGLSfdda",
@@ -2475,7 +2929,12 @@
       "Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=dAbzEAAAQBAJ&printsec=frontcover&dq=intitle:Casa+de+Flama+y+Sombra+inauthor:Sarah+J+Maas&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=dAbzEAAAQBAJ&printsec=frontcover&dq=intitle:Casa+de+Flama+y+Sombra+inauthor:Sarah+J+Maas&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T09:00:10.667Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=dAbzEAAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=dAbzEAAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+    }
   },
   {
     "id": "17NM98hy5DvDrqbCA2JqSUYanleCl3BqV",
@@ -2494,7 +2953,8 @@
       "Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=pZtkEAAAQBAJ&printsec=frontcover&dq=intitle:Casa+de+Cielo+y+Aliento+inauthor:Sarah+J+Maas&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=pZtkEAAAQBAJ&printsec=frontcover&dq=intitle:Casa+de+Cielo+y+Aliento+inauthor:Sarah+J+Maas&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T09:00:10.112Z"
   },
   {
     "id": "17_iZURx7ubtwt2U3wmstTf0J-ScD5J2r",
@@ -2513,7 +2973,12 @@
       "Juvenile Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=Y-tFEAAAQBAJ&printsec=frontcover&dq=intitle:Una+Corte+de+Llamas+Plateadas+inauthor:Sarah+J+Maas&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=Y-tFEAAAQBAJ&printsec=frontcover&dq=intitle:Una+Corte+de+Llamas+Plateadas+inauthor:Sarah+J+Maas&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T09:00:11.334Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=Y-tFEAAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=Y-tFEAAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+    }
   },
   {
     "id": "17ZkZiX8Uuca7i0pLwfn_-ijT7B7lKxGp",
@@ -2534,7 +2999,8 @@
     "language": "es",
     "averageRating": 5,
     "ratingsCount": 1,
-    "previewLink": "http://books.google.es/books?id=FqBqDwAAQBAJ&printsec=frontcover&dq=intitle:Una+Corte+de+Hielo+y+Estrellas+inauthor:Sarah+J+Maas&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=FqBqDwAAQBAJ&printsec=frontcover&dq=intitle:Una+Corte+de+Hielo+y+Estrellas+inauthor:Sarah+J+Maas&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T09:00:11.741Z"
   },
   {
     "id": "17XizHsFgUoMAEuPM8wsfIJw_X800TRIU",
@@ -2553,7 +3019,12 @@
       "Juvenile Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=XA1rDwAAQBAJ&dq=intitle:Una+Corte+de+Alas+y+Ruina+inauthor:Sarah+J+Maas&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=XA1rDwAAQBAJ&dq=intitle:Una+Corte+de+Alas+y+Ruina+inauthor:Sarah+J+Maas&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T09:00:12.032Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=XA1rDwAAQBAJ&printsec=frontcover&img=1&zoom=5&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=XA1rDwAAQBAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api"
+    }
   },
   {
     "id": "17SKJjoJy5ET0W3ah3lSYS3jRLqnW3Jbl",
@@ -2572,7 +3043,8 @@
       "Juvenile Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=pYq3DAAAQBAJ&printsec=frontcover&dq=intitle:Una+Corte+de+Niebla+y+Furia+inauthor:Sarah+J+Maas&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=pYq3DAAAQBAJ&printsec=frontcover&dq=intitle:Una+Corte+de+Niebla+y+Furia+inauthor:Sarah+J+Maas&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T09:00:12.468Z"
   },
   {
     "id": "17S7GPiUjwXxqxqAqAtYEw_XT78FGv26D",
@@ -2593,7 +3065,8 @@
     "language": "es",
     "averageRating": 3,
     "ratingsCount": 2,
-    "previewLink": "http://books.google.es/books?id=HVH2CwAAQBAJ&printsec=frontcover&dq=intitle:Una+Corte+de+Rosas+y+Espinas+inauthor:Sarah+J+Maas&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=HVH2CwAAQBAJ&printsec=frontcover&dq=intitle:Una+Corte+de+Rosas+y+Espinas+inauthor:Sarah+J+Maas&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T09:00:12.675Z"
   },
   {
     "id": "17kTX09doETFYR3AT-qtN2k46AOwBBC0X",
@@ -2618,7 +3091,8 @@
     "imageLinks": {
       "smallThumbnail": "http://books.google.com/books/content?id=e8EDEQAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
       "thumbnail": "http://books.google.com/books/content?id=e8EDEQAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
-    }
+    },
+    "createdTime": "2025-05-03T09:00:13.913Z"
   },
   {
     "id": "182do7I8HIP9Ab_7qujv2krvmEPVF-95r",
@@ -2637,7 +3111,8 @@
       "Young Adult Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=7pJmEQAAQBAJ&printsec=frontcover&dq=intitle:Powerless+inauthor:Lauren+Roberts&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=7pJmEQAAQBAJ&printsec=frontcover&dq=intitle:Powerless+inauthor:Lauren+Roberts&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T09:00:15.384Z"
   },
   {
     "id": "17wNgvZxKKQmAahQJvffN5Mlq-Ibx4b8w",
@@ -2656,7 +3131,12 @@
       "Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=gWLNEAAAQBAJ&printsec=frontcover&dq=intitle:%C3%89xtasis+inauthor:Tracy+Wolff&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=gWLNEAAAQBAJ&printsec=frontcover&dq=intitle:%C3%89xtasis+inauthor:Tracy+Wolff&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T09:00:15.997Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=gWLNEAAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=gWLNEAAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+    }
   },
   {
     "id": "17u_1_YVdMkO4XU7txzExLPs6qv0gIGe3",
@@ -2675,7 +3155,12 @@
       "Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=sTQXEAAAQBAJ&printsec=frontcover&dq=intitle:Furia+inauthor:Tracy+Wolff&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=sTQXEAAAQBAJ&printsec=frontcover&dq=intitle:Furia+inauthor:Tracy+Wolff&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T09:00:16.354Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=sTQXEAAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=sTQXEAAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+    }
   },
   {
     "id": "189RY5TW779ot9ARWsWxFtChYvsO9dlVC",
@@ -2696,7 +3181,8 @@
     "language": "es",
     "averageRating": 5,
     "ratingsCount": 1,
-    "previewLink": "http://books.google.es/books?id=qenzDwAAQBAJ&printsec=frontcover&dq=intitle:Anhelo+inauthor:Tracy+Wolff&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=qenzDwAAQBAJ&printsec=frontcover&dq=intitle:Anhelo+inauthor:Tracy+Wolff&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T09:00:16.662Z"
   },
   {
     "id": "189irWkWBrho6CN2Cf415yrNgKJfm0lth",
@@ -2709,7 +3195,8 @@
     "categories": [],
     "language": "es",
     "previewLink": "http://books.google.es/books?id=_2zj0AEACAAJ&dq=intitle:Fulgor+inauthor:Tracy+Wolff&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
-    "coverUrl": "https://proassetspdlcom.cdnstatics2.com/usuaris/libros/thumbs/6a6e232b-25b8-4ffe-a55a-50d0a7a85ca7/d_1200_1200/portada_fulgor-serie-crave-4_tracy-wolff_202201271030.webp"
+    "coverUrl": "https://proassetspdlcom.cdnstatics2.com/usuaris/libros/thumbs/6a6e232b-25b8-4ffe-a55a-50d0a7a85ca7/d_1200_1200/portada_fulgor-serie-crave-4_tracy-wolff_202201271030.webp",
+    "createdTime": "2025-05-03T09:00:16.962Z"
   },
   {
     "id": "18MgHbNrEezXhEr9pHeguOut7P5WUEycF",
@@ -2728,7 +3215,12 @@
       "Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=iK44EAAAQBAJ&printsec=frontcover&dq=intitle:Ansia+inauthor:Tracy+Wolff&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=iK44EAAAQBAJ&printsec=frontcover&dq=intitle:Ansia+inauthor:Tracy+Wolff&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T09:00:17.187Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=iK44EAAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=iK44EAAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+    }
   },
   {
     "id": "18IHPPD0khd08PadgkeiisLhOpLct_YGI",
@@ -2747,13 +3239,21 @@
       "Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=TpakEAAAQBAJ&printsec=frontcover&dq=intitle:Hechizo+inauthor:Tracy+Wolff&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=TpakEAAAQBAJ&printsec=frontcover&dq=intitle:Hechizo+inauthor:Tracy+Wolff&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-05-03T09:00:17.480Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=TpakEAAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=TpakEAAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+    }
   },
   {
     "id": "1q-KQna4F34qR6ipLvC0o1DGDgaJQFrSh",
     "title": "Empire of Storms & Tower of Dawn (Tándem)",
     "author": "Sarah J Maas",
-    "saga": null,
+    "saga": {
+      "name": "",
+      "number": 0
+    },
     "coverUrl": "http://books.google.com/books/content?id=KVOv0AEACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
     "description": "Poder, alianzas, guerra, venganza... La travesía a un imperio distante de sanadores mágicos. Chaol Westfall siempre se ha definido a sí mismo como un hombre de lealtad inquebrantable, de gran fortaleza y a partir de su posición como capitán de la Guardia. Pero todo eso ha cambiado desde que el castillo de cristal se hizo añicos: sus hombres fueron diezmados y el rey de Adarlan lo libró de un golpe mortal pero dejó su cuerpo destrozado. Su única oportunidad de recuperarse reside en los legendarios curanderos de la Torre Cesme en Antica -el bastión del poderoso imperio en el Continente Meridional. Y ahora que la guerra se cierne sobre Dorian y Aelin de vuelta en casa, su supervivencia quizá dependa de que Chaol y Nesryn convenzan a sus regidores de formar una alianza con ellos. Pero lo que descubren en Antica los cambiará por completo y será más vital salvar a Erilea de lo que podrían haber imaginado. ENGLISH DESCRIPTION In the next installment of the New York Times bestselling Throne of Glass series, follow Chaol on his sweeping journey to a distant empire. Chaol Westfall has always defined himself by his unwavering loyalty, his strength, and his position as the Captain of the Guard. But all of that has changed since the glass castle shattered, since his men were slaughtered, since the King of Adarlan spared him from a killing blow, but left his body broken. His only shot at recovery lies with the legendary healers of the Torre Cesme in Antica--the stronghold of the southern continent's mighty empire. And with war looming over Dorian and Aelin back home, their survival might lie with Chaol and Nesryn convincing its rulers to ally with them. But what they discover in Antica will change them both--and be more vital to saving Erilea than they could have imagined.",
     "publisher": "Alfaguara Juvenil",
@@ -2762,13 +3262,17 @@
       "Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=KVOv0AEACAAJ&dq=intitle:Empire+of+Storms+%26+Tower+of+Dawn+(Ta%CC%81ndem)+inauthor:Sarah+J+Maas&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=KVOv0AEACAAJ&dq=intitle:Empire+of+Storms+%26+Tower+of+Dawn+(Ta%CC%81ndem)+inauthor:Sarah+J+Maas&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-11-27T08:17:53.529Z"
   },
   {
     "id": "14UfNxVAF-NUFU67Jrjav5SP0zijFUrSZ",
     "title": "La corte de los cuchillos rotos",
     "author": "Anna Smith Spark",
-    "saga": null,
+    "saga": {
+      "name": "",
+      "number": 0
+    },
     "coverUrl": "http://books.google.com/books/content?id=YRiREQAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
     "description": "Una novela épica, oscura y deslumbrante: el debut de fantasía grimdark de Anna Smith Spark El antaño poderoso Imperio de Sekemleth se ve amenazado por la decadencia y la ruina; los nobles rivales luchan por la supremacía y están dispuestos a todo para conseguirla. El influyente aristócrata Orhan Emereth, que planea arrebatar el trono con ayuda de un ejército de mercenarios, ignora que entre sus filas se oculta un joven muy especial: Marith, que no solo huye de su propio pasado, sino también de su padre, un hombre tan poderoso como empeñado en verlo muerto. La suma sacerdotisa Thalia, una de las figuras más respetadas del Estado, jamás ha abandonado su templo, pero cuando empieza la masacre del golpe de Estado, tiene que huir para escapar de una muerte segura. En su camino se cruza con Marith, quien le promete que la sacará con vida de la ciudad. Juntos se convertirán en piezas clave en el gran juego por el poder.",
     "publisher": "Oz Editorial",
@@ -2778,7 +3282,12 @@
       "Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=YRiREQAAQBAJ&printsec=frontcover&dq=intitle:La+corte+de+los+cuchillos+rotos+inauthor:Anna+Smith+Spark&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=YRiREQAAQBAJ&printsec=frontcover&dq=intitle:La+corte+de+los+cuchillos+rotos+inauthor:Anna+Smith+Spark&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-11-26T18:10:44.998Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=YRiREQAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=YRiREQAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+    }
   },
   {
     "id": "1-TQVqENNDUdnhZTcIgP4UDSq1MG6rwr5",
@@ -2805,7 +3314,12 @@
       "Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=oD-EuQAACAAJ&dq=intitle:Las+dos+torres+inauthor:J.+R.+R.+Tolkien&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=oD-EuQAACAAJ&dq=intitle:Las+dos+torres+inauthor:J.+R.+R.+Tolkien&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-12-08T01:19:43.942Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=fB_YQwAACAAJ&printsec=frontcover&img=1&zoom=5&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=fB_YQwAACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api"
+    }
   },
   {
     "id": "1Vf3bYvLdCmdgtijjhhDUUIvS05G8NF8U",
@@ -2826,7 +3340,8 @@
     "language": "es",
     "averageRating": 4.5,
     "ratingsCount": 22,
-    "previewLink": "http://books.google.es/books?id=DYmUGGwZ8_oC&printsec=frontcover&dq=intitle:El+Senor+de+los+Anillos+inauthor:J.+R.+R.+Tolkien&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=DYmUGGwZ8_oC&printsec=frontcover&dq=intitle:El+Senor+de+los+Anillos+inauthor:J.+R.+R.+Tolkien&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-12-08T01:19:47.004Z"
   },
   {
     "id": "1vvuEc3GkvoQp0HlpYOrwxTyl0TvkNu0a",
@@ -2847,7 +3362,8 @@
     "language": "es",
     "averageRating": 4.5,
     "ratingsCount": 22,
-    "previewLink": "http://books.google.es/books?id=DYmUGGwZ8_oC&printsec=frontcover&dq=intitle:La+comunidad+del+anillo+inauthor:J.+R.+R.+Tolkien&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=DYmUGGwZ8_oC&printsec=frontcover&dq=intitle:La+comunidad+del+anillo+inauthor:J.+R.+R.+Tolkien&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-12-08T01:19:49.157Z"
   },
   {
     "id": "1VRR76_Mz0flPMXFvk8Hup2eO2yNY3y3T",
@@ -2866,7 +3382,8 @@
       "Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=Au4OQwAACAAJ&dq=intitle:El+retorno+del+rey+inauthor:J.+R.+R.+Tolkien&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=Au4OQwAACAAJ&dq=intitle:El+retorno+del+rey+inauthor:J.+R.+R.+Tolkien&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-12-08T01:19:02.395Z"
   },
   {
     "id": "1I-YYcKvqSiYWaAfRVWRcg2gwRieSOg5X",
@@ -2887,13 +3404,17 @@
     "language": "es",
     "averageRating": 5,
     "ratingsCount": 5,
-    "previewLink": "http://books.google.es/books?id=LvsQ34A1fOMC&printsec=frontcover&dq=intitle:Apendices+inauthor:J.R.R.+Tolkien&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=LvsQ34A1fOMC&printsec=frontcover&dq=intitle:Apendices+inauthor:J.R.R.+Tolkien&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-12-08T01:17:39.297Z"
   },
   {
     "id": "15KOBswQD-bXg1lQGvK3jbzAFSuGz6GoM",
     "title": "La esfinge de los hielos",
     "author": "Julio Verne",
-    "saga": null,
+    "saga": {
+      "name": "",
+      "number": 0
+    },
     "coverUrl": "http://books.google.com/books/content?id=2XAiEAAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
     "description": "La esfinge de los hielos, publicada en la segunda serie del Magasin d'Éducation et de Récréation desde el 1 de enero (volumen 5, número 49) hasta el 15 de diciembre de 1897 (volumen 6, número 72), y como libro el 24 de junio de ese mismo año, trata de la busca del desaparecido Pym en el polo sur. Es la continuación de La narración de Arthur Gordon Pym, de Edgar Allan Poe (1838), en un rendido homenaje de uno de sus discípulos y admiradores. Jeorgling, un enigmático y extraño estadounidense se encuentra en las islas Kerguelen realizando estudios que sólo él conoce. Al finalizar, busca regresar a los Estados Unidos por el medio que sea. El único barco que pasa por la zona es comandado por el capitán Len Guy, el cual se niega a llevarlo de vuelta a Tristán de Acuña u a otra isla. Sin embargo, el hecho de que Joerglin sea de Connecticut, cerca de donde vivió el famoso Pym, hace cambiar de idea al capitán. Como en la novela de Poe, se produce una rebelión que se ve ferozmente acentuada al chocar el navío contra un iceberg tras haber pasado por las islas Aurora y haber observado los hundidos restos de la isla Tsalal. Tras el choque contra el iceberg, algunos de los amotinados escapan en un bote salvavidas. Los héroes logran escapar en una especie de paracota abandonada por los nativos siguiendo la corriente, y una fuerza misteriosa lleva a ambos grupos ineluctablemente hacia algún enigmático lugar en el Polo Sur.",
     "publisher": "Editorial Verbum",
@@ -2903,13 +3424,21 @@
       "Biography & Autobiography"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=2XAiEAAAQBAJ&printsec=frontcover&dq=intitle:La+esfinge+de+los+hielos+inauthor:Julio+Verne&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=2XAiEAAAQBAJ&printsec=frontcover&dq=intitle:La+esfinge+de+los+hielos+inauthor:Julio+Verne&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-12-08T00:58:51.830Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=2XAiEAAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=2XAiEAAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+    }
   },
   {
     "id": "1blEe4WUnw0CgVLuEzwj9ECasjn7Rlda-",
     "title": "Aventuras de un nino irlandes",
     "author": "Julio Verne",
-    "saga": null,
+    "saga": {
+      "name": "",
+      "number": 0
+    },
     "coverUrl": "http://books.google.com/books/content?id=5sf2jwEACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
     "description": "Un joven huérfano supera la adversidad a medida que va creciendo. Así, empieza su propio negocio con la ayuda de otro huérfano, cuya vida había salvado. Verne comienza a contar las aventuras e historias de este muchacho desde que era pequeño hasta que se establece y triunfa a la edad de quince años.",
     "publisher": "Createspace Independent Publishing Platform",
@@ -2917,13 +3446,17 @@
     "pageCount": 288,
     "categories": [],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=5sf2jwEACAAJ&dq=intitle:Aventuras+de+un+nino+irlandes+inauthor:Julio+Verne&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=5sf2jwEACAAJ&dq=intitle:Aventuras+de+un+nino+irlandes+inauthor:Julio+Verne&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-12-08T00:58:51.278Z"
   },
   {
     "id": "1V_qQpEMdHGpwPkIp6aDGD2w6H66reENH",
     "title": "El faro del fin del mundo",
     "author": "Julio Verne",
-    "saga": null,
+    "saga": {
+      "name": "",
+      "number": 0
+    },
     "coverUrl": "http://books.google.com/books/content?id=BsTWCgAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
     "description": "Estamos especializados en publicar textos en español. Para encontrar mas títulos busque “NoBooks Editorial” o visite nuestra web http://www.nobooksed.com Contamos con mas volúmenes en español que cualquier otra editorial en formato electrónico y continuamos creciendo. Fue escrita hacia 1901, puesto que el escritor llevaba varias obras de adelanto sobre el orden de entrega de sus publicaciones. Es considerada una de las mejores novelas de esa etapa literaria de Verne",
     "publisher": "NoBooks Editorial",
@@ -2933,26 +3466,60 @@
       "Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=BsTWCgAAQBAJ&printsec=frontcover&dq=intitle:El+faro+del+fin+del+mundo+inauthor:Julio+Verne&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=BsTWCgAAQBAJ&printsec=frontcover&dq=intitle:El+faro+del+fin+del+mundo+inauthor:Julio+Verne&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "createdTime": "2025-12-08T00:58:55.459Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=fMMqEAAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=fMMqEAAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+    }
   },
   {
     "id": "1-d3beHqyHK0ulScANojC3Y8MXwbneq9r",
     "title": "El verano en que me enamore",
     "author": "Jenny Han",
-    "saga": null,
-    "coverUrl": "https://books.google.es/books/publisher/content/images/frontcover/CQg0bh6rhxcC?fife=w400-h600"
+    "saga": {
+      "name": "",
+      "number": 0
+    },
+    "coverUrl": "https://books.google.es/books/publisher/content/images/frontcover/CQg0bh6rhxcC?fife=w400-h600",
+    "createdTime": "2025-05-03T08:59:30.600Z",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=Rj5yEAAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=Rj5yEAAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+    },
+    "description": "El pack incluye la trilogía de Jenny Han: El verano en que me enamoré, No hay verano sin ti, Siempre nos quedará el verano Por la autora del fenómeno A todos los chicos de los que me enamoré. El verano en que me enamoré: Belly nunca ha sido la clase de chica a la que le pasan cosas. Año tras año, sus vacaciones transcurren en la casa de la playa junto a su hermano, su madre, la mejor amiga de ésta y sus hijos Conrad y Jeremiah. Pero los chicos apenas se dan cuenta de lo mucho que se fija en ellos. Todos los veranos, Belly desea que eso cambie. Y, esta vez, lo hará: éste será el verano en que Belly se volverá guapa, el verano en que todo cambiará. No hay verano sin ti: Belly espera con impaciencia la llegada de las vacaciones para reencontrarse con Conrad y Jeremiah en la casa de la playa. Pero este verano no podrá ir. No después de que la madre de los chicos volviera a enfermar y de que Conrad cambiara. Todo lo que el verano significaba se ha esfumado y Belly está deseando que acabe. Hasta que recibe una llamada inesperada que la convence de que aún podría volver a ser como antes. Y eso sólo puede ocurrir en un lugar... Siempre nos quedará el verano: Belly sólo ha querido a dos chicos en su vida. Y ambos se apellidan Fisher. Tras salir con Jeremiah durante los últimos dos años, está casi segura de que es su alma gemela. En cambio, Conrad no ha superado el error de haberla dejado escapar, así que cuando Belly y Jere deciden dar un paso más en su relación, sabe que ha llegado el momento de hablar o callar para siempre. Decida lo que decida, Belly deberá enfrentarse a lo inevitable: tendrá que romperle el corazón a uno de los dos.",
+    "publisher": "Crossbooks",
+    "publishedDate": "2022-06-08",
+    "pageCount": 726,
+    "categories": [
+      "Juvenile Fiction"
+    ],
+    "language": "es",
+    "previewLink": "http://books.google.es/books?id=Rj5yEAAAQBAJ&printsec=frontcover&dq=intitle:%22El+verano+en+que+me+enamore%22+inauthor:%22Jenny+Han%22&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
   },
   {
     "id": "1-DUWQXet4dTAeOXs18rRS8F2_VFrPMpp",
     "title": "El mago de Oz",
     "author": "L. Frank Baum",
-    "saga": null,
+    "saga": {
+      "name": "",
+      "number": 0
+    },
     "coverUrl": "https://books.google.es/books/publisher/content/images/frontcover/xZr10AEACAAJ?fife=w400-h600",
     "description": "Dorothy vivía en medio de las extensas praderas de Kansas, con su tío Henry, que era granjero, y su tía Em, la esposa de éste. La casa que los albergaba era pequeña, pues la madera necesaria para su construcción debió ser transportada en carretas desde muy lejos. Constaba de cuatro paredes, piso y techo, lo cual formaba una habitación, y en ella había una cocina algo herrumbrada, un mueble para los platos, una mesa, tres o cuatro sillas y las camas. El tío Henry y la tía Em tenían una cama grande situada en un rincón, y Dorothy ocupaba una pequeñita en otro rincón. No había altillo ni tampoco sótano, salvo un hueco cavado en el piso, y al que llamaban refugio para ciclones, donde la familia podía cobijarse en caso de que se descargara un huracán lo bastante fuerte como para barrer con cualquier edificio que hallara en su camino. A este hueco —pequeño y oscuro— se llegaba por medio de una escalera y una puerta trampa que había en medio del piso. Cuando Dorothy se detenía en el vano de la puerta y miraba a su alrededor, no podía ver otra cosa que la gran pradera que los rodeaba. Ni un árbol ni una casa se destacaba en la inmensa llanura que se extendía en todas direcciones hasta parecer juntarse con el cielo. El sol había calcinado la tierra arada hasta convertirla en una masa grisácea con una que otra rajadura aquí y allá. Ni siquiera la hierba era verde, pues el sol había quemado la parte superior de sus largas hojillas hasta teñirlas del mismo gris predominante en el lugar. En un tiempo la casa estuvo pintada, pero el calor del astro rey había levantado ampollas en la pintura y las lluvias se llevaron a ésta, de modo que la vivienda tenía ahora la misma tonalidad grisácea y opaca que todo lo que la circundaba.",
     "imageLinks": {
       "smallThumbnail": "http://books.google.com/books/content?id=z4u_EAAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
       "thumbnail": "http://books.google.com/books/content?id=z4u_EAAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
-    }
+    },
+    "createdTime": "2025-05-03T08:59:31.800Z",
+    "publisher": "BoD - Books on Demand",
+    "publishedDate": "2023-05-18",
+    "pageCount": 97,
+    "categories": [
+      "Fiction"
+    ],
+    "language": "es",
+    "previewLink": "http://books.google.es/books?id=z4u_EAAAQBAJ&printsec=frontcover&dq=intitle:%22El+mago+de+Oz%22+inauthor:%22L.+Frank+Baum%22&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
   },
   {
     "id": "105tUf2NhX_ZFvWPBiukp-nASyrWmoINw",
@@ -2965,8 +3532,12 @@
     "id": "13gQL-ImJngxNhIVshtHFjyY2HgnZ8Zt-",
     "title": "El caballero de los Siete Reinos Gigamesh",
     "author": "George R R Martin",
-    "saga": null,
-    "coverUrl": "https://books.google.es/books/publisher/content/images/frontcover/igB2BgAAQBAJ?fife=w400-h600"
+    "saga": {
+      "name": "",
+      "number": 0
+    },
+    "coverUrl": "https://books.google.es/books/publisher/content/images/frontcover/igB2BgAAQBAJ?fife=w400-h600",
+    "createdTime": "2025-05-03T08:59:40.532Z"
   },
   {
     "id": "15gDsNm-az8Z1JW9uEYbDRUGdIir4HzMG",
@@ -2981,28 +3552,31 @@
     "imageLinks": {
       "smallThumbnail": "http://books.google.com/books/content?id=vXRuEAAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
       "thumbnail": "http://books.google.com/books/content?id=vXRuEAAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
-    }
-  },
-  {
-    "id": "187FBB6vuJZxNOfVcz6andHxBoA2AWHxi",
-    "title": "Reckless",
-    "author": "Lauren Roberts",
-    "saga": {
-      "name": "Powerless",
-      "number": 2
     },
-    "coverUrl": "https://books.google.es/books/publisher/content/images/frontcover/e8EDEQAAQBAJ?fife=w400-h600",
-    "description": "Llega la deseada segunda parte del fenómeno imparable Powerless, la saga de fantasía romántica que ha seducido al mundo entero. Amistad, amor, misterio, peligro... 100 % adictiva, 100 % Powerless. Él es el refugio que ella siempre había deseado. Ella es el enemigo que él tiene que vencer. Tras sobrevivir a las Pruebas de la Purga, Paedyn Gray, nacida sin poderes, mató al rey e inició una resistencia en todo el país. Ahora está huyendo de la persona hacia la que querría correr. Kai Azer es actualmente el defensor de Ilya y debe permanecer leal a su hermano Kitt, el nuevo rey. Ha prometido encontrar a Paedyn y llevarla ante la justicia. A través de peligros mortales, Kai persigue a la única persona que desearía proteger. Pero en una ciudad sin élites, el equilibrio entre el cazador y la presa cambia, y la batalla entre el deber y el deseo es mortal.",
-    "imageLinks": {
-      "smallThumbnail": "http://books.google.com/books/content?id=e8EDEQAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
-      "thumbnail": "http://books.google.com/books/content?id=e8EDEQAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
-    }
+    "createdTime": "2025-05-03T08:59:59.412Z",
+    "publisher": "ALFAGUARA JUVENIL",
+    "publishedDate": "2022-05-13",
+    "pageCount": 448,
+    "categories": [
+      "Young Adult Fiction"
+    ],
+    "language": "es",
+    "previewLink": "http://books.google.es/books?id=vXRuEAAAQBAJ&printsec=frontcover&dq=intitle:%22Trono+de+Cristal%22+inauthor:%22Sarah+J.+Maas%22&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
   },
   {
     "id": "1-K_1raa6_b-M-mirI3gSfe6oCblTfS1h",
     "title": "Un destino teñido de sangre",
     "author": "Danielle L. Jensen",
-    "saga": null
+    "saga": {
+      "name": "",
+      "number": 0
+    },
+    "createdTime": "2025-11-26T18:10:50.127Z",
+    "publishedDate": "2024",
+    "categories": [],
+    "language": "es",
+    "previewLink": "http://books.google.es/books?id=2Fac0QEACAAJ&dq=intitle:%22Un+destino+ten%CC%83ido+de+sangre%22+inauthor:%22Danielle+L.+Jensen%22&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "coverUrl": "/cover/33.png"
   },
   {
     "id": "1tXAJjgn2-v6Hrs2JEj5JIfSXlp3w5NwQ",
@@ -3144,7 +3718,14 @@
       "thumbnail": "http://books.google.com/books/content?id=v_FsLwEACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api"
     },
     "averageRating": 5,
-    "ratingsCount": 1
+    "ratingsCount": 1,
+    "createdTime": "2025-12-08T23:08:32.957Z",
+    "publishedDate": "2012-10-11",
+    "categories": [
+      "Courts and courtiers"
+    ],
+    "language": "es",
+    "previewLink": "http://books.google.es/books?id=v_FsLwEACAAJ&dq=intitle:%22El+Pozo+de+la+Ascension%22+inauthor:%22Brandon+Sanderson%22&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
   },
   {
     "id": "1aiBrUlQQldftEKCzh4MHvGxod8YVQ1Dx",
@@ -3159,7 +3740,15 @@
     "imageLinks": {
       "smallThumbnail": "http://books.google.com/books/content?id=1wvpkQEACAAJ&printsec=frontcover&img=1&zoom=5&source=gbs_api",
       "thumbnail": "http://books.google.com/books/content?id=1wvpkQEACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api"
-    }
+    },
+    "createdTime": "2025-12-08T23:08:27.191Z",
+    "publisher": "EDB FICCION",
+    "publishedDate": "2010-05-12",
+    "categories": [
+      "Fiction"
+    ],
+    "language": "es",
+    "previewLink": "http://books.google.es/books?id=1wvpkQEACAAJ&dq=intitle:%22El+Heroe+de+las+Eras%22+inauthor:%22Brandon+Sanderson%22&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
   },
   {
     "id": "1LSEVvz6yA-etW6UEk04IYBFDRGL7A6x_",
@@ -3174,6 +3763,93 @@
     "imageLinks": {
       "smallThumbnail": "http://books.google.com/books/content?id=nlcOuAEACAAJ&printsec=frontcover&img=1&zoom=5&source=gbs_api",
       "thumbnail": "http://books.google.com/books/content?id=nlcOuAEACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api"
-    }
+    },
+    "createdTime": "2025-12-08T23:08:22.711Z",
+    "publisher": "NOVA",
+    "publishedDate": "2016-11-30",
+    "categories": [
+      "Courts and courtiers"
+    ],
+    "language": "es",
+    "previewLink": "http://books.google.es/books?id=nlcOuAEACAAJ&dq=intitle:%22El+Imperio+Final%22+inauthor:%22Brandon+Sanderson%22&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+  },
+  {
+    "id": "1YEP4IGCGxkr3S64P_SNB06W4DuE_7oe5",
+    "driveFileId": "1YEP4IGCGxkr3S64P_SNB06W4DuE_7oe5",
+    "title": "Amanecer rojo",
+    "author": "Pierce Brown",
+    "saga": {
+      "name": "Amanecer Rojo",
+      "number": 1
+    },
+    "createdTime": "2025-12-09T19:13:23.835Z",
+    "coverUrl": "http://books.google.com/books/content?id=NUTODwAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=NUTODwAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=NUTODwAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+    },
+    "description": "Estrategia. Fuerza. Amor. Traición. Ideas como libertad o igualdad murieron junto con la Tierra. Ahora, en Marte, el equilibrio se sustenta en un férreo sistema de castas representadas por colores. Para acceder a la élite de los gobernantes, los dorados deben ganarse su puesto en una contienda implacable. Pero Darrow no es un dorado. Es un rojo, forjado en las entrañas del infierno. Afilado por el odio. Fortalecido por el amor. Para sobrevivir, debe ocultar su verdad. Sin olvidar que cada muerte, cada paso de la contienda, es por la libertad. Y con una idea fija en la mente: no convertirse en uno de ellos, pase lo que pase. En un mundo de oscuridad, un rojo amanecerá dorado.",
+    "publisher": "RBA Libros",
+    "publishedDate": "2014-10-30",
+    "pageCount": 497,
+    "categories": [
+      "Young Adult Fiction"
+    ],
+    "language": "es",
+    "previewLink": "http://books.google.es/books?id=NUTODwAAQBAJ&printsec=frontcover&dq=intitle:%22Amanecer+rojo%22+inauthor:%22Pierce+Brown%22&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+  },
+  {
+    "id": "10fMwmw5MOBMYyR1Wq4-2LkYsizOu9JLQ",
+    "driveFileId": "10fMwmw5MOBMYyR1Wq4-2LkYsizOu9JLQ",
+    "title": "Hijo dorado",
+    "author": "Pierce Brown",
+    "saga": {
+      "name": "Amanecer Rojo",
+      "number": 2
+    },
+    "createdTime": "2025-12-09T19:13:21.625Z",
+    "coverUrl": "http://books.google.com/books/content?id=yUPODwAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=yUPODwAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=yUPODwAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+    },
+    "description": "Tras una implacable competición en el Instituto de Marte, Darrow se ha anado un puesto de honor entre la élite gobernante. Ahora luce la cicatriz curvada de los dorados, los más crueles y brillantes de los humanos. Pero Darrow no es como ellos... SU FUTURO SE HA CONSTRUIDO SOBRE MENTIRAS, SU PASADO ESTÁ MARCADO POR LA TRAGEDIA. Y NO PERDONA. NO OLVIDA. Para hacer realidad su objetivo de destruir el sistema desde dentro, Darrow debe convertirse en el mejor de los dorados. El más fuerte. El más inteligente. El más implacable. Solo así devolverá la luz a su pueblo. Aunque su sombra se torne más oscura a cada paso.",
+    "publisher": "RBA Libros",
+    "publishedDate": "2015-05-14",
+    "pageCount": 632,
+    "categories": [
+      "Young Adult Fiction"
+    ],
+    "language": "es",
+    "previewLink": "http://books.google.es/books?id=yUPODwAAQBAJ&printsec=frontcover&dq=intitle:%22Hijo+dorado%22+inauthor:%22Pierce+Brown%22&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "averageRating": null,
+    "ratingsCount": 0
+  },
+  {
+    "id": "1Okw8BsojDUBAjkLXIQm1Q9edwB9I0BqB",
+    "driveFileId": "1Okw8BsojDUBAjkLXIQm1Q9edwB9I0BqB",
+    "title": "Mañana Azul",
+    "author": "Pierce Brown",
+    "saga": {
+      "name": "Amanecer Rojo",
+      "number": 3
+    },
+    "createdTime": "2025-12-09T19:13:18.974Z",
+    "coverUrl": "http://books.google.com/books/content?id=N0TODwAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=N0TODwAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=N0TODwAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+    },
+    "description": "HONOR VENGANZA REVOLUCIÓN Arriesgándolo todo para hundir la Sociedad dorada, Darrow ha sobrevivido a las despiadadas rivalidades entre los guerreros más poderosos. Ha logrado ascender y ha aguardado pacientemente el momento de desencadenar la revolución que acabará con la jerarquía desde dentro. Por fin ha llegado la hora... TRAICIONADO POR SUS ALIADOS. ABANDONADO A LA OSCURIDAD. UNA VOZ SE ALZARÁ POR LA JUSTICIA. Para vencer, necesitará persuadir a los que están sumidos en la oscuridad para que rompan sus cadenas y reclamen un destino que se les ha negado durante mucho tiempo. Un destino demasiado glorioso para renunciar a él. CUANDO LA LIBERTAD ESTÁ A TU ALCANCE LA ESPERANZA SE CONVIERTE EN TU ENEMIGO.",
+    "publisher": "RBA Libros",
+    "publishedDate": "2017-02-09",
+    "pageCount": 735,
+    "categories": [
+      "Young Adult Fiction"
+    ],
+    "language": "es",
+    "averageRating": null,
+    "ratingsCount": 0,
+    "previewLink": "http://books.google.es/books?id=N0TODwAAQBAJ&printsec=frontcover&dq=intitle:%22Ma%C3%B1ana+Azul%22+inauthor:%22Pierce+Brown%22&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
   }
 ]
