@@ -1466,7 +1466,7 @@ app.get('/libro', async (req, res) => {
   const synopsis = meta.description || 'No se encontró sinopsis.';
   const rating = meta.averageRating ? `⭐ ${meta.averageRating}/5` : '';
 
-  const synopsisHtml = `<div style="max-width:760px;margin:18px auto;color:#ddd;line-height:1.7;font-size:18px;">${synopsis}</div>`;
+  const synopsisHtml = `<div style="max-width:760px;margin:18px auto;color:#ddd;line-height:1.8;font-size:27px;">${synopsis}</div>`;
 
   res.send(`<!DOCTYPE html>
 <html lang="es">
