@@ -2945,29 +2945,31 @@ app.get('/api/books/incomplete', async (req, res) => {
   // Un libro es incompleto si le falta: título, autor, saga, descripción o año
   const requiredFields = ['title', 'author', 'saga', 'description', 'publishedDate'];
   
+  // Función para verificar si un campo está vacío
+  const isEmpty = (value, fieldName) => {
+    if (fieldName === 'saga') {
+      return !value || !value.name || (typeof value.name === 'string' && value.name.trim() === '');
+    }
+    if (fieldName === 'publishedDate') {
+      return !value || (typeof value === 'string' && value.trim() === '');
+    }
+    // Para otros campos
+    return !value || (typeof value === 'string' && value.trim() === '');
+  };
+  
   // Encontrar libros incompletos
   const incompleteBooks = bookMetadata.filter(book => {
-    const missingFields = requiredFields.filter(field => {
-      if (field === 'saga') {
-        return !book[field] || !book[field].name || book[field].name.trim() === '';
-      }
-      return !book[field] || (typeof book[field] === 'string' && book[field].trim() === '');
-    });
+    const missingFields = requiredFields.filter(field => isEmpty(book[field], field));
     return missingFields.length > 0;
   }).map(book => {
-    const missingFields = requiredFields.filter(field => {
-      if (field === 'saga') {
-        return !book[field] || !book[field].name || book[field].name.trim() === '';
-      }
-      return !book[field] || (typeof book[field] === 'string' && book[field].trim() === '');
-    });
+    const missingFields = requiredFields.filter(field => isEmpty(book[field], field));
     return {
       id: book.id,
-      title: book.title,
-      author: book.author,
-      saga: book.saga,
-      description: book.description,
-      publishedDate: book.publishedDate,
+      title: book.title || 'Sin título',
+      author: book.author || 'Desconocido',
+      saga: book.saga || { name: 'Sin saga', number: 0 },
+      description: book.description || null,
+      publishedDate: book.publishedDate || null,
       missingFields
     };
   }).sort((a, b) => b.missingFields.length - a.missingFields.length);
