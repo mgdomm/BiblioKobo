@@ -1473,15 +1473,13 @@ app.get('/libro', async (req, res) => {
 
   const synopsisHtml = `<div style="max-width:760px;margin:18px auto;color:#ddd;line-height:1.8;font-size:27px;">${synopsis}</div>`;
   
-  // Información adicional de Google Books
-  const infoHtml = `
-    <div style="max-width:760px;margin:30px auto;padding:20px;background:rgba(25,230,214,0.1);border-left:4px solid #19E6D6;border-radius:8px;color:#ddd;font-size:16px;line-height:1.8;">
-      ${publisher ? `<div style="margin-bottom:12px;"><strong style="color:#19E6D6;">Editorial:</strong> ${publisher}</div>` : ''}
-      ${publishedDate ? `<div style="margin-bottom:12px;"><strong style="color:#19E6D6;">Fecha de publicación:</strong> ${publishedDate}</div>` : ''}
-      ${pageCount ? `<div style="margin-bottom:12px;"><strong style="color:#19E6D6;">Páginas:</strong> ${pageCount}</div>` : ''}
-      ${language ? `<div style="margin-bottom:12px;"><strong style="color:#19E6D6;">Idioma:</strong> ${language === 'es' ? 'Español' : language.toUpperCase()}</div>` : ''}
-      ${categories.length > 0 ? `<div style="margin-bottom:12px;"><strong style="color:#19E6D6;">Categorías:</strong> ${categories.join(', ')}</div>` : ''}
-    </div>
+  // Info de Google Books para mostrar arriba (junto a autor y saga)
+  const googleBooksInfoHtml = `
+    ${publisher ? `<div style="color:#ddd;margin-bottom:6px;">Editorial: ${publisher}</div>` : ''}
+    ${publishedDate ? `<div style="color:#ddd;margin-bottom:6px;">Publicado: ${publishedDate}</div>` : ''}
+    ${pageCount ? `<div style="color:#ddd;margin-bottom:6px;">Páginas: ${pageCount}</div>` : ''}
+    ${language ? `<div style="color:#ddd;margin-bottom:6px;">Idioma: ${language === 'es' ? 'Español' : language.toUpperCase()}</div>` : ''}
+    ${categories.length > 0 ? `<div style="color:#ddd;margin-bottom:12px;">Categorías: ${categories.join(', ')}</div>` : ''}
   `;
 
   res.send(`<!DOCTYPE html>
@@ -1501,12 +1499,12 @@ app.get('/libro', async (req, res) => {
         <h2 style="margin:0 0 8px;color:#fff;font-family:'MedievalSharp',cursive;">${title}</h2>
         <div style="color:#ddd;margin-bottom:6px;">Autor: <a href="/autor?name=${encodeURIComponent(author)}" style="color:#fff;text-decoration:none;">${author}</a></div>
         ${saga?`<div style="color:#19E6D6;margin-bottom:12px;">Saga: <a href="/saga?name=${encodeURIComponent(saga)}" style="color:#19E6D6;text-decoration:none;">${saga}</a></div>`:''}
+        ${googleBooksInfoHtml}
         ${rating?`<div style="color:#FFD700;margin-bottom:12px;font-size:18px;">${rating}</div>`:''}
         <p><a href="/download?id=${encodeURIComponent(id)}" class="button">Descargar</a></p>
       </div>
     </div>
     ${synopsisHtml}
-    ${infoHtml}
   </div>
 </body>
 </html>`);
