@@ -2145,7 +2145,7 @@ app.get('/api/stats', async (req, res) => {
   
   const booksWithCovers = bookMetadata.filter(b => b.coverUrl).length;
   const incompleteBooks = bookMetadata.filter(book => {
-    const requiredFields = ['title', 'author', 'description', 'coverUrl', 'publisher', 'pageCount', 'language', 'categories'];
+    const requiredFields = ['title', 'author', 'description', 'coverUrl', 'pageCount', 'language', 'categories'];
     const missingFields = requiredFields.filter(field => {
       if (field === 'categories') return !book[field] || !Array.isArray(book[field]) || book[field].length === 0;
       return !book[field] || (typeof book[field] === 'string' && book[field].trim() === '');
@@ -2817,7 +2817,7 @@ app.get('/api/books/incomplete', async (req, res) => {
   reloadBooksMetadata();
   
   // Definir campos requeridos
-  const requiredFields = ['title', 'author', 'description', 'coverUrl', 'publisher', 'pageCount', 'language', 'categories'];
+  const requiredFields = ['title', 'author', 'description', 'coverUrl', 'pageCount', 'language', 'categories'];
   
   // Encontrar libros incompletos
   const incompleteBooks = bookMetadata.filter(book => {
