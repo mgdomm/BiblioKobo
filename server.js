@@ -2447,13 +2447,15 @@ app.get('/api/sync-google-books', async (req, res) => {
 
     reloadBooksMetadata();
     
-    // Encontrar libros sin coverUrl o sin description
-    const booksToSync = bookMetadata.filter(b => !b.coverUrl || !b.description);
+    // Encontrar libros sin datos completos de Google Books
+    const booksToSync = bookMetadata.filter(b => 
+      !b.coverUrl || !b.description || !b.publisher || !b.pageCount || !b.categories || b.categories.length === 0
+    );
     
     if (booksToSync.length === 0) {
       return res.json({ 
         success: true, 
-        message: 'Todos los libros tienen portada y descripción',
+        message: 'Todos los libros tienen datos completos de Google Books',
         updated: 0,
         total: bookMetadata.length
       });
@@ -2466,22 +2468,39 @@ app.get('/api/sync-google-books', async (req, res) => {
       try {
         const googleBooksData = await fetchGoogleBooksData(book.title, book.author);
         if (googleBooksData) {
-          // Actualizar solo campos vacíos
+          // Actualizar todos los campos de Google Books
           if (!book.description && googleBooksData.description) {
             book.description = googleBooksData.description;
-            console.log(`[SYNC-GBOOKS] ✅ ${book.title}: descripción agregada`);
           }
           if (!book.coverUrl && googleBooksData.imageLinks?.thumbnail) {
             book.coverUrl = googleBooksData.imageLinks.thumbnail;
-            console.log(`[SYNC-GBOOKS] ✅ ${book.title}: portada agregada`);
           }
           if (!book.imageLinks && googleBooksData.imageLinks) {
             book.imageLinks = googleBooksData.imageLinks;
+          }
+          if (!book.publisher && googleBooksData.publisher) {
+            book.publisher = googleBooksData.publisher;
+          }
+          if (!book.publishedDate && googleBooksData.publishedDate) {
+            book.publishedDate = googleBooksData.publishedDate;
+          }
+          if (!book.pageCount && googleBooksData.pageCount) {
+            book.pageCount = googleBooksData.pageCount;
+          }
+          if (!book.categories || book.categories.length === 0) {
+            book.categories = googleBooksData.categories || [];
+          }
+          if (!book.language && googleBooksData.language) {
+            book.language = googleBooksData.language;
           }
           if (!book.averageRating && googleBooksData.averageRating) {
             book.averageRating = googleBooksData.averageRating;
             book.ratingsCount = googleBooksData.ratingsCount;
           }
+          if (!book.previewLink && googleBooksData.previewLink) {
+            book.previewLink = googleBooksData.previewLink;
+          }
+          console.log(`[SYNC-GBOOKS] ✅ ${book.title}: datos actualizados`);
           updated++;
         }
       } catch (err) {
