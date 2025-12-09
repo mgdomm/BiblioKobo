@@ -1973,6 +1973,52 @@ app.get('/stats', async (req, res) => {
       </div>
     </div>
     
+    <!-- Libros Incompletos -->
+    <div style="margin-top:40px; padding:30px; background:linear-gradient(135deg, rgba(25,25,25,0.95), rgba(18,18,18,0.9)); border:1px solid rgba(25,230,214,0.2); border-radius:12px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <h3 style="font-family:'MedievalSharp', cursive; color:#19E6D6; margin:0; font-size:20px;">📋 Libros Incompletos</h3>
+        <span style="color:#999; font-size:12px;" id="incomplete-count">Cargando...</span>
+      </div>
+      
+      <!-- Buscador -->
+      <div style="margin-bottom:20px;">
+        <input type="text" id="search-incomplete" placeholder="Buscar por título o autor..." style="width:100%; padding:12px 15px; background:rgba(25,230,214,0.1); border:1px solid rgba(25,230,214,0.3); border-radius:6px; color:#fff; font-size:14px; box-sizing:border-box;">
+      </div>
+      
+      <!-- Tabla -->
+      <div style="overflow-x:auto;">
+        <table id="incomplete-table" style="width:100%; border-collapse:collapse; font-size:13px;">
+          <thead>
+            <tr style="border-bottom:2px solid rgba(25,230,214,0.3);">
+              <th style="text-align:left; padding:12px; color:#19E6D6; font-weight:bold; font-family:'MedievalSharp', cursive;">Título</th>
+              <th style="text-align:left; padding:12px; color:#19E6D6; font-weight:bold; font-family:'MedievalSharp', cursive;">Autor</th>
+              <th style="text-align:left; padding:12px; color:#19E6D6; font-weight:bold; font-family:'MedievalSharp', cursive;">Campos Faltantes</th>
+              <th style="text-align:center; padding:12px; color:#19E6D6; font-weight:bold; font-family:'MedievalSharp', cursive;">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="incomplete-tbody">
+          </tbody>
+        </table>
+      </div>
+    </div>
+    
+    <!-- Modal para editar libro -->
+    <div id="edit-modal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.8); z-index:9999; overflow-y:auto; padding:20px;">
+      <div style="background:linear-gradient(135deg, rgba(25,25,25,0.98), rgba(18,18,18,0.95)); border:1px solid rgba(25,230,214,0.3); border-radius:12px; max-width:600px; margin:20px auto; padding:30px; color:#fff;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+          <h2 style="font-family:'MedievalSharp', cursive; color:#19E6D6; margin:0; font-size:22px;">Editar Libro</h2>
+          <button onclick="closeEditModal()" style="background:none; border:none; font-size:24px; color:#19E6D6; cursor:pointer; padding:0; width:30px; height:30px;">✕</button>
+        </div>
+        
+        <textarea id="book-json-editor" style="width:100%; height:400px; background:rgba(25,230,214,0.05); border:1px solid rgba(25,230,214,0.3); border-radius:6px; color:#fff; padding:12px; font-family:monospace; font-size:12px; box-sizing:border-box; resize:vertical; line-height:1.5;" placeholder="JSON del libro..."></textarea>
+        
+        <div style="margin-top:20px; display:flex; gap:10px;">
+          <button onclick="saveBook()" style="flex:1; padding:12px 20px; background:linear-gradient(135deg, rgba(25,230,214,0.3), rgba(25,230,214,0.2)); border:1px solid rgba(25,230,214,0.5); border-radius:6px; color:#19E6D6; font-weight:bold; cursor:pointer; font-family:'MedievalSharp', cursive; font-size:14px;">✅ Guardar</button>
+          <button onclick="closeEditModal()" style="flex:1; padding:12px 20px; background:rgba(25,230,214,0.1); border:1px solid rgba(25,230,214,0.3); border-radius:6px; color:#999; font-weight:bold; cursor:pointer; font-family:'MedievalSharp', cursive; font-size:14px;">❌ Cancelar</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Información de la biblioteca -->
     <div style="margin-top:30px; padding:20px; background:rgba(25,230,214,0.05); border:1px solid rgba(25,230,214,0.2); border-radius:8px;">
       <h3 style="font-family:'MedievalSharp', cursive; color:#19E6D6; margin-top:0;">ℹ️ Información de la Biblioteca</h3>
@@ -1988,8 +2034,135 @@ app.get('/stats', async (req, res) => {
       <a href="/" class="button">← Volver a Inicio</a>
     </p>
   </div>
+
+  <script>
+    let currentBookId = null;
+    let allIncompleteBooks = [];
+    
+    // Cargar libros incompletos al cargar la página
+    async function loadIncompleteBooks() {
+      try {
+        const response = await fetch('/api/books/incomplete');
+        const data = await response.json();
+        allIncompleteBooks = data.books;
+        document.getElementById('incomplete-count').textContent = data.total + ' libro' + (data.total !== 1 ? 's' : '');
+        renderIncompleteBooks(allIncompleteBooks);
+      } catch (err) {
+        console.error('Error cargando libros incompletos:', err);
+        document.getElementById('incomplete-count').textContent = 'Error';
+      }
+    }
+    
+    // Renderizar tabla de libros incompletos
+    function renderIncompleteBooks(books) {
+      const tbody = document.getElementById('incomplete-tbody');
+      tbody.innerHTML = books.map(book => \`
+        <tr style="border-bottom:1px solid rgba(25,230,214,0.1); transition:background 0.2s;">
+          <td style="padding:12px; color:#fff;">\${book.title}</td>
+          <td style="padding:12px; color:#ccc;">\${book.author}</td>
+          <td style="padding:12px; color:#19E6D6; font-size:12px;">
+            <span style="background:rgba(230,25,25,0.2); padding:4px 8px; border-radius:3px; display:inline-block;">
+              \${book.missingFields.join(', ')}
+            </span>
+          </td>
+          <td style="padding:12px; text-align:center;">
+            <button onclick="openEditModal('\${book.id}')" style="background:rgba(25,230,214,0.2); border:1px solid rgba(25,230,214,0.4); color:#19E6D6; padding:6px 12px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:12px;">✏️ Editar</button>
+          </td>
+        </tr>
+      \`).join('');
+    }
+    
+    // Filtrar tabla según búsqueda
+    document.getElementById('search-incomplete').addEventListener('keyup', function(e) {
+      const searchTerm = e.target.value.toLowerCase();
+      const filtered = allIncompleteBooks.filter(book => 
+        book.title.toLowerCase().includes(searchTerm) || 
+        book.author.toLowerCase().includes(searchTerm)
+      );
+      renderIncompleteBooks(filtered);
+    });
+    
+    // Abrir modal de edición
+    async function openEditModal(bookId) {
+      currentBookId = bookId;
+      try {
+        const response = await fetch('/api/books/' + bookId);
+        const book = await response.json();
+        document.getElementById('book-json-editor').value = JSON.stringify(book, null, 2);
+        document.getElementById('edit-modal').style.display = 'block';
+      } catch (err) {
+        alert('Error: ' + err.message);
+      }
+    }
+    
+    // Cerrar modal
+    function closeEditModal() {
+      document.getElementById('edit-modal').style.display = 'none';
+      currentBookId = null;
+    }
+    
+    // Guardar cambios del libro
+    async function saveBook() {
+      try {
+        const jsonText = document.getElementById('book-json-editor').value;
+        const bookData = JSON.parse(jsonText);
+        
+        const response = await fetch('/api/books/' + currentBookId, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(bookData)
+        });
+        
+        if (!response.ok) throw new Error('Error al guardar');
+        
+        alert('✅ Libro actualizado correctamente');
+        closeEditModal();
+        loadIncompleteBooks(); // Recargar tabla
+      } catch (err) {
+        alert('❌ Error: ' + err.message);
+      }
+    }
+    
+    // Cerrar modal al hacer clic fuera
+    document.getElementById('edit-modal').addEventListener('click', function(e) {
+      if (e.target === this) closeEditModal();
+    });
+    
+    // Cargar libros al cargar la página
+    loadIncompleteBooks();
+  </script>
 </body>
 </html>`);
+});
+
+// API JSON: Obtener estadísticas (para dashboard)
+app.get('/api/stats', async (req, res) => {
+  reloadBooksMetadata();
+  
+  const totalBooks = bookMetadata.length;
+  const totalAuthors = [...new Set(bookMetadata.map(b => b.author))].length;
+  const totalSagas = [...new Set(bookMetadata.filter(b => b.saga?.name).map(b => b.saga.name))].length;
+  
+  const booksWithCovers = bookMetadata.filter(b => b.coverUrl).length;
+  const incompleteBooks = bookMetadata.filter(book => {
+    const requiredFields = ['title', 'author', 'description', 'coverUrl', 'publisher', 'pageCount', 'language', 'categories'];
+    const missingFields = requiredFields.filter(field => {
+      if (field === 'categories') return !book[field] || !Array.isArray(book[field]) || book[field].length === 0;
+      return !book[field] || (typeof book[field] === 'string' && book[field].trim() === '');
+    });
+    return missingFields.length > 0;
+  }).length;
+  
+  const googleBooksSynced = bookMetadata.filter(b => b.averageRating).length;
+  
+  res.json({
+    totalBooks,
+    totalAuthors,
+    totalSagas,
+    booksWithCovers,
+    incompleteBooks,
+    googleBooksSynced
+  });
 });
 
 // API: Obtener portada de Google Books y guardar en JSON
@@ -2627,6 +2800,88 @@ app.post('/api/upload-to-drive', upload.single('file'), async (req, res) => {
   } catch (err) {
     console.error('[UPLOAD] Error:', err.message);
     res.status(500).json({ error: err.message || 'Error procesando archivo' });
+  }
+});
+
+// Dashboard: Servir editor de libros
+app.get('/dashboard', (req, res) => {
+  const pass = req.query.pass || '';
+  if (pass !== '252914') {
+    return res.status(403).json({ error: 'Acceso denegado' });
+  }
+  res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
+});
+
+// API: Obtener libros incompletos (con campos faltantes)
+app.get('/api/books/incomplete', async (req, res) => {
+  reloadBooksMetadata();
+  
+  // Definir campos requeridos
+  const requiredFields = ['title', 'author', 'description', 'coverUrl', 'publisher', 'pageCount', 'language', 'categories'];
+  
+  // Encontrar libros incompletos
+  const incompleteBooks = bookMetadata.filter(book => {
+    const missingFields = requiredFields.filter(field => {
+      if (field === 'categories') return !book[field] || !Array.isArray(book[field]) || book[field].length === 0;
+      return !book[field] || (typeof book[field] === 'string' && book[field].trim() === '');
+    });
+    return missingFields.length > 0;
+  }).map(book => {
+    const missingFields = requiredFields.filter(field => {
+      if (field === 'categories') return !book[field] || !Array.isArray(book[field]) || book[field].length === 0;
+      return !book[field] || (typeof book[field] === 'string' && book[field].trim() === '');
+    });
+    return {
+      ...book,
+      missingFields
+    };
+  }).sort((a, b) => b.missingFields.length - a.missingFields.length);
+  
+  res.json({ total: incompleteBooks.length, books: incompleteBooks });
+});
+
+// API: Obtener libro individual
+app.get('/api/books/:id', async (req, res) => {
+  const { id } = req.params;
+  reloadBooksMetadata();
+  
+  const book = bookMetadata.find(b => b.id === id);
+  if (!book) return res.status(404).json({ error: 'Libro no encontrado' });
+  
+  res.json(book);
+});
+
+// API: Actualizar libro
+app.put('/api/books/:id', async (req, res) => {
+  const { id } = req.params;
+  const updatedData = req.body;
+  
+  reloadBooksMetadata();
+  
+  const bookIndex = bookMetadata.findIndex(b => b.id === id);
+  if (bookIndex === -1) return res.status(404).json({ error: 'Libro no encontrado' });
+  
+  // Validar que no se pierdan campos críticos
+  const book = bookMetadata[bookIndex];
+  const validated = {
+    ...book,
+    ...updatedData,
+    id: book.id, // Proteger el ID
+    uploadDate: book.uploadDate, // Proteger fecha original
+    createdTime: book.createdTime // Proteger timestamp de Drive
+  };
+  
+  // Actualizar en memoria
+  bookMetadata[bookIndex] = validated;
+  
+  // Guardar a disco
+  try {
+    await fs.promises.writeFile(BOOKS_FILE, JSON.stringify(bookMetadata, null, 2));
+    console.log(`[API /books/:id PUT] ✅ Libro actualizado: ${validated.title} (ID: ${id})`);
+    res.json({ success: true, book: validated });
+  } catch (err) {
+    console.error('[API /books/:id PUT] Error:', err.message);
+    res.status(500).json({ error: err.message });
   }
 });
 
