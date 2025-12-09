@@ -2131,17 +2131,6 @@ app.get('/stats', async (req, res) => {
       }).join('');
     }
     
-    // Filtrar tabla según búsqueda
-    document.getElementById('search-incomplete').addEventListener('keyup', function(e) {
-      const searchTerm = e.target.value.toLowerCase();
-      const filtered = allIncompleteBooks.filter(book => 
-        book.title.toLowerCase().includes(searchTerm) || 
-        book.author.toLowerCase().includes(searchTerm) ||
-        (book.saga && book.saga.name && book.saga.name.toLowerCase().includes(searchTerm))
-      );
-      renderIncompleteBooks(filtered);
-    });
-    
     // Abrir modal de edición
     async function openEditModal(bookId) {
       currentBookId = bookId;
@@ -2183,11 +2172,6 @@ app.get('/stats', async (req, res) => {
       }
     }
     
-    // Cerrar modal al hacer clic fuera
-    document.getElementById('edit-modal').addEventListener('click', function(e) {
-      if (e.target === this) closeEditModal();
-    });
-    
     // Buscar cualquier libro
     async function searchBook() {
       const searchTerm = document.getElementById('search-any-book').value.toLowerCase().trim();
@@ -2228,13 +2212,41 @@ app.get('/stats', async (req, res) => {
       }
     }
     
-    // Buscar al presionar Enter en el buscador global
-    document.getElementById('search-any-book').addEventListener('keypress', function(e) {
-      if (e.key === 'Enter') searchBook();
+    // Envolver todo en DOMContentLoaded para asegurar que los elementos están listos
+    document.addEventListener('DOMContentLoaded', function() {
+      // Buscar al presionar Enter en el buscador global
+      const searchAnyBookInput = document.getElementById('search-any-book');
+      if (searchAnyBookInput) {
+        searchAnyBookInput.addEventListener('keypress', function(e) {
+          if (e.key === 'Enter') searchBook();
+        });
+      }
+      
+      // Buscar en tabla de incompletos
+      const searchIncompleteInput = document.getElementById('search-incomplete');
+      if (searchIncompleteInput) {
+        searchIncompleteInput.addEventListener('keyup', function(e) {
+          const searchTerm = this.value.toLowerCase().trim();
+          const filtered = allIncompleteBooks.filter(book => 
+            book.title.toLowerCase().includes(searchTerm) ||
+            book.author.toLowerCase().includes(searchTerm) ||
+            (book.saga && book.saga.name && book.saga.name.toLowerCase().includes(searchTerm))
+          );
+          renderIncompleteBooks(filtered);
+        });
+      }
+      
+      // Cargar libros al cargar la página
+      loadIncompleteBooks();
+      
+      // Cerrar modal al hacer clic fuera
+      const editModal = document.getElementById('edit-modal');
+      if (editModal) {
+        editModal.addEventListener('click', function(e) {
+          if (e.target === this) closeEditModal();
+        });
+      }
     });
-    
-    // Cargar libros al cargar la página
-    loadIncompleteBooks();
   </script>
 </body>
 </html>`);
