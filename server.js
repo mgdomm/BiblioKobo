@@ -344,42 +344,42 @@ body { margin:0; padding:0 0 40px 0; background:#000; color:#eee; font-family:Ga
 .overlay.top { position:fixed; top:0; left:0; width:100%; height:220px; z-index:2; }
 .overlay.home { position:absolute; top:0; left:0; width:100%; height:100vh; z-index:2; display:flex; justify-content:center; align-items:center; }
 
-h1 { font-family:'MedievalSharp', cursive; font-size:48px; color:#fff; margin:0; text-shadow: 0 2px 6px rgba(0,0,0,0.9); }
+h1 { font-family:'MedievalSharp', cursive; font-size:56px; color:#fff; margin:0; text-shadow: 0 2px 6px rgba(0,0,0,0.9); }
 
 .top-buttons { display:flex; justify-content:center; flex-wrap:wrap; margin-bottom:6px; }
 /* primary buttons: visible, subtle bg, no harsh border */
-.top-buttons a { font-family:'MedievalSharp', cursive; font-size:20px; color:#fff; text-decoration:none; border-radius:6px; padding:6px 12px; margin:2px; background:rgba(255,255,255,0.06); transition:0.2s; }
+.top-buttons a { font-family:'MedievalSharp', cursive; font-size:24px; color:#fff; text-decoration:none; border-radius:6px; padding:8px 16px; margin:2px; background:rgba(255,255,255,0.06); transition:0.2s; }
 .top-buttons a:hover { background:rgba(255,255,255,0.12); }
 .top-buttons.secondary { position:absolute; top:10px; right:10px; font-size:16px; }
 /* secondary (Inicio) should be plain text, no border */
-.top-buttons.secondary a { color:#fff; text-decoration:none; border:none; padding:4px 8px; background:transparent; font-size:16px; }
+.top-buttons.secondary a { color:#fff; text-decoration:none; border:none; padding:6px 10px; background:transparent; font-size:18px; }
 
 form { margin:20px 0; text-align:center; }
-input[type="search"] { padding:6px 8px; margin:0 4px; font-size:12px; border-radius:6px; border:2px solid #19E6D6; background:#111; color:#fff; font-family:'MedievalSharp', cursive; font-weight:normal; transition:0.2s; }
+input[type="search"] { padding:8px 12px; margin:0 4px; font-size:16px; border-radius:6px; border:2px solid #19E6D6; background:#111; color:#fff; font-family:'MedievalSharp', cursive; font-weight:normal; transition:0.2s; }
 input[type="search"]:focus { outline:none; border-color:#19E6D6; box-shadow:0 0 8px rgba(25,230,214,0.4); }
-select { padding:6px 8px; margin:0 4px; font-size:12px; border-radius:6px; border:2px solid #fff; background:#111; color:#fff; font-family:'MedievalSharp', cursive; font-weight:normal; transition:0.2s; }
+select { padding:8px 12px; margin:0 4px; font-size:16px; border-radius:6px; border:2px solid #fff; background:#111; color:#fff; font-family:'MedievalSharp', cursive; font-weight:normal; transition:0.2s; }
 select:focus { outline:none; border-color:#fff; box-shadow:0 0 8px rgba(255,255,255,0.4); }
-button[type="submit"] { padding:6px 12px; font-family:'MedievalSharp', cursive; font-weight:normal; font-size:12px; border:2px solid #19E6D6; background:#111; color:#fff; border-radius:6px; cursor:pointer; transition:0.2s; }
+button[type="submit"] { padding:8px 16px; font-family:'MedievalSharp', cursive; font-weight:normal; font-size:16px; border:2px solid #19E6D6; background:#111; color:#fff; border-radius:6px; cursor:pointer; transition:0.2s; }
 button[type="submit"]:hover { background:#19E6D6; color:#000; }
 
 #grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 130px)); gap:30px; padding:30px 20px 40px 20px; max-width:100%; margin:0 auto; justify-content:center; }
 .book { position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; width:130px; min-height:auto; background:linear-gradient(180deg, rgba(18,18,18,0.92), rgba(12,12,12,0.9)); padding:8px; border-radius:10px; border:1px solid rgba(255,255,255,0.04); text-align:center; word-wrap:break-word; transition:opacity 0.3s, transform 0.15s; box-shadow:0 6px 18px rgba(0,0,0,0.6); }
 .book img { width:90px; height:140px; border-radius:6px; object-fit:cover; margin-bottom:8px; display:block; margin-left:auto; margin-right:auto; }
-.title { font-size:12px; font-weight:700; color:#fff; font-family:'MedievalSharp', cursive; margin:0 0 6px 0; padding:6px 4px 6px 4px; border-bottom:1px solid rgba(255,255,255,0.04); line-height:1.3; }
+.title { font-size:15px; font-weight:700; color:#fff; font-family:'MedievalSharp', cursive; margin:0 0 6px 0; padding:6px 4px 6px 4px; border-bottom:1px solid rgba(255,255,255,0.04); line-height:1.4; }
 .title a { color: inherit; text-decoration: none; display:block; padding:0; }
-.author-span, .number-span { font-size:11px; color:#ddd; font-family:'MedievalSharp', cursive; font-weight:400; display:block; margin-top:4px; padding:0 2px; line-height:1.2; }
+.author-span, .number-span { font-size:13px; color:#ddd; font-family:'MedievalSharp', cursive; font-weight:400; display:block; margin-top:4px; padding:0 2px; line-height:1.3; }
 .author-span a { color:#fff; text-decoration:none; font-style:italic; font-weight:400; }
-.number-span a { color:#19E6D6; text-decoration:none; font-weight:600; font-size:10px; text-transform:uppercase; }
-.meta a { font-size:10px; font-weight:bold; text-decoration:none; color:#fff; background:rgba(34,34,34,0.7); padding:3px 6px; border-radius:4px; display:inline-block; margin-top:4px; transition:0.2s; }
+.number-span a { color:#19E6D6; text-decoration:none; font-weight:600; font-size:12px; text-transform:uppercase; }
+.meta a { font-size:13px; font-weight:bold; text-decoration:none; color:#fff; background:rgba(34,34,34,0.7); padding:4px 8px; border-radius:4px; display:inline-block; margin-top:4px; transition:0.2s; }
 .meta a:hover { background:rgba(68,68,68,0.9); }
 .author-span a:hover, .number-span a:hover { color:#fff; text-decoration:none; opacity:0.9; }
-a.button { display:inline-block; margin:10px; text-decoration:none; padding:14px 28px; background:#222; color:#fff; border-radius:8px; font-size:20px; font-weight:bold; transition:0.2s; }
+a.button { display:inline-block; margin:10px; text-decoration:none; padding:16px 32px; background:#222; color:#fff; border-radius:8px; font-size:22px; font-weight:bold; transition:0.2s; }
 a.button:hover { background:#444; }
 
 /* Avatares para autores y emblemas para sagas */
 .card-block { display:flex; flex-direction:column; align-items:center; gap:8px; }
 .avatar-rect { width:90px; height:120px; border-radius:8px; background:linear-gradient(160deg, rgba(40,40,40,0.9), rgba(18,18,18,0.9)); border:1px solid rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; font-family:'MedievalSharp', cursive; font-size:32px; color:#fff; letter-spacing:1px; text-shadow:0 2px 6px rgba(0,0,0,0.6); }
-.count-badge { margin-top:-4px; font-size:11px; color:#19E6D6; background:rgba(25,230,214,0.12); border:1px solid rgba(25,230,214,0.5); padding:3px 8px; border-radius:999px; font-family:Garamond, serif; }
+.count-badge { margin-top:-4px; font-size:13px; color:#19E6D6; background:rgba(25,230,214,0.12); border:1px solid rgba(25,230,214,0.5); padding:4px 10px; border-radius:999px; font-family:Garamond, serif; }
 .emblem-rect { width:90px; height:120px; border-radius:8px; background:linear-gradient(180deg, rgba(18,18,18,0.95), rgba(8,8,8,0.9)); border:1px solid rgba(25,230,214,0.35); position:relative; display:flex; align-items:center; justify-content:center; }
 .emblem-rect svg { width:48px; height:48px; fill:none; stroke:#19E6D6; stroke-width:2; filter:drop-shadow(0 0 4px rgba(25,230,214,0.5)); }
 .book:hover { transform:translateY(-2px); box-shadow:0 10px 24px rgba(0,0,0,0.35); }
@@ -397,9 +397,9 @@ a.button:hover { background:#444; }
 #login-modal.active { display:flex; }
 .login-box { background:linear-gradient(135deg, rgba(18,18,18,0.95), rgba(12,12,12,0.9)); border:2px solid rgba(25,230,214,0.5); border-radius:12px; padding:40px; text-align:center; max-width:400px; box-shadow:0 8px 32px rgba(0,0,0,0.8); }
 .login-box h2 { font-family:'MedievalSharp', cursive; color:#19E6D6; font-size:24px; margin:0 0 20px 0; }
-.login-box input { width:100%; padding:12px; margin:10px 0; border:1px solid rgba(25,230,214,0.4); background:rgba(25,25,25,0.8); color:#fff; border-radius:6px; font-size:14px; box-sizing:border-box; }
+.login-box input { width:100%; padding:14px; margin:10px 0; border:1px solid rgba(25,230,214,0.4); background:rgba(25,25,25,0.8); color:#fff; border-radius:6px; font-size:17px; box-sizing:border-box; }
 .login-box input:focus { outline:none; border-color:#19E6D6; box-shadow:0 0 8px rgba(25,230,214,0.4); }
-.login-box button { padding:10px 20px; margin:10px 5px; border:none; border-radius:6px; font-weight:bold; cursor:pointer; background:#19E6D6; color:#000; font-size:14px; }
+.login-box button { padding:12px 24px; margin:10px 5px; border:none; border-radius:6px; font-weight:bold; cursor:pointer; background:#19E6D6; color:#000; font-size:17px; }
 .login-box button:hover { background:#1dd4c8; }
 .login-box button.cancel { background:rgba(255,255,255,0.1); color:#fff; }
 .login-box button.cancel:hover { background:rgba(255,255,255,0.2); }
@@ -900,8 +900,8 @@ function renderBookPage({ libros, titlePage, tipo, nombre, req, noResultsHtml })
       const sagaName = book.saga?.name ? ` · ${book.saga.name}${book.saga.number ? ' #' + book.saga.number : ''}` : '';
       return `<li>
         <a href="/libro?id=${encodeURIComponent(book.id)}" style="font-weight:bold;">${title}</a>
-        <div style="font-size:12px;color:#bbb;">${author}${sagaName}</div>
-        <a href="/download?id=${encodeURIComponent(book.id)}" style="font-size:12px;">Descargar</a>
+        <div style="font-size:15px;color:#bbb;">${author}${sagaName}</div>
+        <a href="/download?id=${encodeURIComponent(book.id)}" style="font-size:15px;">Descargar</a>
       </li>`;
     }).join('') || `<li>${noResultsHtml || getRandomNoResultHtml()}</li>`;
 
@@ -914,7 +914,7 @@ function renderBookPage({ libros, titlePage, tipo, nombre, req, noResultsHtml })
     body { margin:0; padding:16px; background:#000; color:#eee; font-family: Arial, sans-serif; }
     h1 { margin:0 0 12px 0; font-size:22px; color:#19E6D6; }
     form { margin-bottom:12px; display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
-    input[type="search"], select, button { background:#111; color:#fff; border:1px solid #19E6D6; border-radius:6px; padding:6px 8px; font-size:12px; }
+    input[type="search"], select, button { background:#111; color:#fff; border:1px solid #19E6D6; border-radius:6px; padding:8px 12px; font-size:16px; }
     button { cursor:pointer; }
     ul { list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:10px; }
     li { padding:10px; border:1px solid #222; border-radius:6px; }
@@ -939,7 +939,7 @@ function renderBookPage({ libros, titlePage, tipo, nombre, req, noResultsHtml })
   <ul>${items}</ul>
 
   ${totalPages > 1 ? `
-  <div style="margin-top:14px; display:flex; gap:10px; align-items:center; font-size:12px;">
+  <div style="margin-top:14px; display:flex; gap:10px; align-items:center; font-size:15px;">
     ${currentPage > 1 ? `<a href="?${new URLSearchParams({...queryParams, page: currentPage - 1}).toString()}">← Anterior</a>` : ''}
     <span style="color:#999;">Página ${currentPage} de ${totalPages}</span>
     ${currentPage < totalPages ? `<a href="?${new URLSearchParams({...queryParams, page: currentPage + 1}).toString()}">Siguiente →</a>` : ''}
@@ -993,7 +993,7 @@ function renderBookPage({ libros, titlePage, tipo, nombre, req, noResultsHtml })
         <option value="recientes" ${orden==='recientes'?'selected':''}>Más recientes</option>
         ${tipo==='saga'?`<option value="numero" ${orden==='numero'?'selected':''}>#Número</option>`:''}
       </select>
-      <button type="button" id="multi-download-btn" style="display:none;padding:6px 12px;border-radius:8px;border:1px solid #19E6D6;background:#19E6D6;color:#000;font-family:'MedievalSharp', cursive;font-size:14px;cursor:pointer;text-shadow:0 1px 2px rgba(255,255,255,0.8);box-shadow:0 4px 12px rgba(0,0,0,0.4);">Descarga múltiple</button>
+      <button type="button" id="multi-download-btn" style="display:none;padding:8px 16px;border-radius:8px;border:1px solid #19E6D6;background:#19E6D6;color:#000;font-family:'MedievalSharp', cursive;font-size:17px;cursor:pointer;text-shadow:0 1px 2px rgba(255,255,255,0.8);box-shadow:0 4px 12px rgba(0,0,0,0.4);">Descarga múltiple</button>
     </div>
     <input type="hidden" name="name" value="${nombre}" />
     <input type="hidden" name="page" value="${currentPage}" />
@@ -1120,10 +1120,12 @@ function renderBookPage({ libros, titlePage, tipo, nombre, req, noResultsHtml })
     });
     
     function applyRowFade() {
-      // Obtener altura real del banner desde el DOM
       const banner = document.querySelector('.header-banner.top');
-      const headerHeight = banner ? banner.offsetHeight : 290;
-      const fadeLength = 150; // Distancia de fade en píxeles (más controlado)
+      const bannerBottom = banner ? banner.getBoundingClientRect().bottom : 290;
+      const cardHeight = 200; // Altura aproximada de tarjeta
+      const offset = 100; // 100px de offset (mitad de tarjeta)
+      const fadeStartPoint = bannerBottom - offset; // Comenzar fade cuando haya pasado 100px
+      const fadeLength = 150; // Transición más suave
       const minOpacity = 0.15;
       const books = Array.from(document.querySelectorAll('.book'));
       if (!books.length) return;
@@ -1135,17 +1137,13 @@ function renderBookPage({ libros, titlePage, tipo, nombre, req, noResultsHtml })
       });
       const rowTops = Object.keys(rows).map(Number).sort((a,b)=>a-b);
       rowTops.forEach(top => {
-        // La transparencia comienza cuando el borde superior toca el borde inferior del banner
-        const distance = top - headerHeight;
+        const distance = top - fadeStartPoint;
         let opacity = 1;
         if (distance <= 0) {
-          // Tarjeta ya está detrás del banner
           opacity = minOpacity;
         } else if (distance < fadeLength) {
-          // Tarjeta en zona de transición - fade progresivo
           opacity = Math.max(minOpacity, distance / fadeLength);
         } else {
-          // Tarjeta completamente visible
           opacity = 1;
         }
         rows[top].forEach(el => el.style.opacity = opacity);
@@ -1153,7 +1151,7 @@ function renderBookPage({ libros, titlePage, tipo, nombre, req, noResultsHtml })
       const firstRowTop = rowTops.length ? rowTops[0] : Infinity;
       const btns = document.querySelectorAll('.top-buttons a');
       let btnOpacity = 1;
-      const dist = firstRowTop - headerHeight;
+      const dist = firstRowTop - fadeStartPoint;
       if (dist <= 0) btnOpacity = minOpacity;
       else if (dist < fadeLength) btnOpacity = Math.max(minOpacity, dist / fadeLength);
       else btnOpacity = 1;
@@ -1215,11 +1213,11 @@ app.get('/', (req,res)=>{
   <div id="login-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:9999;justify-content:center;align-items:center;">
     <div style="background:linear-gradient(135deg, rgba(18,18,18,0.95), rgba(12,12,12,0.9));border:2px solid rgba(25,230,214,0.5);border-radius:12px;padding:40px;text-align:center;max-width:400px;box-shadow:0 8px 32px rgba(0,0,0,0.8);">
       <h2 id="modal-title" style="font-family:'MedievalSharp', cursive;color:#19E6D6;font-size:24px;margin:0 0 20px 0;">Acceso a Stats</h2>
-      <input type="password" id="pass-input" placeholder="Contraseña" style="width:100%;padding:12px;margin:10px 0;border:2px solid #19E6D6;background:rgba(25,25,25,0.8);color:#fff;border-radius:6px;font-size:14px;box-sizing:border-box;outline:none;transition:all 0.3s ease;" onkeypress="if(event.key==='Enter')document.getElementById('login-btn').click();">
-      <div id="error-message" style="display:none;margin-top:10px;color:#ff6b6b;font-family:'MedievalSharp', cursive;font-size:13px;line-height:1.4;min-height:50px;"></div>
+      <input type="password" id="pass-input" placeholder="Contraseña" style="width:100%;padding:14px;margin:10px 0;border:2px solid #19E6D6;background:rgba(25,25,25,0.8);color:#fff;border-radius:6px;font-size:17px;box-sizing:border-box;outline:none;transition:all 0.3s ease;" onkeypress="if(event.key==='Enter')document.getElementById('login-btn').click();">
+      <div id="error-message" style="display:none;margin-top:10px;color:#ff6b6b;font-family:'MedievalSharp', cursive;font-size:15px;line-height:1.5;min-height:50px;"></div>
       <div style="margin-top:20px;">
-        <button id="login-btn" style="padding:10px 20px;margin:10px 5px;border:none;border-radius:6px;font-weight:bold;cursor:pointer;background:#19E6D6;color:#000;font-size:14px;">Entrar</button>
-        <button id="cancel-btn" style="padding:10px 20px;margin:10px 5px;border:none;border-radius:6px;font-weight:bold;cursor:pointer;background:rgba(255,255,255,0.1);color:#fff;font-size:14px;">Cancelar</button>
+        <button id="login-btn" style="padding:12px 24px;margin:10px 5px;border:none;border-radius:6px;font-weight:bold;cursor:pointer;background:#19E6D6;color:#000;font-size:17px;">Entrar</button>
+        <button id="cancel-btn" style="padding:12px 24px;margin:10px 5px;border:none;border-radius:6px;font-weight:bold;cursor:pointer;background:rgba(255,255,255,0.1);color:#fff;font-size:17px;">Cancelar</button>
       </div>
     </div>
   </div>
@@ -1402,7 +1400,10 @@ app.get('/autores', (req,res)=>{
   <script>
     function applyRowFade() {
       const banner = document.querySelector('.header-banner.top');
-      const headerHeight = banner ? banner.offsetHeight : 290;
+      const bannerBottom = banner ? banner.getBoundingClientRect().bottom : 290;
+      const cardHeight = 200;
+      const offset = 100;
+      const fadeStartPoint = bannerBottom - offset;
       const fadeLength = 150;
       const minOpacity = 0.15;
       const books = Array.from(document.querySelectorAll('.book'));
@@ -1415,7 +1416,7 @@ app.get('/autores', (req,res)=>{
       });
       const rowTops = Object.keys(rows).map(Number).sort((a,b)=>a-b);
       rowTops.forEach(top => {
-        const distance = top - headerHeight;
+        const distance = top - fadeStartPoint;
         let opacity = 1;
         if (distance <= 0) {
           opacity = minOpacity;
@@ -1429,7 +1430,7 @@ app.get('/autores', (req,res)=>{
       const firstRowTop = rowTops.length ? rowTops[0] : Infinity;
       const btns = document.querySelectorAll('.top-buttons a');
       let btnOpacity = 1;
-      const dist = firstRowTop - headerHeight;
+      const dist = firstRowTop - fadeStartPoint;
       if (dist <= 0) btnOpacity = minOpacity;
       else if (dist < fadeLength) btnOpacity = Math.max(minOpacity, dist / fadeLength);
       else btnOpacity = 1;
@@ -1483,7 +1484,10 @@ app.get('/sagas', (req,res)=>{
   <script>
     function applyRowFade() {
       const banner = document.querySelector('.header-banner.top');
-      const headerHeight = banner ? banner.offsetHeight : 290;
+      const bannerBottom = banner ? banner.getBoundingClientRect().bottom : 290;
+      const cardHeight = 200;
+      const offset = 100;
+      const fadeStartPoint = bannerBottom - offset;
       const fadeLength = 150;
       const minOpacity = 0.15;
       const books = Array.from(document.querySelectorAll('.book'));
@@ -1496,7 +1500,7 @@ app.get('/sagas', (req,res)=>{
       });
       const rowTops = Object.keys(rows).map(Number).sort((a,b)=>a-b);
       rowTops.forEach(top => {
-        const distance = top - headerHeight;
+        const distance = top - fadeStartPoint;
         let opacity = 1;
         if (distance <= 0) {
           opacity = minOpacity;
@@ -1510,7 +1514,7 @@ app.get('/sagas', (req,res)=>{
       const firstRowTop = rowTops.length ? rowTops[0] : Infinity;
       const btns = document.querySelectorAll('.top-buttons a');
       let btnOpacity = 1;
-      const dist = firstRowTop - headerHeight;
+      const dist = firstRowTop - fadeStartPoint;
       if (dist <= 0) btnOpacity = minOpacity;
       else if (dist < fadeLength) btnOpacity = Math.max(minOpacity, dist / fadeLength);
       else btnOpacity = 1;
@@ -1590,7 +1594,7 @@ app.get('/recomendados', async (req,res)=>{
       const cover = getCoverForBook(r.id);
       const imgHtml = cover ? `<img src="${cover}" />` : `<div style="width:80px;height:120px;background:#333;border-radius:5px;"></div>`;
       return `<div class="book" style="align-items:flex-start;gap:6px;">
-        <div style="position:absolute;top:4px;right:6px;background:#19E6D6;color:#000;padding:2px 6px;border-radius:6px;font-size:11px;font-family:'MedievalSharp', cursive;">GR ${r.rating.toFixed(2)}</div>
+        <div style="position:absolute;top:4px;right:6px;background:#19E6D6;color:#000;padding:3px 8px;border-radius:6px;font-size:13px;font-family:'MedievalSharp', cursive;">GR ${r.rating.toFixed(2)}</div>
         ${imgHtml}
         <div class="title" style="margin-top:6px;">${r.title}</div>
         <div class="author-span" style="margin-top:2px;">${r.author}</div>
@@ -1896,7 +1900,7 @@ app.get('/stats', async (req, res) => {
     .confirm-box h3 { font-family: 'MedievalSharp', cursive; color: #19E6D6; font-size: 22px; margin: 0 0 15px 0; }
     .confirm-box p { color: #fff; font-size: 16px; line-height: 1.5; margin: 15px 0; }
     .confirm-box .button-group { display: flex; gap: 10px; justify-content: center; margin-top: 25px; }
-    .confirm-box button { padding: 12px 24px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-family: 'MedievalSharp', cursive; font-size: 14px; transition: 0.2s; }
+    .confirm-box button { padding: 14px 28px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-family: 'MedievalSharp', cursive; font-size: 17px; transition: 0.2s; }
     .confirm-box button.confirm { background: #19E6D6; color: #000; }
     .confirm-box button.confirm:hover { background: #1dd4c8; }
     .confirm-box button.cancel { background: rgba(255,255,255,0.1); color: #fff; }
@@ -1907,7 +1911,7 @@ app.get('/stats', async (req, res) => {
     .stat-card { background: transparent; border: 1px solid rgba(25,230,214,0.4); border-radius: 8px; padding: 20px; text-align: center; transition: 0.3s; }
     .stat-card:hover { transform: translateY(-3px); box-shadow: 0 5px 20px rgba(25,230,214,0.2); border-color: rgba(25,230,214,0.6); }
     .stat-number { font-family: 'MedievalSharp', cursive; font-size: 36px; color: #19E6D6; font-weight: bold; margin: 10px 0; }
-    .stat-label { font-size: 14px; color: #999; text-transform: uppercase; letter-spacing: 1px; }
+    .stat-label { font-size: 16px; color: #999; text-transform: uppercase; letter-spacing: 1px; }
     .stat-icon { font-size: 24px; margin-bottom: 10px; }
     
     .top-list { list-style: none; padding: 0; margin: 15px 0 0 0; }

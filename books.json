@@ -3234,12 +3234,14 @@
       "Fiction"
     ],
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=iK44EAAAQBAJ&printsec=frontcover&dq=intitle:Ansia+inauthor:Tracy+Wolff&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "previewLink": "http://books.google.es/books?id=iK44EAAAQBAJ&printsec=frontcover&dq=intitle:%22Ansia%22+inauthor:%22Tracy+Wolff%22&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
     "createdTime": "2025-05-03T09:00:17.187Z",
     "imageLinks": {
       "smallThumbnail": "http://books.google.com/books/content?id=iK44EAAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
       "thumbnail": "http://books.google.com/books/content?id=iK44EAAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
-    }
+    },
+    "averageRating": null,
+    "ratingsCount": 0
   },
   {
     "id": "18IHPPD0khd08PadgkeiisLhOpLct_YGI",
