@@ -3124,6 +3124,18 @@ app.put('/api/books/:id', async (req, res) => {
   // Actualizar en memoria
   bookMetadata[bookIndex] = validated;
   
+  // Obtener datos actualizados de Google Books (sin sobrescribir manualmente editados)
+  try {
+    console.log(`[API /books/:id PUT] Fetching Google Books data for: ${validated.title} by ${validated.author}`);
+    const googleBooksData = await fetchGoogleBooksData(validated.title, validated.author);
+    if (googleBooksData) {
+      mergeGoogleDataIntoBook(validated, googleBooksData);
+      console.log(`[API /books/:id PUT] ✅ Google Books data merged - Cover: ${validated.coverUrl ? '✅' : '❌'}`);
+    }
+  } catch (err) {
+    console.warn(`[API /books/:id PUT] Warning - could not fetch Google Books data: ${err.message}`);
+  }
+  
   // Guardar a disco
   try {
     await fs.promises.writeFile(BOOKS_FILE, JSON.stringify(bookMetadata, null, 2));
