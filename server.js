@@ -1120,9 +1120,11 @@ function renderBookPage({ libros, titlePage, tipo, nombre, req, noResultsHtml })
     });
     
     function applyRowFade() {
-      const headerHeight = 300;
-      const fadeLength = headerHeight * 0.4; // 40% of header
-      const minOpacity = 0.2;
+      // Obtener altura real del banner desde el DOM
+      const banner = document.querySelector('.header-banner.top');
+      const headerHeight = banner ? banner.offsetHeight : 290;
+      const fadeLength = 150; // Distancia de fade en píxeles (más controlado)
+      const minOpacity = 0.15;
       const books = Array.from(document.querySelectorAll('.book'));
       if (!books.length) return;
       const rows = {};
@@ -1133,11 +1135,19 @@ function renderBookPage({ libros, titlePage, tipo, nombre, req, noResultsHtml })
       });
       const rowTops = Object.keys(rows).map(Number).sort((a,b)=>a-b);
       rowTops.forEach(top => {
+        // La transparencia comienza cuando el borde superior toca el borde inferior del banner
         const distance = top - headerHeight;
         let opacity = 1;
-        if (distance <= 0) opacity = minOpacity;
-        else if (distance < fadeLength) opacity = Math.max(minOpacity, distance / fadeLength);
-        else opacity = 1;
+        if (distance <= 0) {
+          // Tarjeta ya está detrás del banner
+          opacity = minOpacity;
+        } else if (distance < fadeLength) {
+          // Tarjeta en zona de transición - fade progresivo
+          opacity = Math.max(minOpacity, distance / fadeLength);
+        } else {
+          // Tarjeta completamente visible
+          opacity = 1;
+        }
         rows[top].forEach(el => el.style.opacity = opacity);
       });
       const firstRowTop = rowTops.length ? rowTops[0] : Infinity;
