@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Test Botones Simples</title>
+<style>
+body { background: #1a1a1a; color: #fff; font-family: Arial; padding: 40px; }
+button { padding: 15px 30px; margin: 10px; cursor: pointer; font-size: 16px; }
+.btn1 { background: #19E6D6; color: #000; border: none; border-radius: 5px; }
+.btn1:hover { background: #00d4d4; }
+.result { margin-top: 30px; padding: 20px; background: #222; border: 2px solid #19E6D6; border-radius: 5px; }
+</style>
+</head>
+<body>
+
+<h1>Test de Botones</h1>
+<p>Haz clic en los botones para probar si los onclick funcionan:</p>
+
+<button class="btn1" onclick="test1()">TEST 1: Alert Simple</button>
+<button class="btn1" onclick="test2()">TEST 2: Cambiar Color</button>
+<button class="btn1" onclick="test3()">TEST 3: Mostrar Hora</button>
+
+<div class="result">
+  <h3>Resultado:</h3>
+  <p id="resultado">Haz clic en un botón arriba...</p>
+</div>
+
+<script>
+function test1() {
+  alert('✅ TEST 1 FUNCIONÓ! Los onclick SÍ responden.');
+  document.getElementById('resultado').textContent = '✅ TEST 1 ejecutado - onclick funciona';
+  document.getElementById('resultado').style.color = '#19E6D6';
+}
+
+function test2() {
+  document.body.style.background = '#2a1a3a';
+  document.getElementById('resultado').textContent = '✅ TEST 2 ejecutado - DOM puede ser modificado';
+  document.getElementById('resultado').style.color = '#ffff00';
+}
+
+function test3() {
+  const hora = new Date().toLocaleTimeString('es-ES');
+  document.getElementById('resultado').innerHTML = '✅ TEST 3 ejecutado<br>Hora actual: ' + hora;
+  document.getElementById('resultado').style.color = '#00ff00';
+}
+
+console.log('Script cargado. Funciones disponibles.');
+</script>
+
+</body>
+</html>

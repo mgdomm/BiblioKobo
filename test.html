@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Test Modal</title>
+<style>
+body { background: #111; color: #fff; font-family: Arial; padding: 20px; }
+button { padding: 10px 20px; cursor: pointer; margin: 5px; }
+.modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); z-index: 1000; }
+.modal.active { display: flex; align-items: center; justify-content: center; }
+.modal-content { background: #222; padding: 30px; border-radius: 10px; max-width: 600px; border: 2px solid #19E6D6; }
+</style>
+</head>
+<body>
+
+<h1>Test Simple de Modales</h1>
+
+<button onclick="testOpenModal()">Abrir Modal (Test)</button>
+
+<div id="test-modal" class="modal">
+  <div class="modal-content">
+    <h2>Modal de Test</h2>
+    <p>Si ves esto, los modales funcionan.</p>
+    <button onclick="testCloseModal()">Cerrar</button>
+  </div>
+</div>
+
+<hr>
+
+<h2>Test de API</h2>
+<p>ID del primer libro incompleto: <span id="book-id"></span></p>
+<button onclick="testFetchAPI()">Fetch /api/books (primero)</button>
+<button onclick="testOpenEditModal('105tUf2NhX_ZFvWPBiukp-nASyrWmoINw')">Test: Abrir Edit Modal (ID real)</button>
+
+<div id="edit-modal" class="modal">
+  <div class="modal-content">
+    <h2>Edit Modal Test</h2>
+    <input type="text" id="test-input" placeholder="Test input" style="width:100%; padding:10px; margin:10px 0; color:#000;">
+    <p>Valor del input: <span id="input-value">vacío</span></p>
+    <button onclick="testCloseEditModal()">Cerrar</button>
+  </div>
+</div>
+
+<script>
+function testOpenModal() {
+  console.log('testOpenModal llamada');
+  const modal = document.getElementById('test-modal');
+  modal.classList.add('active');
+  alert('Modal debería estar visible ahora');
+}
+
+function testCloseModal() {
+  console.log('testCloseModal llamada');
+  const modal = document.getElementById('test-modal');
+  modal.classList.remove('active');
+}
+
+async function testFetchAPI() {
+  try {
+    const resp = await fetch('/api/books');
+    const books = await resp.json();
+    console.log('Books from API:', books.length);
+    if (books.length > 0) {
+      document.getElementById('book-id').textContent = books[0].id;
+      alert('API funciona. Primer libro: ' + books[0].title);
+    }
+  } catch (e) {
+    alert('Error en API: ' + e.message);
+  }
+}
+
+async function testOpenEditModal(bookId) {
+  console.log('testOpenEditModal llamada con ID:', bookId);
+  try {
+    const resp = await fetch('/api/books/' + bookId);
+    if (!resp.ok) {
+      alert('Error: ' + resp.status);
+      return;
+    }
+    const book = await resp.json();
+    console.log('Book data:', book);
+    document.getElementById('test-input').value = book.title || '';
+    document.getElementById('input-value').textContent = book.title || 'sin título';
+    
+    const modal = document.getElementById('edit-modal');
+    modal.classList.add('active');
+    alert('Modal Edit abierto con: ' + book.title);
+  } catch (e) {
+    alert('Error: ' + e.message);
+  }
+}
+
+function testCloseEditModal() {
+  const modal = document.getElementById('edit-modal');
+  modal.classList.remove('active');
+}
+
+console.log('Script cargado y funciones definidas');
+</script>
+
+</body>
+</html>

@@ -38,6 +38,61 @@ app.use('/cover', express.static(path.join(__dirname, 'cover'), {
   etag: false
 }));
 
+// Ruta para test de botones
+app.get('/test-buttons', (req, res) => {
+  res.send(`<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Test Botones Simples</title>
+<style>
+body { background: #1a1a1a; color: #fff; font-family: Arial; padding: 40px; }
+button { padding: 15px 30px; margin: 10px; cursor: pointer; font-size: 16px; }
+.btn1 { background: #19E6D6; color: #000; border: none; border-radius: 5px; }
+.btn1:hover { background: #00d4d4; }
+.result { margin-top: 30px; padding: 20px; background: #222; border: 2px solid #19E6D6; border-radius: 5px; }
+</style>
+</head>
+<body>
+
+<h1>Test de Botones</h1>
+<p>Haz clic en los botones para probar si los onclick funcionan:</p>
+
+<button class="btn1" onclick="test1()">TEST 1: Alert Simple</button>
+<button class="btn1" onclick="test2()">TEST 2: Cambiar Color</button>
+<button class="btn1" onclick="test3()">TEST 3: Mostrar Hora</button>
+
+<div class="result">
+  <h3>Resultado:</h3>
+  <p id="resultado">Haz clic en un botón arriba...</p>
+</div>
+
+<script>
+function test1() {
+  alert('✅ TEST 1 FUNCIONÓ! Los onclick SÍ responden.');
+  document.getElementById('resultado').textContent = '✅ TEST 1 ejecutado - onclick funciona';
+  document.getElementById('resultado').style.color = '#19E6D6';
+}
+
+function test2() {
+  document.body.style.background = '#2a1a3a';
+  document.getElementById('resultado').textContent = '✅ TEST 2 ejecutado - DOM puede ser modificado';
+  document.getElementById('resultado').style.color = '#ffff00';
+}
+
+function test3() {
+  const hora = new Date().toLocaleTimeString('es-ES');
+  document.getElementById('resultado').innerHTML = '✅ TEST 3 ejecutado<br>Hora actual: ' + hora;
+  document.getElementById('resultado').style.color = '#00ff00';
+}
+
+console.log('Script cargado. Funciones disponibles.');
+</script>
+
+</body>
+</html>`);
+});
+
 // Auth: prioriza OAuth si existe, sino usa Service Account
 const OAUTH_CREDENTIALS = path.join(__dirname, 'oauth-credentials.json');
 const OAUTH_TOKEN = path.join(__dirname, 'oauth-token.json');
@@ -1633,21 +1688,11 @@ app.get('/stats', async (req, res) => {
     const randomMsg = deniedMessages[Math.floor(Math.random() * deniedMessages.length)];
     return res.status(403).send(`<!DOCTYPE html>
 <html lang="es">
-<head><meta charset="UTF-8"><title>Acceso Denegado</title><style>${css}</style></head>
-<body>
-  <div class="header-banner top" style="background-image:url('/cover/secuendarias/portada11.png');"></div>
-  <div class="overlay top">
-    <div class="top-buttons secondary"><a href="/">Inicio</a></div>
-    <h1>Azkaban</h1>
-    <div class="top-buttons">
-      <a href="/libros">Libros</a>
-      <a href="/autores">Autores</a>
-      <a href="/sagas">Sagas</a>
-    </div>
-  </div>
-  <div style="padding:60px 40px; color:#eee; text-align:center;">
-    <h2 style="font-family:'MedievalSharp', cursive; font-size:28px; color:#19E6D6; margin-bottom:20px;">🔒 Acceso Denegado</h2>
-    <p style="font-size:1.2em; line-height:1.8; max-width:700px; margin:0 auto; color:#fff;">${randomMsg}</p>
+<head><meta charset="UTF-8"><title>Acceso Denegado</title><style>body{background:#111;color:#fff}</style></head>
+<body style="padding:40px;">
+  <h1>🔒 Acceso Denegado</h1>
+  <p>${randomMsg}</p>
+  <p><a href="/">Volver al inicio</a></p>
     <p style="margin-top:30px;">
       <a href="/" class="button">← Volver</a>
     </p>
@@ -1691,563 +1736,160 @@ app.get('/stats', async (req, res) => {
   const librosConDescrip = bookMetadata.filter(b => b.description && b.description.length > 0).length;
   const porcentajeDescrip = ((librosConDescrip / totalLibros) * 100).toFixed(1);
   
-  // Categorías
-  const categoriesMap = {};
-  bookMetadata.forEach(b => {
-    if (b.categories && Array.isArray(b.categories)) {
-      b.categories.forEach(cat => {
-        categoriesMap[cat] = (categoriesMap[cat] || 0) + 1;
-      });
-    }
-  });
-  const topCategories = Object.entries(categoriesMap)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 8);
-  
-  // Idiomas
-  const languagesMap = {};
-  bookMetadata.forEach(b => {
-    const lang = b.language || 'Desconocido';
-    languagesMap[lang] = (languagesMap[lang] || 0) + 1;
-  });
-  const languageData = Object.entries(languagesMap)
-    .sort((a, b) => b[1] - a[1]);
-  
-  // Rango de páginas
-  const pageRanges = {
-    '0-100': 0,
-    '101-250': 0,
-    '251-400': 0,
-    '401-600': 0,
-    '600+': 0
+  // Calcular libros incompletos
+  const isEmpty = (value, fieldName) => {
+    if (fieldName === 'saga') return !value || !value.name || value.name.trim() === '';
+    if (fieldName === 'publishedDate') return !value || (typeof value === 'string' && value.trim() === '');
+    return !value || (typeof value === 'string' && value.trim() === '');
   };
-  bookMetadata.forEach(b => {
-    if (!b.pageCount) return;
-    const pages = b.pageCount;
-    if (pages <= 100) pageRanges['0-100']++;
-    else if (pages <= 250) pageRanges['101-250']++;
-    else if (pages <= 400) pageRanges['251-400']++;
-    else if (pages <= 600) pageRanges['401-600']++;
-    else pageRanges['600+']++;
-  });
   
-  // Top 5 libros más largos
-  const longestBooks = bookMetadata
-    .filter(b => b.pageCount)
-    .sort((a, b) => b.pageCount - a.pageCount)
-    .slice(0, 5);
-
-  // Top 5 libros más recientes (por publishedDate)
-  const newestBooks = bookMetadata
-    .filter(b => b.publishedDate)
-    .sort((a, b) => new Date(b.publishedDate) - new Date(a.publishedDate))
-    .reverse()
-    .slice(0, 5);
-
-  // Top 5 libros con más libros en saga
-  const sagaStats = {};
-  bookMetadata.forEach(b => {
-    if (b.saga?.name) {
-      if (!sagaStats[b.saga.name]) {
-        sagaStats[b.saga.name] = { count: 0, lastBook: null };
-      }
-      sagaStats[b.saga.name].count++;
-      sagaStats[b.saga.name].lastBook = b.title;
-    }
+  let incompleteBooks = bookMetadata.filter(book => {
+    const missing = [];
+    if (isEmpty(book.title, 'title')) missing.push('title');
+    if (isEmpty(book.author, 'author')) missing.push('author');
+    if (isEmpty(book.saga, 'saga')) missing.push('saga');
+    if (isEmpty(book.description, 'description')) missing.push('description');
+    if (isEmpty(book.publishedDate, 'publishedDate')) missing.push('publishedDate');
+    return missing.length > 0;
   });
-  const topSagasBySize = Object.entries(sagaStats)
-    .sort((a, b) => b[1].count - a[1].count)
-    .slice(0, 8);
 
-  // Top 5 libros más largos
   res.send(`<!DOCTYPE html>
 <html lang="es">
-<head><meta charset="UTF-8"><title>Dashboard - Azkaban Reads</title><link rel="preload" as="image" href="/cover/secuendarias/portada11.png"><style>${css}</style></head>
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard - Libros Incompletos</title>
+  <style>
+    body { background: #111; color: #fff; font-family: Arial; padding: 20px; }
+    h1 { color: #19E6D6; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { padding: 12px; text-align: left; border-bottom: 1px solid #333; }
+    th { background: #19E6D6; color: #000; font-weight: bold; }
+    tr:hover { background: #222; }
+    button { padding: 8px 15px; margin: 3px; cursor: pointer; border: none; border-radius: 4px; }
+    .btn-edit { background: #19E6D6; color: #000; }
+    .btn-delete { background: #ff6b6b; color: #fff; }
+    .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); z-index: 999; align-items: center; justify-content: center; }
+    .modal.active { display: flex; }
+    .modal-content { background: #222; padding: 30px; border-radius: 10px; max-width: 700px; border: 2px solid #19E6D6; }
+    input, textarea { width: 100%; padding: 8px; margin: 5px 0; background: #333; border: 1px solid #555; color: #fff; border-radius: 4px; box-sizing: border-box; }
+    label { display: block; margin-top: 10px; color: #19E6D6; font-weight: bold; }
+  </style>
+</head>
 <body>
-  <div class="header-banner top" style="background-image:url('/cover/secuendarias/portada11.png');"></div>
-  <div class="overlay top">
-    <div class="top-buttons secondary"><a href="/">Inicio</a></div>
-    <h1><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#19E6D6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline; vertical-align:-8px; margin-right:2px;"><path d="M13 2l-8 12h7l-7 8 12-14h-7l3-6z"></path></svg>Dashboard</h1>
-    <div class="top-buttons">
-      <a href="/libros">Libros</a>
-      <a href="/autores">Autores</a>
-      <a href="/sagas">Sagas</a>
-    </div>
+
+<h1>📚 Libros Incompletos (${incompleteBooks.length})</h1>
+
+<table>
+  <thead>
+    <tr>
+      <th>Título</th>
+      <th>Autor</th>
+      <th>Campos Faltantes</th>
+      <th>Acciones</th>
+    </tr>
+  </thead>
+  <tbody>
+    ${incompleteBooks.map(book => `
+      <tr>
+        <td>${book.title || '(vacío)'}</td>
+        <td>${book.author || '(vacío)'}</td>
+        <td>
+          ${(!book.title ? 'título, ' : '')}
+          ${(!book.author ? 'autor, ' : '')}
+          ${(!book.saga || !book.saga.name ? 'saga, ' : '')}
+          ${(!book.description ? 'descripción, ' : '')}
+          ${(!book.publishedDate ? 'fecha' : '')}
+        </td>
+        <td>
+          <button class="btn-edit" onclick="openEditModal('${book.id}')">✏️ Editar</button>
+          <button class="btn-delete" onclick="deleteBook('${book.id}')">🗑️ Eliminar</button>
+        </td>
+      </tr>
+    `).join('')}
+  </tbody>
+</table>
+
+<!-- Modal de Edición -->
+<div id="edit-modal" class="modal">
+  <div class="modal-content">
+    <h2>Editar Libro</h2>
+    <form onsubmit="saveBook(event)">
+      <label>Título *</label>
+      <input type="text" id="edit-title" required>
+      
+      <label>Autor *</label>
+      <input type="text" id="edit-author" required>
+      
+      <label>Saga *</label>
+      <input type="text" id="edit-saga" required>
+      
+      <label>Descripción *</label>
+      <textarea id="edit-description" rows="4" required></textarea>
+      
+      <label>Fecha Publicación *</label>
+      <input type="text" id="edit-date" required>
+      
+      <button type="submit" class="btn-edit">💾 Guardar</button>
+      <button type="button" class="btn-delete" onclick="closeEditModal()">Cancelar</button>
+    </form>
   </div>
+</div>
+
+<script>
+let currentBookId = null;
+let currentBook = null;
+
+function openEditModal(bookId) {
+  currentBookId = bookId;
+  fetch('/api/books/' + bookId)
+    .then(r => r.json())
+    .then(book => {
+      currentBook = book;
+      document.getElementById('edit-title').value = book.title || '';
+      document.getElementById('edit-author').value = book.author || '';
+      document.getElementById('edit-saga').value = (book.saga && book.saga.name) || '';
+      document.getElementById('edit-description').value = book.description || '';
+      document.getElementById('edit-date').value = book.publishedDate || '';
+      document.getElementById('edit-modal').classList.add('active');
+    })
+    .catch(e => alert('Error: ' + e.message));
+}
+
+function closeEditModal() {
+  document.getElementById('edit-modal').classList.remove('active');
+}
+
+function saveBook(e) {
+  e.preventDefault();
+  const updated = {
+    ...currentBook,
+    title: document.getElementById('edit-title').value,
+    author: document.getElementById('edit-author').value,
+    saga: { name: document.getElementById('edit-saga').value, number: 1 },
+    description: document.getElementById('edit-description').value,
+    publishedDate: document.getElementById('edit-date').value
+  };
   
-  <div style="padding:40px; max-width:1400px; margin:0 auto;">
-    <!-- Estadísticas principales -->
-    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:12px; margin-top:20px; margin-bottom:30px;">
-      <div style="background:linear-gradient(135deg, rgba(25,230,214,0.1), rgba(25,230,214,0.05)); border:2px solid rgba(25,230,214,0.3); border-radius:12px; padding:15px; text-align:center;">
-        <div style="width:32px; height:32px; border:2px solid #19E6D6; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 6px;">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#19E6D6" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-        </div>
-        <div style="font-size:11px; color:#aaa; margin-bottom:6px;">Libros</div>
-        <div style="font-size:24px; color:#19E6D6; font-weight:bold; font-family:'MedievalSharp', cursive;">${totalLibros}</div>
-      </div>
-      
-      <div style="background:linear-gradient(135deg, rgba(25,230,214,0.1), rgba(25,230,214,0.05)); border:2px solid rgba(25,230,214,0.3); border-radius:12px; padding:15px; text-align:center;">
-        <div style="width:32px; height:32px; border:2px solid #19E6D6; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 6px;">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#19E6D6" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg>
-        </div>
-        <div style="font-size:11px; color:#aaa; margin-bottom:6px;">Autores</div>
-        <div style="font-size:24px; color:#19E6D6; font-weight:bold; font-family:'MedievalSharp', cursive;">${totalAutores}</div>
-      </div>
-      
-      <div style="background:linear-gradient(135deg, rgba(25,230,214,0.1), rgba(25,230,214,0.05)); border:2px solid rgba(25,230,214,0.3); border-radius:12px; padding:15px; text-align:center;">
-        <div style="width:32px; height:32px; border:2px solid #19E6D6; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 6px;">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#19E6D6" stroke-width="2"><path d="M9 12h.01"/><path d="M15 12h.01"/><path d="M10 16c1 1 2 2 4 2s3-1 4-2"/><path d="M9 5h6M6.5 5h11M2 12c0 2.5 1 4.5 3 5.5m16-1c2-1 3-3 3-5.5 0-5-4.5-9-9-9S3 7 3 12"/></svg>
-        </div>
-        <div style="font-size:11px; color:#aaa; margin-bottom:6px;">Sagas</div>
-        <div style="font-size:24px; color:#19E6D6; font-weight:bold; font-family:'MedievalSharp', cursive;">${totalSagas}</div>
-      </div>
-      
-      <div style="background:linear-gradient(135deg, rgba(25,230,214,0.1), rgba(25,230,214,0.05)); border:2px solid rgba(25,230,214,0.3); border-radius:12px; padding:15px; text-align:center;">
-        <div style="width:32px; height:32px; border:2px solid #19E6D6; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 6px;">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#19E6D6" stroke-width="2"><path d="M13 2l-8 12h7l-7 8 12-14h-7l3-6z"/></svg>
-        </div>
-        <div style="font-size:11px; color:#aaa; margin-bottom:6px;">Descargas</div>
-        <div style="font-size:24px; color:#19E6D6; font-weight:bold; font-family:'MedievalSharp', cursive;">${downloadCount}</div>
-      </div>
-      
-      <div style="background:linear-gradient(135deg, rgba(25,230,214,0.1), rgba(25,230,214,0.05)); border:2px solid rgba(25,230,214,0.3); border-radius:12px; padding:15px; text-align:center;">
-        <div style="width:32px; height:32px; border:2px solid #19E6D6; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 6px;">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#19E6D6" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><polyline points="3 6 9 12 3 18"/></svg>
-        </div>
-        <div style="font-size:11px; color:#aaa; margin-bottom:6px;">Promedio</div>
-        <div style="font-size:24px; color:#19E6D6; font-weight:bold; font-family:'MedievalSharp', cursive;">${promedioLibrosPorAutor}</div>
-      </div>
-      
-      <div style="background:linear-gradient(135deg, rgba(25,230,214,0.1), rgba(25,230,214,0.05)); border:2px solid rgba(25,230,214,0.3); border-radius:12px; padding:15px; text-align:center;">
-        <div style="width:32px; height:32px; border:2px solid #19E6D6; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 6px;">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#19E6D6" stroke-width="2"><image width="18" height="18" x="3" y="3"/></svg>
-        </div>
-        <div style="font-size:11px; color:#aaa; margin-bottom:6px;">Cobertura</div>
-        <div style="font-size:24px; color:#19E6D6; font-weight:bold; font-family:'MedievalSharp', cursive;">${porcentajeCob}%</div>
-      </div>
-    </div>
+  fetch('/api/books/' + currentBookId, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(updated)
+  })
+    .then(r => r.ok ? location.reload() : alert('Error al guardar'))
+    .catch(e => alert('Error: ' + e.message));
+}
 
-    <!-- Top Autores -->
-    <div style="margin-top:20px; padding:30px; background:linear-gradient(135deg, rgba(25,25,25,0.95), rgba(18,18,18,0.9)); border:1px solid rgba(25,230,214,0.2); border-radius:12px;">
-      <h3 style="font-family:'MedievalSharp', cursive; color:#19E6D6; margin:0 0 20px 0; font-size:20px;">Top 5 Autores</h3>
-      <div style="display:grid; gap:10px;">
-        ${topAutores.map((a, i) => `
-          <div style="display:flex; align-items:center; justify-content:space-between; padding:12px 15px; background:rgba(25,230,214,0.05); border-left:3px solid #19E6D6; border-radius:6px;">
-            <div style="display:flex; align-items:center; gap:12px;">
-              <div style="width:28px; height:28px; background:#19E6D6; color:#000; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold; font-family:'MedievalSharp', cursive;">${i + 1}</div>
-              <span style="color:#fff; font-family:'MedievalSharp', cursive;">${a.name}</span>
-            </div>
-            <div style="color:#19E6D6; font-weight:bold; font-size:18px; font-family:'MedievalSharp', cursive;">${a.count}</div>
-          </div>
-        `).join('')}
-      </div>
-    </div>
-    
-    <!-- Top Sagas -->
-    <div style="margin-top:30px; padding:30px; background:linear-gradient(135deg, rgba(25,25,25,0.95), rgba(18,18,18,0.9)); border:1px solid rgba(25,230,214,0.2); border-radius:12px;">
-      <h3 style="font-family:'MedievalSharp', cursive; color:#19E6D6; margin:0 0 20px 0; font-size:20px;">Top 5 Sagas</h3>
-      <div style="display:grid; gap:10px;">
-        ${topSagas.map((s, i) => `
-          <div style="display:flex; align-items:center; justify-content:space-between; padding:12px 15px; background:rgba(25,230,214,0.05); border-left:3px solid #19E6D6; border-radius:6px;">
-            <div style="display:flex; align-items:center; gap:12px;">
-              <div style="width:28px; height:28px; background:#19E6D6; color:#000; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold; font-family:'MedievalSharp', cursive;">${i + 1}</div>
-              <span style="color:#fff; font-family:'MedievalSharp', cursive;">${s.name}</span>
-            </div>
-            <div style="color:#19E6D6; font-weight:bold; font-size:18px; font-family:'MedievalSharp', cursive;">${s.count}</div>
-          </div>
-        `).join('')}
-      </div>
-    </div>
+function deleteBook(bookId) {
+  if (confirm('¿Eliminar este libro?')) {
+    fetch('/api/books/' + bookId, { method: 'DELETE' })
+      .then(r => r.ok ? location.reload() : alert('Error'))
+      .catch(e => alert('Error: ' + e.message));
+  }
+}
 
-    <!-- Row 1: Categorías + Idiomas -->
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-top:30px;">
-      <!-- Top Categorías -->
-      <div style="padding:30px; background:linear-gradient(135deg, rgba(25,25,25,0.95), rgba(18,18,18,0.9)); border:1px solid rgba(25,230,214,0.2); border-radius:12px;">
-        <h3 style="font-family:'MedievalSharp', cursive; color:#19E6D6; margin:0 0 20px 0; font-size:18px;">📚 Top Categorías</h3>
-        <div style="display:grid; gap:8px;">
-          ${topCategories.map((c, i) => `
-            <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 12px; background:rgba(25,230,214,0.05); border-radius:6px;">
-              <span style="color:#fff; font-size:13px;">${c[0]}</span>
-              <div style="display:flex; align-items:center; gap:8px;">
-                <div style="width:120px; height:6px; background:rgba(25,230,214,0.2); border-radius:3px; overflow:hidden;">
-                  <div style="height:100%; background:#19E6D6; width:${(c[1] / totalLibros) * 100}%;"></div>
-                </div>
-                <span style="color:#19E6D6; font-weight:bold; font-size:12px; min-width:25px;">${c[1]}</span>
-              </div>
-            </div>
-          `).join('')}
-        </div>
-      </div>
+console.log('Dashboard cargado. Botones funcionando.');
+</script>
 
-      <!-- Idiomas -->
-      <div style="padding:30px; background:linear-gradient(135deg, rgba(25,25,25,0.95), rgba(18,18,18,0.9)); border:1px solid rgba(25,230,214,0.2); border-radius:12px;">
-        <h3 style="font-family:'MedievalSharp', cursive; color:#19E6D6; margin:0 0 20px 0; font-size:18px;">🌍 Distribución de Idiomas</h3>
-        <div style="display:grid; gap:8px;">
-          ${languageData.slice(0, 8).map((l, i) => `
-            <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 12px; background:rgba(25,230,214,0.05); border-radius:6px;">
-              <span style="color:#fff; font-size:13px;">${l[0] === 'en' ? 'English' : l[0] === 'es' ? 'Español' : l[0] === 'fr' ? 'Français' : l[0] === 'de' ? 'Deutsch' : l[0] || 'Desconocido'}</span>
-              <div style="display:flex; align-items:center; gap:8px;">
-                <div style="width:100px; height:6px; background:rgba(25,230,214,0.2); border-radius:3px; overflow:hidden;">
-                  <div style="height:100%; background:#19E6D6; width:${(l[1] / totalLibros) * 100}%;"></div>
-                </div>
-                <span style="color:#19E6D6; font-weight:bold; font-size:12px; min-width:25px;">${l[1]}</span>
-              </div>
-            </div>
-          `).join('')}
-        </div>
-      </div>
-    </div>
-
-    <!-- Row 2: Rango de páginas + Top Sagas por tamaño -->
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-top:20px;">
-      <!-- Rango de páginas (Gráfico de barras) -->
-      <div style="padding:30px; background:linear-gradient(135deg, rgba(25,25,25,0.95), rgba(18,18,18,0.9)); border:1px solid rgba(25,230,214,0.2); border-radius:12px;">
-        <h3 style="font-family:'MedievalSharp', cursive; color:#19E6D6; margin:0 0 20px 0; font-size:18px;">📖 Rango de Páginas</h3>
-        <div style="display:grid; gap:10px;">
-          ${Object.entries(pageRanges).map(([range, count]) => {
-            const maxCount = Math.max(...Object.values(pageRanges));
-            const percentage = (count / maxCount) * 100;
-            return `
-              <div>
-                <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
-                  <span style="color:#ccc; font-size:12px;">${range}</span>
-                  <span style="color:#19E6D6; font-weight:bold; font-size:12px;">${count}</span>
-                </div>
-                <div style="width:100%; height:20px; background:rgba(25,230,214,0.1); border-radius:4px; overflow:hidden;">
-                  <div style="height:100%; background:linear-gradient(90deg, #19E6D6, #00d4d4); width:${percentage}%; transition:width 0.3s;"></div>
-                </div>
-              </div>
-            `;
-          }).join('')}
-        </div>
-      </div>
-
-      <!-- Top Sagas por tamaño -->
-      <div style="padding:30px; background:linear-gradient(135deg, rgba(25,25,25,0.95), rgba(18,18,18,0.9)); border:1px solid rgba(25,230,214,0.2); border-radius:12px;">
-        <h3 style="font-family:'MedievalSharp', cursive; color:#19E6D6; margin:0 0 20px 0; font-size:18px;">📚 Sagas Más Largas</h3>
-        <div style="display:grid; gap:8px;">
-          ${topSagasBySize.map((s, i) => `
-            <div style="padding:10px 12px; background:rgba(25,230,214,0.05); border-left:3px solid #19E6D6; border-radius:6px;">
-              <div style="display:flex; justify-content:space-between; align-items:center;">
-                <div>
-                  <div style="color:#fff; font-size:13px; font-weight:bold;">${s[0]}</div>
-                  <div style="color:#999; font-size:11px; margin-top:2px;">${s[1].count} libro${s[1].count !== 1 ? 's' : ''}</div>
-                </div>
-                <div style="color:#19E6D6; font-weight:bold; font-size:18px; font-family:'MedievalSharp', cursive;">${s[1].count}</div>
-              </div>
-            </div>
-          `).join('')}
-        </div>
-      </div>
-    </div>
-
-    <!-- Row 3: Libros más largos + Libros más recientes -->
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-top:20px;">
-      <!-- Top 5 libros más largos -->
-      <div style="padding:30px; background:linear-gradient(135deg, rgba(25,25,25,0.95), rgba(18,18,18,0.9)); border:1px solid rgba(25,230,214,0.2); border-radius:12px;">
-        <h3 style="font-family:'MedievalSharp', cursive; color:#19E6D6; margin:0 0 20px 0; font-size:18px;">📖 Libros Más Largos</h3>
-        <div style="display:grid; gap:8px;">
-          ${longestBooks.map((b, i) => `
-            <div style="padding:10px 12px; background:rgba(25,230,214,0.05); border-left:3px solid #19E6D6; border-radius:6px;">
-              <div style="display:flex; justify-content:space-between; align-items:start; gap:8px;">
-                <div style="flex:1;">
-                  <div style="color:#fff; font-size:13px; font-weight:bold; line-height:1.3;">${b.title}</div>
-                  <div style="color:#999; font-size:11px; margin-top:3px;">${b.author}</div>
-                </div>
-                <div style="color:#19E6D6; font-weight:bold; font-size:16px; font-family:'MedievalSharp', cursive; white-space:nowrap;">${b.pageCount}p</div>
-              </div>
-            </div>
-          `).join('')}
-        </div>
-      </div>
-
-      <!-- Top 5 libros más recientes -->
-      <div style="padding:30px; background:linear-gradient(135deg, rgba(25,25,25,0.95), rgba(18,18,18,0.9)); border:1px solid rgba(25,230,214,0.2); border-radius:12px;">
-        <h3 style="font-family:'MedievalSharp', cursive; color:#19E6D6; margin:0 0 20px 0; font-size:18px;">📅 Libros Más Recientes</h3>
-        <div style="display:grid; gap:8px;">
-          ${newestBooks.map((b, i) => {
-            const date = new Date(b.publishedDate);
-            return `
-              <div style="padding:10px 12px; background:rgba(25,230,214,0.05); border-left:3px solid #19E6D6; border-radius:6px;">
-                <div style="display:flex; justify-content:space-between; align-items:start; gap:8px;">
-                  <div style="flex:1;">
-                    <div style="color:#fff; font-size:13px; font-weight:bold; line-height:1.3;">${b.title}</div>
-                    <div style="color:#999; font-size:11px; margin-top:3px;">${b.author}</div>
-                  </div>
-                  <div style="color:#19E6D6; font-weight:bold; font-size:12px; white-space:nowrap; text-align:right;">${date.toLocaleDateString('es-ES')}</div>
-                </div>
-              </div>
-            `;
-          }).join('')}
-        </div>
-      </div>
-    </div>
-
-    <!-- Información de Cobertura -->
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-top:20px;">
-      <div style="padding:20px; background:rgba(25,230,214,0.05); border:1px solid rgba(25,230,214,0.2); border-radius:8px;">
-        <h4 style="font-family:'MedievalSharp', cursive; color:#19E6D6; margin:0 0 12px 0; font-size:14px;">🖼️ Cobertura de Portadas</h4>
-        <div style="display:flex; align-items:center; gap:12px;">
-          <div style="flex:1;">
-            <div style="height:8px; background:rgba(25,230,214,0.2); border-radius:4px; overflow:hidden;">
-              <div style="height:100%; background:linear-gradient(90deg, #19E6D6, #00d4d4); width:${porcentajeCob}%;"></div>
-            </div>
-          </div>
-          <div style="font-weight:bold; color:#19E6D6; font-size:16px;">${librosConCobertura}/${totalLibros}</div>
-        </div>
-        <div style="color:#999; font-size:12px; margin-top:6px;">${librosConCobertura} con portada • ${librosSinCobertura} sin portada</div>
-      </div>
-
-      <div style="padding:20px; background:rgba(25,230,214,0.05); border:1px solid rgba(25,230,214,0.2); border-radius:8px;">
-        <h4 style="font-family:'MedievalSharp', cursive; color:#19E6D6; margin:0 0 12px 0; font-size:14px;">📝 Cobertura de Descripciones</h4>
-        <div style="display:flex; align-items:center; gap:12px;">
-          <div style="flex:1;">
-            <div style="height:8px; background:rgba(25,230,214,0.2); border-radius:4px; overflow:hidden;">
-              <div style="height:100%; background:linear-gradient(90deg, #19E6D6, #00d4d4); width:${porcentajeDescrip}%;"></div>
-            </div>
-          </div>
-          <div style="font-weight:bold; color:#19E6D6; font-size:16px;">${porcentajeDescrip}%</div>
-        </div>
-        <div style="color:#999; font-size:12px; margin-top:6px;">${librosConDescrip} con descripción</div>
-      </div>
-    </div>
-    
-    <!-- Libros Incompletos -->
-    <div style="margin-top:40px; padding:30px; background:linear-gradient(135deg, rgba(25,25,25,0.95), rgba(18,18,18,0.9)); border:1px solid rgba(25,230,214,0.2); border-radius:12px;">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-        <h3 style="font-family:'MedievalSharp', cursive; color:#19E6D6; margin:0; font-size:20px;">📋 Libros Incompletos</h3>
-        <span style="color:#999; font-size:12px;" id="incomplete-count">Cargando...</span>
-      </div>
-      
-      <!-- Buscador -->
-      <div style="margin-bottom:20px;">
-        <input type="text" id="search-incomplete" placeholder="Buscar por título, autor o saga..." style="width:100%; padding:12px 15px; background:rgba(25,230,214,0.1); border:1px solid rgba(25,230,214,0.3); border-radius:6px; color:#fff; font-size:14px; box-sizing:border-box;">
-      </div>
-      
-      <!-- Tabla -->
-      <div style="overflow-x:auto;">
-        <table id="incomplete-table" style="width:100%; border-collapse:collapse; font-size:13px;">
-          <thead>
-            <tr style="border-bottom:2px solid rgba(25,230,214,0.3);">
-              <th style="text-align:left; padding:12px; color:#19E6D6; font-weight:bold; font-family:'MedievalSharp', cursive; min-width:150px;">Título</th>
-              <th style="text-align:left; padding:12px; color:#19E6D6; font-weight:bold; font-family:'MedievalSharp', cursive; min-width:120px;">Autor</th>
-              <th style="text-align:left; padding:12px; color:#19E6D6; font-weight:bold; font-family:'MedievalSharp', cursive; min-width:120px;">Saga</th>
-              <th style="text-align:left; padding:12px; color:#19E6D6; font-weight:bold; font-family:'MedievalSharp', cursive; min-width:100px;">Año</th>
-              <th style="text-align:left; padding:12px; color:#19E6D6; font-weight:bold; font-family:'MedievalSharp', cursive; min-width:200px;">Descripción (primeras 80 caracteres)</th>
-              <th style="text-align:center; padding:12px; color:#19E6D6; font-weight:bold; font-family:'MedievalSharp', cursive; min-width:80px;">Campos Faltantes</th>
-              <th style="text-align:center; padding:12px; color:#19E6D6; font-weight:bold; font-family:'MedievalSharp', cursive; min-width:80px;">Acciones</th>
-            </tr>
-          </thead>
-          <tbody id="incomplete-tbody">
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- Buscador de cualquier libro -->
-    <div style="margin-top:40px; padding:30px; background:linear-gradient(135deg, rgba(25,25,25,0.95), rgba(18,18,18,0.9)); border:1px solid rgba(25,230,214,0.2); border-radius:12px;">
-      <h3 style="font-family:'MedievalSharp', cursive; color:#19E6D6; margin:0 0 20px 0; font-size:20px;">🔍 Buscar Libro (cualquiera)</h3>
-      <div style="display:flex; gap:10px;">
-        <input type="text" id="search-any-book" placeholder="Busca por título, autor o saga..." style="flex:1; padding:12px 15px; background:rgba(25,230,214,0.1); border:1px solid rgba(25,230,214,0.3); border-radius:6px; color:#fff; font-size:14px; box-sizing:border-box;">
-        <button onclick="searchBook()" style="padding:12px 30px; background:linear-gradient(135deg, rgba(25,230,214,0.3), rgba(25,230,214,0.2)); border:1px solid rgba(25,230,214,0.5); border-radius:6px; color:#19E6D6; font-weight:bold; cursor:pointer; font-family:'MedievalSharp', cursive; font-size:14px;">Buscar</button>
-      </div>
-      <div id="search-results" style="margin-top:15px;"></div>
-    </div>
-    
-    <!-- Modal para editar libro -->
-    <div id="edit-modal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.8); z-index:9999; overflow-y:auto; padding:20px;">
-      <div style="background:linear-gradient(135deg, rgba(25,25,25,0.98), rgba(18,18,18,0.95)); border:1px solid rgba(25,230,214,0.3); border-radius:12px; max-width:600px; margin:20px auto; padding:30px; color:#fff;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-          <h2 style="font-family:'MedievalSharp', cursive; color:#19E6D6; margin:0; font-size:22px;">Editar Libro</h2>
-          <button onclick="closeEditModal()" style="background:none; border:none; font-size:24px; color:#19E6D6; cursor:pointer; padding:0; width:30px; height:30px;">✕</button>
-        </div>
-        
-        <textarea id="book-json-editor" style="width:100%; height:400px; background:rgba(25,230,214,0.05); border:1px solid rgba(25,230,214,0.3); border-radius:6px; color:#fff; padding:12px; font-family:monospace; font-size:12px; box-sizing:border-box; resize:vertical; line-height:1.5;" placeholder="JSON del libro..."></textarea>
-        
-        <div style="margin-top:20px; display:flex; gap:10px;">
-          <button onclick="saveBook()" style="flex:1; padding:12px 20px; background:linear-gradient(135deg, rgba(25,230,214,0.3), rgba(25,230,214,0.2)); border:1px solid rgba(25,230,214,0.5); border-radius:6px; color:#19E6D6; font-weight:bold; cursor:pointer; font-family:'MedievalSharp', cursive; font-size:14px;">✅ Guardar</button>
-          <button onclick="closeEditModal()" style="flex:1; padding:12px 20px; background:rgba(25,230,214,0.1); border:1px solid rgba(25,230,214,0.3); border-radius:6px; color:#999; font-weight:bold; cursor:pointer; font-family:'MedievalSharp', cursive; font-size:14px;">❌ Cancelar</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Información de la biblioteca -->
-    <div style="margin-top:30px; padding:20px; background:rgba(25,230,214,0.05); border:1px solid rgba(25,230,214,0.2); border-radius:8px;">
-      <h3 style="font-family:'MedievalSharp', cursive; color:#19E6D6; margin-top:0;">ℹ️ Información de la Biblioteca</h3>
-      <p style="color:#ccc; line-height:1.8; margin:0;">
-        <strong>Última actualización:</strong> ${new Date().toLocaleString('es-ES')}<br>
-        <strong>Versión:</strong> Azkaban Reads v1.0<br>
-        <strong>Estado:</strong> 🟢 En línea<br>
-        <strong>Total de Elementos Indexados:</strong> ${totalLibros + totalAutores + totalSagas}
-      </p>
-    </div>
-    
-    <p style="text-align:center; margin-top:30px;">
-      <a href="/" class="button">← Volver a Inicio</a>
-    </p>
-  </div>
-
-  <script>
-    let currentBookId = null;
-    let allIncompleteBooks = [];
-    
-    // Cargar libros incompletos al cargar la página
-    async function loadIncompleteBooks() {
-      try {
-        const response = await fetch('/api/books/incomplete');
-        const data = await response.json();
-        allIncompleteBooks = data.books;
-        document.getElementById('incomplete-count').textContent = data.total + ' libro' + (data.total !== 1 ? 's' : '');
-        renderIncompleteBooks(allIncompleteBooks);
-      } catch (err) {
-        console.error('Error cargando libros incompletos:', err);
-        document.getElementById('incomplete-count').textContent = 'Error';
-      }
-    }
-    
-    // Renderizar tabla de libros incompletos
-    function renderIncompleteBooks(books) {
-      const tbody = document.getElementById('incomplete-tbody');
-      tbody.innerHTML = books.map(book => {
-        const sagaDisplay = book.saga && book.saga.name ? (book.saga.name + ' #' + (book.saga.number || 1)) : '—';
-        const yearDisplay = book.publishedDate ? new Date(book.publishedDate).getFullYear() : '—';
-        const descDisplay = book.description ? book.description.substring(0, 80) : '(vacío)';
-        const descColor = book.description ? '#ccc' : '#ff6b6b';
-        const missingStr = book.missingFields && book.missingFields.length > 0 ? book.missingFields.join(', ') : 'Ninguno';
-        return '<tr style="border-bottom:1px solid rgba(25,230,214,0.1); transition:background 0.2s;">' +
-          '<td style="padding:12px; color:#19E6D6; font-weight:bold;">' + book.title + '</td>' +
-          '<td style="padding:12px; color:#ccc;">' + book.author + '</td>' +
-          '<td style="padding:12px; color:#fff;">' + sagaDisplay + '</td>' +
-          '<td style="padding:12px; color:#fff;">' + yearDisplay + '</td>' +
-          '<td style="padding:12px; color:' + descColor + '; font-size:12px; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">' + descDisplay + '</td>' +
-          '<td style="padding:12px; color:#ff6b6b; font-size:11px; text-align:center;">' +
-          (book.missingFields && book.missingFields.length > 0 ? 
-            '<span style="background:rgba(255,107,107,0.15); padding:4px 8px; border-radius:3px; display:inline-block;">' + missingStr + '</span>' :
-            '<span style="color:#4CAF50;">✓ Completo</span>') +
-          '</td>' +
-          '<td style="padding:12px; text-align:center;">' +
-          '<button onclick="openEditModal(\'' + book.id + '\')" style="background:rgba(25,230,214,0.2); border:1px solid rgba(25,230,214,0.4); color:#19E6D6; padding:6px 12px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:11px;">✏️ Editar</button>' +
-          '</td></tr>';
-      }).join('');
-    }
-    
-    // Abrir modal de edición
-    async function openEditModal(bookId) {
-      currentBookId = bookId;
-      try {
-        const response = await fetch('/api/books/' + bookId);
-        const book = await response.json();
-        document.getElementById('book-json-editor').value = JSON.stringify(book, null, 2);
-        document.getElementById('edit-modal').style.display = 'block';
-      } catch (err) {
-        alert('Error: ' + err.message);
-      }
-    }
-    
-    // Cerrar modal
-    function closeEditModal() {
-      document.getElementById('edit-modal').style.display = 'none';
-      currentBookId = null;
-    }
-    
-    // Guardar cambios del libro
-    async function saveBook() {
-      try {
-        const jsonText = document.getElementById('book-json-editor').value;
-        const bookData = JSON.parse(jsonText);
-        
-        const response = await fetch('/api/books/' + currentBookId, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(bookData)
-        });
-        
-        if (!response.ok) throw new Error('Error al guardar');
-        
-        alert('✅ Libro actualizado correctamente');
-        closeEditModal();
-        loadIncompleteBooks(); // Recargar tabla
-      } catch (err) {
-        alert('❌ Error: ' + err.message);
-      }
-    }
-    
-    // Buscar cualquier libro
-    async function searchBook() {
-      const searchTerm = document.getElementById('search-any-book').value.toLowerCase().trim();
-      if (!searchTerm) {
-        document.getElementById('search-results').innerHTML = '<p style="color:#999;">Ingresa un término de búsqueda</p>';
-        return;
-      }
-      
-      try {
-        const response = await fetch('/api/books');
-        const allBooks = await response.json();
-        
-        const results = allBooks.filter(book =>
-          book.title.toLowerCase().includes(searchTerm) ||
-          book.author.toLowerCase().includes(searchTerm) ||
-          (book.saga && book.saga.name && book.saga.name.toLowerCase().includes(searchTerm))
-        ).slice(0, 10); // Limitar a 10 resultados
-        
-        if (results.length === 0) {
-          document.getElementById('search-results').innerHTML = '<p style="color:#ff6b6b;">No se encontraron libros</p>';
-          return;
-        }
-        
-        const html = results.map(book => {
-          const sagaStr = book.saga && book.saga.name ? (book.saga.name + ' #' + (book.saga.number || 1)) : '—';
-          return '<div style="background:rgba(25,230,214,0.05); border-left:3px solid #19E6D6; padding:12px; border-radius:4px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">' +
-            '<div style="flex:1;">' +
-            '<div style="color:#19E6D6; font-weight:bold; font-family:\'MedievalSharp\', cursive;">' + book.title + '</div>' +
-            '<div style="color:#999; font-size:12px; margin-top:4px;">' + book.author + ' • ' + sagaStr + '</div>' +
-            '</div>' +
-            '<button onclick="openEditModal(\'' + book.id + '\')" style="background:rgba(25,230,214,0.2); border:1px solid rgba(25,230,214,0.4); color:#19E6D6; padding:6px 12px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:11px; white-space:nowrap;">✏️ Editar JSON</button>' +
-            '</div>';
-        }).join('');
-        
-        document.getElementById('search-results').innerHTML = '<div style="color:#999; font-size:12px; margin-bottom:12px;">Se encontraron ' + results.length + ' resultado' + (results.length !== 1 ? 's' : '') + ':</div>' + html;
-      } catch (err) {
-        document.getElementById('search-results').innerHTML = '<p style="color:#ff6b6b;">Error: ' + err.message + '</p>';
-      }
-    }
-    
-    // Envolver todo en DOMContentLoaded para asegurar que los elementos están listos
-    document.addEventListener('DOMContentLoaded', function() {
-      // Buscar al presionar Enter en el buscador global
-      const searchAnyBookInput = document.getElementById('search-any-book');
-      if (searchAnyBookInput) {
-        searchAnyBookInput.addEventListener('keypress', function(e) {
-          if (e.key === 'Enter') searchBook();
-        });
-      }
-      
-      // Buscar en tabla de incompletos
-      const searchIncompleteInput = document.getElementById('search-incomplete');
-      if (searchIncompleteInput) {
-        searchIncompleteInput.addEventListener('keyup', function(e) {
-          const searchTerm = this.value.toLowerCase().trim();
-          const filtered = allIncompleteBooks.filter(book => 
-            book.title.toLowerCase().includes(searchTerm) ||
-            book.author.toLowerCase().includes(searchTerm) ||
-            (book.saga && book.saga.name && book.saga.name.toLowerCase().includes(searchTerm))
-          );
-          renderIncompleteBooks(filtered);
-        });
-      }
-      
-      // Cargar libros al cargar la página
-      loadIncompleteBooks();
-      
-      // Cerrar modal al hacer clic fuera
-      const editModal = document.getElementById('edit-modal');
-      if (editModal) {
-        editModal.addEventListener('click', function(e) {
-          if (e.target === this) closeEditModal();
-        });
-      }
-    });
-  </script>
 </body>
 </html>`);
 });
@@ -3030,6 +2672,31 @@ app.put('/api/books/:id', async (req, res) => {
     res.json({ success: true, book: validated });
   } catch (err) {
     console.error('[API /books/:id PUT] Error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// API: Eliminar libro por ID
+app.delete('/api/books/:id', async (req, res) => {
+  const { id } = req.params;
+  
+  reloadBooksMetadata();
+  
+  const bookIndex = bookMetadata.findIndex(b => b.id === id);
+  if (bookIndex === -1) return res.status(404).json({ error: 'Libro no encontrado' });
+  
+  const deletedBook = bookMetadata[bookIndex];
+  
+  // Eliminar del array
+  bookMetadata.splice(bookIndex, 1);
+  
+  // Guardar a disco
+  try {
+    await fs.promises.writeFile(BOOKS_FILE, JSON.stringify(bookMetadata, null, 2));
+    console.log(`[API /books/:id DELETE] ✅ Libro eliminado: ${deletedBook.title} (ID: ${id})`);
+    res.json({ success: true, message: 'Libro eliminado correctamente' });
+  } catch (err) {
+    console.error('[API /books/:id DELETE] Error:', err.message);
     res.status(500).json({ error: err.message });
   }
 });
