@@ -877,6 +877,9 @@ function ordenarBooks(books, criterio, tipo = null) {
 function renderBookPage({ libros, titlePage, tipo, nombre, req, noResultsHtml }) {
   const orden = (req && (req.query.ordenar || req.query.orden)) || 'alfabetico';
   libros = ordenarBooks(libros, orden, tipo);
+  const kobo = req ? isKobo(req) : false;
+  const queryParams = req?.query || {};
+  const searchValue = queryParams.buscar ? queryParams.buscar.replace(/"/g, '&quot;') : '';
   
   // Paginación
   const itemsPerPage = 25;
@@ -887,6 +890,63 @@ function renderBookPage({ libros, titlePage, tipo, nombre, req, noResultsHtml })
   const endIndex = startIndex + itemsPerPage;
   const paginatedLibros = libros.slice(startIndex, endIndex);
   
+  // Versión liviana para Kobo (sin imágenes ni gradientes pesados)
+  if (kobo) {
+    const items = paginatedLibros.map(book => {
+      const title = book.title || 'Sin título';
+      const author = book.author || 'Desconocido';
+      const sagaName = book.saga?.name ? ` · ${book.saga.name}${book.saga.number ? ' #' + book.saga.number : ''}` : '';
+      return `<li>
+        <a href="/libro?id=${encodeURIComponent(book.id)}" style="font-weight:bold;">${title}</a>
+        <div style="font-size:12px;color:#bbb;">${author}${sagaName}</div>
+        <a href="/download?id=${encodeURIComponent(book.id)}" style="font-size:12px;">Descargar</a>
+      </li>`;
+    }).join('') || `<li>${noResultsHtml || getRandomNoResultHtml()}</li>`;
+
+    return `<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>${titlePage} (Kobo)</title>
+  <style>
+    body { margin:0; padding:16px; background:#000; color:#eee; font-family: Arial, sans-serif; }
+    h1 { margin:0 0 12px 0; font-size:22px; color:#19E6D6; }
+    form { margin-bottom:12px; display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
+    input[type="search"], select, button { background:#111; color:#fff; border:1px solid #19E6D6; border-radius:6px; padding:6px 8px; font-size:12px; }
+    button { cursor:pointer; }
+    ul { list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:10px; }
+    li { padding:10px; border:1px solid #222; border-radius:6px; }
+    a { color:#19E6D6; text-decoration:none; }
+  </style>
+</head>
+<body>
+  <h1>${titlePage}</h1>
+  <form method="get" action="/${tipo}">
+    <input type="search" name="buscar" placeholder="Buscar" value="${searchValue}" />
+    <select name="ordenar" onchange="this.form.submit()">
+      <option value="alfabetico" ${orden==='alfabetico'?'selected':''}>A→Z</option>
+      <option value="alfabetico-desc" ${orden==='alfabetico-desc'?'selected':''}>Z→A</option>
+      <option value="recientes" ${orden==='recientes'?'selected':''}>Recientes</option>
+      ${tipo==='saga'?`<option value="numero" ${orden==='numero'?'selected':''}>#Número</option>`:''}
+    </select>
+    <input type="hidden" name="name" value="${nombre}" />
+    <input type="hidden" name="page" value="${currentPage}" />
+    <button type="submit">Buscar</button>
+  </form>
+
+  <ul>${items}</ul>
+
+  ${totalPages > 1 ? `
+  <div style="margin-top:14px; display:flex; gap:10px; align-items:center; font-size:12px;">
+    ${currentPage > 1 ? `<a href="?${new URLSearchParams({...queryParams, page: currentPage - 1}).toString()}">← Anterior</a>` : ''}
+    <span style="color:#999;">Página ${currentPage} de ${totalPages}</span>
+    ${currentPage < totalPages ? `<a href="?${new URLSearchParams({...queryParams, page: currentPage + 1}).toString()}">Siguiente →</a>` : ''}
+  </div>
+  ` : ''}
+</body>
+</html>`;
+  }
+
   let booksHtml = paginatedLibros.map(book => {
     const cover = book.coverUrl || getCoverForBook(book.id);
     const imgHtml = cover ? `<img src="${cover}" data-book-id="${book.id}" data-title="${book.title}" data-author="${book.author}" />` : `<div style="width:80px;height:120px;background:#333;border-radius:5px;" data-book-id="${book.id}" data-title="${book.title}" data-author="${book.author}"></div>`;
