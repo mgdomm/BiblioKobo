@@ -32,10 +32,12 @@ const upload = multer({
   }
 });
 
-// Servir carpeta cover con caché agresivo
+// Servir carpeta cover con caché agresivo (7 días para portadas estáticas)
 app.use('/cover', express.static(path.join(__dirname, 'cover'), {
-  maxAge: '1d',
-  etag: false
+  maxAge: '7d',
+  etag: true,
+  lastModified: true,
+  immutable: true
 }));
 
 // Ruta para test de botones
@@ -1161,10 +1163,10 @@ function renderBookPage({ libros, titlePage, tipo, nombre, req, noResultsHtml })
 app.get('/', (req,res)=>{
   res.send(`<!DOCTYPE html>
 <html lang="es">
-  <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Azkaban Reads</title><link rel="preload" as="image" href="/cover/portada/portada1.webp?v=${Date.now()}"><style>${css}</style><style>body{padding-top:0;} .header-banner.home{background-size:cover;background-position:center;will-change:transform;background-color:#0a0a0a;opacity:0;animation:fadeInBanner 1.2s ease forwards;} .header-banner.home::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.4) 70%, #0a0a0a 100%);pointer-events:none;z-index:1;} .overlay.home{opacity:0;visibility:hidden;animation:fadeIn 0.6s ease forwards;z-index:2;} @keyframes fadeInBanner{from{opacity:0;} to{opacity:1;}} @keyframes fadeIn{from{opacity:0;} to{opacity:1;visibility:visible;}}</style></head>
+  <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Azkaban Reads</title><link rel="preload" as="image" href="/cover/portada/portada1.webp"><style>${css}</style><style>body{padding-top:0;} .header-banner.home{background-size:cover;background-position:center;will-change:transform;background-color:#0a0a0a;opacity:0;} .header-banner.home.loaded{animation:fadeInBanner 0.4s ease forwards;} .header-banner.home::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.4) 70%, #0a0a0a 100%);pointer-events:none;z-index:1;} .overlay.home{opacity:0;visibility:hidden;} .overlay.home.loaded{animation:fadeIn 0.3s ease 0.2s forwards;z-index:2;} @keyframes fadeInBanner{from{opacity:0;} to{opacity:1;}} @keyframes fadeIn{from{opacity:0;} to{opacity:1;visibility:visible;}}</style></head>
 <body>
-  <div class="header-banner home" id="home-bg" style="height:100vh; background-size:cover; background-position:center; background-image:url('/cover/portada/portada1.webp?v=${Date.now()}');"></div>
-  <div class="overlay home" style="justify-content:center;">
+  <div class="header-banner home" id="home-bg" style="height:100vh; background-size:cover; background-position:center; background-image:url('/cover/portada/portada1.webp');"></div>
+  <div class="overlay home" id="home-overlay" style="justify-content:center;">
     <h1>Azkaban Reads</h1>
     <div class="top-buttons">
       <a href="/libros">Libros</a>
@@ -1172,6 +1174,16 @@ app.get('/', (req,res)=>{
       <a href="/sagas">Sagas</a>
     </div>
   </div>
+  
+  <script>
+    // Precargar imagen y activar animación cuando esté lista
+    const img = new Image();
+    img.onload = function() {
+      document.getElementById('home-bg').classList.add('loaded');
+      document.getElementById('home-overlay').classList.add('loaded');
+    };
+    img.src = '/cover/portada/portada1.webp';
+  </script>
   
   <!-- Botón flotante de stats -->
   <button id="stats-btn" style="position:fixed;bottom:20px;right:80px;width:48px;height:48px;border-radius:50%;background:transparent;border:2px solid #19E6D6;cursor:pointer;z-index:100;display:flex;align-items:center;justify-content:center;transition:0.25s;padding:0;color:#19E6D6;">
