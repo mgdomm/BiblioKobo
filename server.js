@@ -2141,7 +2141,7 @@ app.get('/stats', async (req, res) => {
       <p id="confirm-message">¿Estás seguro de realizar esta acción?</p>
       <div class="button-group">
         <button class="cancel" onclick="closeConfirmDialog()">Cancelar</button>
-        <button class="confirm" id="confirm-action">Confirmar</button>
+        <button type="button" class="confirm" id="confirm-action">Confirmar</button>
       </div>
     </div>
   </div>
@@ -2234,14 +2234,17 @@ app.get('/stats', async (req, res) => {
       document.getElementById('confirm-title').textContent = title;
       document.getElementById('confirm-message').textContent = message;
       confirmCallback = onConfirm;
-      document.getElementById('confirm-dialog').classList.add('active');
-      
-      // Configurar botón de confirmación
       const confirmBtn = document.getElementById('confirm-action');
-      confirmBtn.onclick = () => {
+      // Reemplazar el botón para limpiar handlers previos y asegurar un único callback
+      const newBtn = confirmBtn.cloneNode(true);
+      confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
+      newBtn.addEventListener('click', () => {
         closeConfirmDialog();
-        if (confirmCallback) confirmCallback();
-      };
+        if (typeof confirmCallback === 'function') {
+          confirmCallback();
+        }
+      });
+      document.getElementById('confirm-dialog').classList.add('active');
     }
     
     function closeConfirmDialog() {
