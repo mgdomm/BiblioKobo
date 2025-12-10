@@ -1641,7 +1641,7 @@ app.get('/libro', async (req, res) => {
 <html lang="es">
 <head><meta charset="utf-8"><title>${title}</title><style>${css}</style></head>
 <body>
-  <div class="header-banner top" style="background-image:url('${cover ? cover + '?v=' + Date.now() : '/cover/secuendarias/portada11.png?v=' + Date.now()}');"></div>
+  <div class="header-banner top" style="background-image:url('${cover || '/cover/secuendarias/portada11.png'}');"></div>
   <div class="overlay top">
     <div class="top-buttons secondary"><a href="/">Inicio</a></div>
     <h1>${title}</h1>
@@ -1650,7 +1650,7 @@ app.get('/libro', async (req, res) => {
   <div style="max-width:900px;margin:20px auto;padding:12px;color:#fff;">
     <p style="margin-bottom:20px;"><a href="javascript:history.back()" class="button" style="display:inline-block;">← Volver</a></p>
     <div style="display:flex;gap:18px;align-items:flex-start;flex-wrap:wrap;">
-      <div style="flex:0 0 200px;text-align:center;"><img src="${cover ? cover + '?v=' + Date.now() : '/cover/portada/portada1.png?v=' + Date.now()}" style="width:180px;height:auto;border-radius:8px;display:block;margin:0 auto;"/></div>
+      <div style="flex:0 0 200px;text-align:center;"><img src="${cover || '/cover/portada/portada1.png'}" style="width:180px;height:auto;border-radius:8px;display:block;margin:0 auto;"/></div>
       <div style="flex:1 1 400px;">
         <h2 style="margin:0 0 8px;color:#fff;font-family:'MedievalSharp',cursive;">${title}</h2>
         <div style="color:#ddd;margin-bottom:6px;">Autor: <a href="/autor?name=${encodeURIComponent(author)}" style="color:#fff;text-decoration:none;">${author}</a></div>
@@ -1843,8 +1843,8 @@ app.get('/stats', async (req, res) => {
     
     .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.95); z-index: 9999; align-items: center; justify-content: center; overflow-y: auto; padding: 20px; }
     .modal.active { display: flex; }
-    .modal-content { background: linear-gradient(135deg, rgba(18,18,18,0.98), rgba(12,12,12,0.95)); padding: 15px 30px 20px 30px; border-radius: 12px; max-width: 900px; width: 100%; border: 2px solid #19E6D6; max-height: 90vh; overflow-y: auto; }
-    .modal-content h2 { font-family: 'MedievalSharp', cursive; color: #19E6D6; margin: 0 0 15px 0; font-size: 18px; }
+    .modal-content { background: linear-gradient(135deg, rgba(18,18,18,0.98), rgba(12,12,12,0.95)); padding: 30px; border-radius: 12px; max-width: 900px; width: 100%; border: 2px solid #19E6D6; max-height: 90vh; overflow-y: auto; }
+    .modal-content h2 { font-family: 'MedievalSharp', cursive; color: #19E6D6; margin: 0 0 20px 0; }
     
     .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
     .form-grid.full { grid-template-columns: 1fr; }
