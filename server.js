@@ -1648,6 +1648,7 @@ app.get('/libro', async (req, res) => {
     <div class="top-buttons"><a href="/libros">Libros</a><a href="/autores">Autores</a></div>
   </div>
   <div style="max-width:900px;margin:20px auto;padding:12px;color:#fff;">
+    <p style="margin-bottom:20px;"><a href="javascript:history.back()" class="button" style="display:inline-block;">← Volver</a></p>
     <div style="display:flex;gap:18px;align-items:flex-start;flex-wrap:wrap;">
       <div style="flex:0 0 200px;text-align:center;"><img src="${cover || '/cover/portada/portada1.png'}" style="width:180px;height:auto;border-radius:8px;display:block;margin:0 auto;"/></div>
       <div style="flex:1 1 400px;">
@@ -1820,8 +1821,8 @@ app.get('/stats', async (req, res) => {
     .section { background: rgba(18,18,18,0.95); border: 1px solid rgba(25,230,214,0.3); border-radius: 10px; padding: 25px; margin-bottom: 30px; }
     .section h2 { font-family: 'MedievalSharp', cursive; color: #19E6D6; font-size: 24px; margin: 0 0 20px 0; }
     
-    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-    th, td { padding: 12px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 16px; }
+    th, td { padding: 12px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 15px; }
     th { background: rgba(25,230,214,0.2); color: #19E6D6; font-weight: bold; font-family: 'MedievalSharp', cursive; }
     tr:hover { background: rgba(255,255,255,0.05); }
     
@@ -1848,8 +1849,8 @@ app.get('/stats', async (req, res) => {
     .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
     .form-grid.full { grid-template-columns: 1fr; }
     .form-field { margin-bottom: 15px; }
-    .form-field label { display: block; margin-bottom: 5px; color: #19E6D6; font-weight: bold; font-family: 'MedievalSharp', cursive; font-size: 14px; }
-    .form-field input, .form-field textarea, .form-field select { width: 100%; padding: 10px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.3); color: #fff; border-radius: 4px; box-sizing: border-box; font-family: Garamond, serif; }
+    .form-field label { display: block; margin-bottom: 5px; color: #19E6D6; font-weight: bold; font-family: 'MedievalSharp', cursive; font-size: 16px; }
+    .form-field input, .form-field textarea, .form-field select { width: 100%; padding: 10px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.3); color: #fff; border-radius: 4px; box-sizing: border-box; font-family: Garamond, serif; font-size: 16px; }
     .form-field input:focus, .form-field textarea:focus { outline: none; border-color: #19E6D6; box-shadow: 0 0 8px rgba(25,230,214,0.3); }
     
     .json-preview { background: rgba(0,0,0,0.5); padding: 15px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.2); max-height: 200px; overflow-y: auto; font-family: monospace; font-size: 12px; color: #19E6D6; white-space: pre-wrap; margin-top: 10px; }
@@ -2150,7 +2151,7 @@ app.get('/stats', async (req, res) => {
     let currentBookId = null;
     let currentBook = null;
     let allBooks = ${JSON.stringify(bookMetadata)};
-    let confirmCallback = null;
+    let confirmCallback = null; // conservado por compatibilidad
     
     // Búsqueda con autocompletado
     function searchBooks(query) {
@@ -2233,23 +2234,24 @@ app.get('/stats', async (req, res) => {
     function showConfirmDialog(title, message, onConfirm) {
       document.getElementById('confirm-title').textContent = title;
       document.getElementById('confirm-message').textContent = message;
-      confirmCallback = onConfirm;
       const confirmBtn = document.getElementById('confirm-action');
-      // Reemplazar el botón para limpiar handlers previos y asegurar un único callback
-      const newBtn = confirmBtn.cloneNode(true);
-      confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
-      newBtn.addEventListener('click', () => {
-        closeConfirmDialog();
-        if (typeof confirmCallback === 'function') {
-          confirmCallback();
+      console.log('[showConfirmDialog] Abriendo diálogo:', title);
+      // Asignar handler único por apertura
+      confirmBtn.onclick = () => {
+        console.log('[confirmBtn.onclick] Confirmado, ejecutando callback...');
+        document.getElementById('confirm-dialog').classList.remove('active');
+        if (typeof onConfirm === 'function') {
+          console.log('[confirmBtn.onclick] Callback es función, ejecutando...');
+          onConfirm();
+        } else {
+          console.log('[confirmBtn.onclick] Callback no es función:', typeof onConfirm);
         }
-      });
+      };
       document.getElementById('confirm-dialog').classList.add('active');
     }
     
     function closeConfirmDialog() {
       document.getElementById('confirm-dialog').classList.remove('active');
-      confirmCallback = null;
     }
     
     // Guardar cambios
@@ -2281,27 +2283,38 @@ app.get('/stats', async (req, res) => {
       };
       
       const bookTitle = updated.title || 'este libro';
+      console.log('[saveBook] Mostrando confirm dialog, bookId:', currentBookId);
       showConfirmDialog(
         '💾 Guardar Cambios',
-        \`¿Confirmas guardar los cambios en "\${bookTitle}"?\`,
+        '¿Confirmas guardar los cambios en "' + bookTitle + '"?',
         () => {
+          console.log('[saveBook callback] Iniciando fetch PUT a /api/books/' + currentBookId);
           fetch('/api/books/' + currentBookId, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(updated)
           })
             .then(r => {
+              console.log('[saveBook fetch] Response:', r.status, r.ok);
               if (r.ok) {
+                console.log('[saveBook fetch] Éxito, mostrando diálogo de éxito');
                 showConfirmDialog(
                   '✅ Éxito',
                   'Los cambios se guardaron correctamente.',
-                  () => location.reload()
+                  () => {
+                    console.log('[saveBook success callback] Recargando página...');
+                    location.reload();
+                  }
                 );
               } else {
+                console.log('[saveBook fetch] Error, status:', r.status);
                 showConfirmDialog('❌ Error', 'No se pudieron guardar los cambios.', null);
               }
             })
-            .catch(e => showConfirmDialog('❌ Error', 'Error de conexión: ' + e.message, null));
+            .catch(e => {
+              console.error('[saveBook fetch error]', e);
+              showConfirmDialog('❌ Error', 'Error de conexión: ' + e.message, null);
+            });
         }
       );
     }
@@ -2313,7 +2326,7 @@ app.get('/stats', async (req, res) => {
       
       showConfirmDialog(
         '⚠️ Eliminar Libro',
-        \`¿Estás seguro de eliminar "\${bookTitle}" permanentemente? Esta acción no se puede deshacer.\`,
+        '¿Estás seguro de eliminar "' + bookTitle + '" permanentemente? Esta acción no se puede deshacer.',
         () => {
           fetch('/api/books/' + bookId, { method: 'DELETE' })
             .then(r => {
@@ -2603,7 +2616,7 @@ app.get('/upload', (req, res) => {
     .file-card h4 { color: #19E6D6; margin: 0 0 15px 0; font-family: 'MedievalSharp', cursive; }
     .form-group { margin-bottom: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
     .form-group.full { grid-template-columns: 1fr; }
-    input, textarea { width: 100%; padding: 10px; border: 2px solid rgba(25,230,214,0.3); background: rgba(25,25,25,0.8); color: #fff; border-radius: 6px; font-family: inherit; box-sizing: border-box; }
+    input, textarea { width: 100%; padding: 10px; border: 2px solid rgba(25,230,214,0.3); background: rgba(25,25,25,0.8); color: #fff; border-radius: 6px; font-family: inherit; box-sizing: border-box; font-size: 16px; }
     input:focus, textarea:focus { border-color: #19E6D6; outline: none; }
     .required::after { content: ' *'; color: #ff6b6b; }
     .upload-btn { width: 100%; padding: 15px; margin-top: 20px; background: #19E6D6; color: #000; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 16px; font-family: 'MedievalSharp', cursive; transition: all 0.3s; }
