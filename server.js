@@ -1401,9 +1401,10 @@ app.get('/autores', (req,res)=>{
 
   <script>
     function applyRowFade() {
-      const headerHeight = 300;
-      const fadeLength = headerHeight * 0.4;
-      const minOpacity = 0.2;
+      const banner = document.querySelector('.header-banner.top');
+      const headerHeight = banner ? banner.offsetHeight : 290;
+      const fadeLength = 150;
+      const minOpacity = 0.15;
       const books = Array.from(document.querySelectorAll('.book'));
       if (!books.length) return;
       const rows = {};
@@ -1416,9 +1417,13 @@ app.get('/autores', (req,res)=>{
       rowTops.forEach(top => {
         const distance = top - headerHeight;
         let opacity = 1;
-        if (distance <= 0) opacity = minOpacity;
-        else if (distance < fadeLength) opacity = Math.max(minOpacity, distance / fadeLength);
-        else opacity = 1;
+        if (distance <= 0) {
+          opacity = minOpacity;
+        } else if (distance < fadeLength) {
+          opacity = Math.max(minOpacity, distance / fadeLength);
+        } else {
+          opacity = 1;
+        }
         rows[top].forEach(el => el.style.opacity = opacity);
       });
       const firstRowTop = rowTops.length ? rowTops[0] : Infinity;
@@ -1477,9 +1482,10 @@ app.get('/sagas', (req,res)=>{
 
   <script>
     function applyRowFade() {
-      const headerHeight = 300;
-      const fadeLength = headerHeight * 0.4;
-      const minOpacity = 0.2;
+      const banner = document.querySelector('.header-banner.top');
+      const headerHeight = banner ? banner.offsetHeight : 290;
+      const fadeLength = 150;
+      const minOpacity = 0.15;
       const books = Array.from(document.querySelectorAll('.book'));
       if (!books.length) return;
       const rows = {};
@@ -1492,9 +1498,13 @@ app.get('/sagas', (req,res)=>{
       rowTops.forEach(top => {
         const distance = top - headerHeight;
         let opacity = 1;
-        if (distance <= 0) opacity = minOpacity;
-        else if (distance < fadeLength) opacity = Math.max(minOpacity, distance / fadeLength);
-        else opacity = 1;
+        if (distance <= 0) {
+          opacity = minOpacity;
+        } else if (distance < fadeLength) {
+          opacity = Math.max(minOpacity, distance / fadeLength);
+        } else {
+          opacity = 1;
+        }
         rows[top].forEach(el => el.style.opacity = opacity);
       });
       const firstRowTop = rowTops.length ? rowTops[0] : Infinity;
