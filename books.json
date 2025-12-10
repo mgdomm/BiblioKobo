@@ -3252,8 +3252,8 @@
     "title": "Empire of Storms & Tower of Dawn (Tándem)",
     "author": "Sarah J Maas",
     "saga": {
-      "name": "",
-      "number": 0
+      "name": "Trono de Cristal - TOG",
+      "number": null
     },
     "coverUrl": "http://books.google.com/books/content?id=KVOv0AEACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
     "description": "Poder, alianzas, guerra, venganza... La travesía a un imperio distante de sanadores mágicos. Chaol Westfall siempre se ha definido a sí mismo como un hombre de lealtad inquebrantable, de gran fortaleza y a partir de su posición como capitán de la Guardia. Pero todo eso ha cambiado desde que el castillo de cristal se hizo añicos: sus hombres fueron diezmados y el rey de Adarlan lo libró de un golpe mortal pero dejó su cuerpo destrozado. Su única oportunidad de recuperarse reside en los legendarios curanderos de la Torre Cesme en Antica -el bastión del poderoso imperio en el Continente Meridional. Y ahora que la guerra se cierne sobre Dorian y Aelin de vuelta en casa, su supervivencia quizá dependa de que Chaol y Nesryn convenzan a sus regidores de formar una alianza con ellos. Pero lo que descubren en Antica los cambiará por completo y será más vital salvar a Erilea de lo que podrían haber imaginado. ENGLISH DESCRIPTION In the next installment of the New York Times bestselling Throne of Glass series, follow Chaol on his sweeping journey to a distant empire. Chaol Westfall has always defined himself by his unwavering loyalty, his strength, and his position as the Captain of the Guard. But all of that has changed since the glass castle shattered, since his men were slaughtered, since the King of Adarlan spared him from a killing blow, but left his body broken. His only shot at recovery lies with the legendary healers of the Torre Cesme in Antica--the stronghold of the southern continent's mighty empire. And with war looming over Dorian and Aelin back home, their survival might lie with Chaol and Nesryn convincing its rulers to ally with them. But what they discover in Antica will change them both--and be more vital to saving Erilea than they could have imagined.",
@@ -3264,7 +3264,10 @@
     ],
     "language": "es",
     "previewLink": "http://books.google.es/books?id=KVOv0AEACAAJ&dq=intitle:Empire+of+Storms+%26+Tower+of+Dawn+(Ta%CC%81ndem)+inauthor:Sarah+J+Maas&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
-    "createdTime": "2025-11-27T08:17:53.529Z"
+    "createdTime": "2025-11-27T08:17:53.529Z",
+    "pageCount": null,
+    "isbn": null,
+    "averageRating": null
   },
   {
     "id": "14UfNxVAF-NUFU67Jrjav5SP0zijFUrSZ",
@@ -3571,15 +3574,20 @@
     "title": "Un destino teñido de sangre",
     "author": "Danielle L. Jensen",
     "saga": {
-      "name": "",
-      "number": 0
+      "name": "Sin Destino",
+      "number": 1
     },
     "createdTime": "2025-11-26T18:10:50.127Z",
     "publishedDate": "2024",
-    "categories": [],
+    "categories": null,
     "language": "es",
     "previewLink": "http://books.google.es/books?id=2Fac0QEACAAJ&dq=intitle:%22Un+destino+ten%CC%83ido+de+sangre%22+inauthor:%22Danielle+L.+Jensen%22&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
-    "coverUrl": "/cover/33.png"
+    "coverUrl": "/cover/33.png",
+    "description": null,
+    "publisher": null,
+    "pageCount": null,
+    "isbn": null,
+    "averageRating": null
   },
   {
     "id": "1tXAJjgn2-v6Hrs2JEj5JIfSXlp3w5NwQ",

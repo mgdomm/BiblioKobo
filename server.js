@@ -228,8 +228,9 @@ try {
   bookMetadata = [];
 }
 
-// Contador simple de descargas (memoria)
+// Contadores simples de descargas y uploads (memoria)
 let downloadCount = 0;
+let uploadCount = 0;
 
 // Cache sencillo para ratings externos
 const ratingsCache = new Map();
@@ -333,12 +334,12 @@ const css = `
 body { margin:0; padding:0 0 40px 0; background:#000; color:#eee; font-family:Garamond, serif; }
 /* Top banner variations */
 .header-banner { background-size:cover; background-position:center; overflow:hidden; }
-.header-banner.top { position:fixed; top:0; left:0; right:0; height:300px; z-index:1; background-position: center 50%; background-size:cover; }
+.header-banner.top { position:fixed; top:0; left:0; right:0; height:220px; z-index:1; background-position: center 50%; background-size:cover; }
 .header-banner.home { position:relative; height:100vh; background-position: center 50%; background-size:cover; }
 .header-banner::after { content:""; position:absolute; left:0; right:0; bottom:0; height:40%; background: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.95) 100%); pointer-events:none; }
 
-.overlay { display:flex; flex-direction:column; justify-content:flex-end; align-items:center; padding-bottom:10px; text-align:center; }
-.overlay.top { position:fixed; top:0; left:0; width:100%; height:300px; z-index:2; }
+.overlay { display:flex; flex-direction:column; justify-content:flex-end; align-items:center; padding-bottom:25px; text-align:center; }
+.overlay.top { position:fixed; top:0; left:0; width:100%; height:220px; z-index:2; }
 .overlay.home { position:absolute; top:0; left:0; width:100%; height:100vh; z-index:2; display:flex; justify-content:center; align-items:center; }
 
 h1 { font-family:'MedievalSharp', cursive; font-size:48px; color:#fff; margin:0; text-shadow: 0 2px 6px rgba(0,0,0,0.9); }
@@ -405,27 +406,27 @@ a.button:hover { background:#444; }
 .hidden-stats-btn:hover { box-shadow:0 0 10px rgba(25,230,214,0.4), 0 0 20px rgba(25,230,214,0.2); transform:scale(1.08); }
 
 /* ensure content sits below fixed top banner */
-body { padding-top:300px; }
+body { padding-top:220px; }
 
-/* Desktop: aumentar 20% altura de header-banner.top */
+/* Desktop: 50px más que antes (240 + 50 = 290px) */
 @media (min-width: 1024px) {
-  .header-banner.top { height:360px; }
-  .overlay.top { height:360px; }
-  body { padding-top:360px; }
+  .header-banner.top { height:290px; }
+  .overlay.top { height:290px; }
+  body { padding-top:290px; }
 }
 
-/* Tablet: mantener tamaño normal */
+/* Tablet: 30px más que antes (200 + 30 = 230px) */
 @media (min-width: 768px) and (max-width: 1023px) {
-  .header-banner.top { height:300px; }
-  .overlay.top { height:300px; }
-  body { padding-top:300px; }
+  .header-banner.top { height:230px; }
+  .overlay.top { height:230px; }
+  body { padding-top:230px; }
 }
 
-/* Mobile: mantener tamaño normal */
+/* Mobile: 20px más que antes (200 + 20 = 220px) */
 @media (max-width: 767px) {
-  .header-banner.top { height:300px; }
-  .overlay.top { height:300px; }
-  body { padding-top:300px; }
+  .header-banner.top { height:220px; }
+  .overlay.top { height:220px; }
+  body { padding-top:220px; }
 }
 `;
 
@@ -1693,28 +1694,26 @@ app.get('/stats', async (req, res) => {
   <h1>🔒 Acceso Denegado</h1>
   <p>${randomMsg}</p>
   <p><a href="/">Volver al inicio</a></p>
-    <p style="margin-top:30px;">
-      <a href="/" class="button">← Volver</a>
-    </p>
-  </div>
 </body>
 </html>`);
   }
   
-  // Calcular estadísticas
+  // Calcular estadísticas generales
   const totalLibros = bookMetadata.length;
   const totalAutores = [...new Set(bookMetadata.map(b => b.author))].length;
   const totalSagas = [...new Set(bookMetadata.filter(b => b.saga?.name).map(b => b.saga.name))].length;
   
+  // Contar uploads reales desde el JSON (libros con uploadDate)
+  const uploadsReales = bookMetadata.filter(b => b.uploadDate).length;
+  
   // Top autores
   const autorCount = {};
   bookMetadata.forEach(b => {
-    autorCount[b.author] = (autorCount[b.author] || 0) + 1;
+    if (b.author) autorCount[b.author] = (autorCount[b.author] || 0) + 1;
   });
   const topAutores = Object.entries(autorCount)
     .sort((a, b) => b[1] - a[1])
-    .slice(0, 5)
-    .map(([name, count]) => ({ name, count }));
+    .slice(0, 5);
   
   // Top sagas
   const sagaCount = {};
@@ -1723,18 +1722,14 @@ app.get('/stats', async (req, res) => {
   });
   const topSagas = Object.entries(sagaCount)
     .sort((a, b) => b[1] - a[1])
-    .slice(0, 5)
-    .map(([name, count]) => ({ name, count }));
+    .slice(0, 5);
   
-  const promedioLibrosPorAutor = (totalLibros / totalAutores).toFixed(1);
-
-  // Calcular más estadísticas avanzadas
-  const librosConCobertura = bookMetadata.filter(b => b.coverUrl).length;
-  const librosSinCobertura = totalLibros - librosConCobertura;
-  const porcentajeCob = ((librosConCobertura / totalLibros) * 100).toFixed(1);
-  
-  const librosConDescrip = bookMetadata.filter(b => b.description && b.description.length > 0).length;
-  const porcentajeDescrip = ((librosConDescrip / totalLibros) * 100).toFixed(1);
+  const librosConISBN = bookMetadata.filter(b => b.isbn && b.isbn.length > 0).length;
+  const librosConPublisher = bookMetadata.filter(b => b.publisher && b.publisher.length > 0).length;
+  const librosConPageCount = bookMetadata.filter(b => b.pageCount && b.pageCount > 0).length;
+  const librosConCategories = bookMetadata.filter(b => b.categories && b.categories.length > 0).length;
+  const librosConFecha = bookMetadata.filter(b => b.publishedDate && b.publishedDate.length > 0).length;
+  const librosConIdioma = bookMetadata.filter(b => b.language && b.language.length > 0).length;
   
   // Calcular libros incompletos
   const isEmpty = (value, fieldName) => {
@@ -1757,138 +1752,525 @@ app.get('/stats', async (req, res) => {
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Dashboard - Libros Incompletos</title>
-  <style>
-    body { background: #111; color: #fff; font-family: Arial; padding: 20px; }
-    h1 { color: #19E6D6; }
-    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-    th, td { padding: 12px; text-align: left; border-bottom: 1px solid #333; }
-    th { background: #19E6D6; color: #000; font-weight: bold; }
-    tr:hover { background: #222; }
-    button { padding: 8px 15px; margin: 3px; cursor: pointer; border: none; border-radius: 4px; }
+  <title>Dashboard Editor</title>
+  <style>${css}
+    
+    /* Estilos adicionales para dashboard */
+    .dashboard-content { padding: 30px 20px; max-width: 1400px; margin: 0 auto; }
+    .section { background: rgba(18,18,18,0.95); border: 1px solid rgba(25,230,214,0.3); border-radius: 10px; padding: 25px; margin-bottom: 30px; }
+    .section h2 { font-family: 'MedievalSharp', cursive; color: #19E6D6; font-size: 24px; margin: 0 0 20px 0; }
+    
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+    th, td { padding: 12px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+    th { background: rgba(25,230,214,0.2); color: #19E6D6; font-weight: bold; font-family: 'MedievalSharp', cursive; }
+    tr:hover { background: rgba(255,255,255,0.05); }
+    
+    button { padding: 8px 15px; margin: 3px; cursor: pointer; border: none; border-radius: 4px; font-family: 'MedievalSharp', cursive; transition: 0.2s; }
     .btn-edit { background: #19E6D6; color: #000; }
+    .btn-edit:hover { background: #1dd4c8; }
     .btn-delete { background: #ff6b6b; color: #fff; }
-    .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); z-index: 999; align-items: center; justify-content: center; }
+    .btn-delete:hover { background: #ff5252; }
+    
+    .search-box { display: flex; gap: 10px; align-items: center; margin-bottom: 15px; }
+    .search-box input { flex: 1; padding: 10px; background: rgba(0,0,0,0.5); border: 2px solid #19E6D6; color: #fff; border-radius: 6px; font-family: 'MedievalSharp', cursive; }
+    .search-box input:focus { outline: none; box-shadow: 0 0 10px rgba(25,230,214,0.4); }
+    
+    .suggestions { position: absolute; background: rgba(18,18,18,0.98); border: 2px solid #19E6D6; border-top: none; border-radius: 0 0 6px 6px; max-height: 300px; overflow-y: auto; z-index: 1000; width: calc(100% - 24px); }
+    .suggestion-item { padding: 10px 15px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.1); transition: 0.2s; }
+    .suggestion-item:hover { background: rgba(25,230,214,0.2); }
+    .suggestion-item strong { color: #19E6D6; }
+    
+    .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.95); z-index: 9999; align-items: center; justify-content: center; overflow-y: auto; padding: 20px; }
     .modal.active { display: flex; }
-    .modal-content { background: #222; padding: 30px; border-radius: 10px; max-width: 700px; border: 2px solid #19E6D6; }
-    input, textarea { width: 100%; padding: 8px; margin: 5px 0; background: #333; border: 1px solid #555; color: #fff; border-radius: 4px; box-sizing: border-box; }
-    label { display: block; margin-top: 10px; color: #19E6D6; font-weight: bold; }
+    .modal-content { background: linear-gradient(135deg, rgba(18,18,18,0.98), rgba(12,12,12,0.95)); padding: 30px; border-radius: 12px; max-width: 900px; width: 100%; border: 2px solid #19E6D6; max-height: 90vh; overflow-y: auto; }
+    .modal-content h2 { font-family: 'MedievalSharp', cursive; color: #19E6D6; margin: 0 0 20px 0; }
+    
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    .form-grid.full { grid-template-columns: 1fr; }
+    .form-field { margin-bottom: 15px; }
+    .form-field label { display: block; margin-bottom: 5px; color: #19E6D6; font-weight: bold; font-family: 'MedievalSharp', cursive; font-size: 14px; }
+    .form-field input, .form-field textarea, .form-field select { width: 100%; padding: 10px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.3); color: #fff; border-radius: 4px; box-sizing: border-box; font-family: Garamond, serif; }
+    .form-field input:focus, .form-field textarea:focus { outline: none; border-color: #19E6D6; box-shadow: 0 0 8px rgba(25,230,214,0.3); }
+    
+    .json-preview { background: rgba(0,0,0,0.5); padding: 15px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.2); max-height: 200px; overflow-y: auto; font-family: monospace; font-size: 12px; color: #19E6D6; white-space: pre-wrap; margin-top: 10px; }
+    
+    .button-row { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+    
+    /* Estilos para diálogo de confirmación estilo login-box */
+    .confirm-dialog { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 10000; justify-content: center; align-items: center; }
+    .confirm-dialog.active { display: flex; }
+    .confirm-box { background: linear-gradient(135deg, rgba(18,18,18,0.95), rgba(12,12,12,0.9)); border: 2px solid rgba(25,230,214,0.5); border-radius: 12px; padding: 40px; text-align: center; max-width: 450px; box-shadow: 0 8px 32px rgba(0,0,0,0.8); }
+    .confirm-box h3 { font-family: 'MedievalSharp', cursive; color: #19E6D6; font-size: 22px; margin: 0 0 15px 0; }
+    .confirm-box p { color: #fff; font-size: 16px; line-height: 1.5; margin: 15px 0; }
+    .confirm-box .button-group { display: flex; gap: 10px; justify-content: center; margin-top: 25px; }
+    .confirm-box button { padding: 12px 24px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-family: 'MedievalSharp', cursive; font-size: 14px; transition: 0.2s; }
+    .confirm-box button.confirm { background: #19E6D6; color: #000; }
+    .confirm-box button.confirm:hover { background: #1dd4c8; }
+    .confirm-box button.cancel { background: rgba(255,255,255,0.1); color: #fff; }
+    .confirm-box button.cancel:hover { background: rgba(255,255,255,0.2); }
+    
+    /* Estilos para estadísticas */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 20px; }
+    .stat-card { background: transparent; border: 1px solid rgba(25,230,214,0.4); border-radius: 8px; padding: 20px; text-align: center; transition: 0.3s; }
+    .stat-card:hover { transform: translateY(-3px); box-shadow: 0 5px 20px rgba(25,230,214,0.2); border-color: rgba(25,230,214,0.6); }
+    .stat-number { font-family: 'MedievalSharp', cursive; font-size: 36px; color: #19E6D6; font-weight: bold; margin: 10px 0; }
+    .stat-label { font-size: 14px; color: #999; text-transform: uppercase; letter-spacing: 1px; }
+    .stat-icon { font-size: 24px; margin-bottom: 10px; }
+    
+    .top-list { list-style: none; padding: 0; margin: 15px 0 0 0; }
+    .top-list li { display: flex; justify-content: space-between; padding: 10px; margin: 5px 0; background: rgba(0,0,0,0.3); border-radius: 6px; border-left: 3px solid #19E6D6; }
+    .top-list li span:first-child { color: #fff; font-weight: bold; }
+    .top-list li span:last-child { color: #19E6D6; font-family: 'MedievalSharp', cursive; }
   </style>
 </head>
 <body>
-
-<h1>📚 Libros Incompletos (${incompleteBooks.length})</h1>
-
-<table>
-  <thead>
-    <tr>
-      <th>Título</th>
-      <th>Autor</th>
-      <th>Campos Faltantes</th>
-      <th>Acciones</th>
-    </tr>
-  </thead>
-  <tbody>
-    ${incompleteBooks.map(book => `
-      <tr>
-        <td>${book.title || '(vacío)'}</td>
-        <td>${book.author || '(vacío)'}</td>
-        <td>
-          ${(!book.title ? 'título, ' : '')}
-          ${(!book.author ? 'autor, ' : '')}
-          ${(!book.saga || !book.saga.name ? 'saga, ' : '')}
-          ${(!book.description ? 'descripción, ' : '')}
-          ${(!book.publishedDate ? 'fecha' : '')}
-        </td>
-        <td>
-          <button class="btn-edit" onclick="openEditModal('${book.id}')">✏️ Editar</button>
-          <button class="btn-delete" onclick="deleteBook('${book.id}')">🗑️ Eliminar</button>
-        </td>
-      </tr>
-    `).join('')}
-  </tbody>
-</table>
-
-<!-- Modal de Edición -->
-<div id="edit-modal" class="modal">
-  <div class="modal-content">
-    <h2>Editar Libro</h2>
-    <form onsubmit="saveBook(event)">
-      <label>Título *</label>
-      <input type="text" id="edit-title" required>
-      
-      <label>Autor *</label>
-      <input type="text" id="edit-author" required>
-      
-      <label>Saga *</label>
-      <input type="text" id="edit-saga" required>
-      
-      <label>Descripción *</label>
-      <textarea id="edit-description" rows="4" required></textarea>
-      
-      <label>Fecha Publicación *</label>
-      <input type="text" id="edit-date" required>
-      
-      <button type="submit" class="btn-edit">💾 Guardar</button>
-      <button type="button" class="btn-delete" onclick="closeEditModal()">Cancelar</button>
-    </form>
+  <div class="header-banner top" style="background-image:url('/cover/secuendarias/portada11.png');"></div>
+  <div class="overlay top">
+    <div class="top-buttons secondary"><a href="/">Inicio</a></div>
+    <h1>Dashboard Editor</h1>
+    <div class="top-buttons">
+      <a href="/libros">Libros</a>
+      <a href="/sagas">Sagas</a>
+      <a href="/autores">Autores</a>
+    </div>
   </div>
-</div>
 
-<script>
-let currentBookId = null;
-let currentBook = null;
+  <div class="dashboard-content">
+    <!-- Estadísticas Generales -->
+    <div style="margin-bottom: 30px;">
+      <h2 style="font-family: 'MedievalSharp', cursive; color: #19E6D6; font-size: 24px; margin: 0 0 20px 0; padding-left: 10px;">📊 Estadísticas Generales</h2>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon">📚</div>
+          <div class="stat-number">${totalLibros}</div>
+          <div class="stat-label">Total Libros</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">✍️</div>
+          <div class="stat-number">${totalAutores}</div>
+          <div class="stat-label">Autores</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">📖</div>
+          <div class="stat-number">${totalSagas}</div>
+          <div class="stat-label">Sagas</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🔢</div>
+          <div class="stat-number">${librosConISBN}</div>
+          <div class="stat-label">Con ISBN</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🏢</div>
+          <div class="stat-number">${librosConPublisher}</div>
+          <div class="stat-label">Con Editorial</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">📄</div>
+          <div class="stat-number">${librosConPageCount}</div>
+          <div class="stat-label">Con Páginas</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🏷️</div>
+          <div class="stat-number">${librosConCategories}</div>
+          <div class="stat-label">Con Categorías</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">📅</div>
+          <div class="stat-number">${librosConFecha}</div>
+          <div class="stat-label">Con Fecha Pub.</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🌐</div>
+          <div class="stat-number">${librosConIdioma}</div>
+          <div class="stat-label">Con Idioma</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">📥</div>
+          <div class="stat-number">${downloadCount}</div>
+          <div class="stat-label">Descargas (sesión)</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">📤</div>
+          <div class="stat-number">${uploadsReales}</div>
+          <div class="stat-label">Uploads</div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Top Rankings -->
+    <div class="section">
+      <h2>🏆 Top Rankings</h2>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+        <div>
+          <h3 style="color: #19E6D6; font-family: 'MedievalSharp', cursive; font-size: 18px; margin-bottom: 15px;">Top 5 Autores</h3>
+          <ul class="top-list">
+            ${topAutores.map(([name, count]) => `
+              <li>
+                <span>${name}</span>
+                <span>${count} libros</span>
+              </li>
+            `).join('')}
+          </ul>
+        </div>
+        <div>
+          <h3 style="color: #19E6D6; font-family: 'MedievalSharp', cursive; font-size: 18px; margin-bottom: 15px;">Top 5 Sagas</h3>
+          <ul class="top-list">
+            ${topSagas.map(([name, count]) => `
+              <li>
+                <span>${name}</span>
+                <span>${count} libros</span>
+              </li>
+            `).join('')}
+          </ul>
+        </div>
+      </div>
+    </div>
 
-function openEditModal(bookId) {
-  currentBookId = bookId;
-  fetch('/api/books/' + bookId)
-    .then(r => r.json())
-    .then(book => {
-      currentBook = book;
-      document.getElementById('edit-title').value = book.title || '';
-      document.getElementById('edit-author').value = book.author || '';
-      document.getElementById('edit-saga').value = (book.saga && book.saga.name) || '';
-      document.getElementById('edit-description').value = book.description || '';
-      document.getElementById('edit-date').value = book.publishedDate || '';
-      document.getElementById('edit-modal').classList.add('active');
-    })
-    .catch(e => alert('Error: ' + e.message));
-}
+    <!-- Sección: Libros Incompletos -->
+    <div class="section">
+      <h2>📚 Libros Incompletos (${incompleteBooks.length})</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Título</th>
+            <th>Autor</th>
+            <th>Campos Faltantes</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${incompleteBooks.map(book => `
+            <tr>
+              <td>${book.title || '(vacío)'}</td>
+              <td>${book.author || '(vacío)'}</td>
+              <td style="font-size: 11px; color: #ff6b6b;">
+                ${(!book.title ? 'título, ' : '')}
+                ${(!book.author ? 'autor, ' : '')}
+                ${(!book.saga || !book.saga.name ? 'saga, ' : '')}
+                ${(!book.description ? 'descripción, ' : '')}
+                ${(!book.publishedDate ? 'fecha' : '')}
+              </td>
+              <td>
+                <button class="btn-edit" onclick="openEditModal('${book.id}')">✏️ Editar</button>
+                <button class="btn-delete" onclick="deleteBook('${book.id}')">🗑️</button>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
 
-function closeEditModal() {
-  document.getElementById('edit-modal').classList.remove('active');
-}
+    <!-- Sección 2: Buscar y Editar Cualquier Libro -->
+    <div class="section">
+      <h2>🔍 Buscar y Editar Cualquier Libro</h2>
+      <div style="position: relative;">
+        <div class="search-box">
+          <input 
+            type="text" 
+            id="book-search" 
+            placeholder="Escribe título o autor..." 
+            autocomplete="off"
+            oninput="searchBooks(this.value)"
+            onfocus="this.select()"
+          >
+        </div>
+        <div id="suggestions" class="suggestions" style="display: none;"></div>
+      </div>
+      <p style="font-size: 12px; color: #999; margin-top: 10px;">
+        💡 Escribe para buscar entre todos los ${bookMetadata.length} libros. Haz clic en uno para editarlo.
+      </p>
+    </div>
+  </div>
 
-function saveBook(e) {
-  e.preventDefault();
-  const updated = {
-    ...currentBook,
-    title: document.getElementById('edit-title').value,
-    author: document.getElementById('edit-author').value,
-    saga: { name: document.getElementById('edit-saga').value, number: 1 },
-    description: document.getElementById('edit-description').value,
-    publishedDate: document.getElementById('edit-date').value
-  };
+  <!-- Modal de Edición Completo -->
+  <div id="edit-modal" class="modal">
+    <div class="modal-content">
+      <h2 id="modal-title">Editar Libro</h2>
+      <form onsubmit="saveBook(event)">
+        <div class="form-grid">
+          <div class="form-field">
+            <label>Título *</label>
+            <input type="text" id="edit-title" required>
+          </div>
+          <div class="form-field">
+            <label>Autor *</label>
+            <input type="text" id="edit-author" required>
+          </div>
+        </div>
+        
+        <div class="form-grid">
+          <div class="form-field">
+            <label>Saga</label>
+            <input type="text" id="edit-saga">
+          </div>
+          <div class="form-field">
+            <label>Número en Saga</label>
+            <input type="number" id="edit-saga-number" min="1">
+          </div>
+        </div>
+        
+        <div class="form-grid full">
+          <div class="form-field">
+            <label>Descripción</label>
+            <textarea id="edit-description" rows="4"></textarea>
+          </div>
+        </div>
+        
+        <div class="form-grid">
+          <div class="form-field">
+            <label>Fecha Publicación</label>
+            <input type="text" id="edit-date" placeholder="YYYY-MM-DD">
+          </div>
+          <div class="form-field">
+            <label>Editorial</label>
+            <input type="text" id="edit-publisher">
+          </div>
+        </div>
+        
+        <div class="form-grid">
+          <div class="form-field">
+            <label>Páginas</label>
+            <input type="number" id="edit-pages" min="1">
+          </div>
+          <div class="form-field">
+            <label>Idioma</label>
+            <input type="text" id="edit-language" placeholder="es, en, fr...">
+          </div>
+        </div>
+        
+        <div class="form-grid">
+          <div class="form-field">
+            <label>ISBN</label>
+            <input type="text" id="edit-isbn">
+          </div>
+          <div class="form-field">
+            <label>Categorías (separadas por coma)</label>
+            <input type="text" id="edit-categories" placeholder="Fantasía, Aventura">
+          </div>
+        </div>
+        
+        <div class="form-grid">
+          <div class="form-field">
+            <label>URL Portada</label>
+            <input type="text" id="edit-cover">
+          </div>
+          <div class="form-field">
+            <label>Calificación (0-5)</label>
+            <input type="number" id="edit-rating" min="0" max="5" step="0.1">
+          </div>
+        </div>
+        
+        <details style="margin-top: 20px;">
+          <summary style="cursor: pointer; color: #19E6D6; font-family: 'MedievalSharp', cursive;">📋 Ver JSON Completo</summary>
+          <div id="json-preview" class="json-preview"></div>
+        </details>
+        
+        <div class="button-row">
+          <button type="button" class="btn-delete" onclick="closeEditModal()">Cancelar</button>
+          <button type="submit" class="btn-edit">💾 Guardar Cambios</button>
+        </div>
+      </form>
+    </div>
+  </div>
   
-  fetch('/api/books/' + currentBookId, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(updated)
-  })
-    .then(r => r.ok ? location.reload() : alert('Error al guardar'))
-    .catch(e => alert('Error: ' + e.message));
-}
+  <!-- Diálogo de Confirmación -->
+  <div id="confirm-dialog" class="confirm-dialog">
+    <div class="confirm-box">
+      <h3 id="confirm-title">Confirmar Acción</h3>
+      <p id="confirm-message">¿Estás seguro de realizar esta acción?</p>
+      <div class="button-group">
+        <button class="cancel" onclick="closeConfirmDialog()">Cancelar</button>
+        <button class="confirm" id="confirm-action">Confirmar</button>
+      </div>
+    </div>
+  </div>
 
-function deleteBook(bookId) {
-  if (confirm('¿Eliminar este libro?')) {
-    fetch('/api/books/' + bookId, { method: 'DELETE' })
-      .then(r => r.ok ? location.reload() : alert('Error'))
-      .catch(e => alert('Error: ' + e.message));
-  }
-}
-
-console.log('Dashboard cargado. Botones funcionando.');
-</script>
+  <script>
+    let currentBookId = null;
+    let currentBook = null;
+    let allBooks = ${JSON.stringify(bookMetadata)};
+    let confirmCallback = null;
+    
+    // Búsqueda con autocompletado
+    function searchBooks(query) {
+      const suggestions = document.getElementById('suggestions');
+      if (!query || query.trim().length < 2) {
+        suggestions.style.display = 'none';
+        return;
+      }
+      
+      const q = query.toLowerCase();
+      const matches = allBooks.filter(book => 
+        (book.title && book.title.toLowerCase().includes(q)) ||
+        (book.author && book.author.toLowerCase().includes(q))
+      ).slice(0, 10);
+      
+      if (matches.length === 0) {
+        suggestions.innerHTML = '<div class="suggestion-item">No se encontraron resultados</div>';
+        suggestions.style.display = 'block';
+        return;
+      }
+      
+      suggestions.innerHTML = matches.map(book => 
+        \`<div class="suggestion-item" onclick="selectBook('\${book.id}')">
+          <strong>\${book.title || '(sin título)'}</strong><br>
+          <span style="font-size: 12px; color: #999;">\${book.author || '(sin autor)'}</span>
+        </div>\`
+      ).join('');
+      suggestions.style.display = 'block';
+    }
+    
+    // Seleccionar libro de las sugerencias
+    function selectBook(bookId) {
+      document.getElementById('suggestions').style.display = 'none';
+      document.getElementById('book-search').value = '';
+      openEditModal(bookId);
+    }
+    
+    // Cerrar sugerencias al hacer clic fuera
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.search-box') && !e.target.closest('.suggestions')) {
+        document.getElementById('suggestions').style.display = 'none';
+      }
+    });
+    
+    // Abrir modal de edición
+    function openEditModal(bookId) {
+      currentBookId = bookId;
+      fetch('/api/books/' + bookId)
+        .then(r => r.json())
+        .then(book => {
+          currentBook = book;
+          document.getElementById('modal-title').textContent = 'Editar: ' + (book.title || 'Libro sin título');
+          document.getElementById('edit-title').value = book.title || '';
+          document.getElementById('edit-author').value = book.author || '';
+          document.getElementById('edit-saga').value = (book.saga && book.saga.name) || '';
+          document.getElementById('edit-saga-number').value = (book.saga && book.saga.number) || '';
+          document.getElementById('edit-description').value = book.description || '';
+          document.getElementById('edit-date').value = book.publishedDate || '';
+          document.getElementById('edit-publisher').value = book.publisher || '';
+          document.getElementById('edit-pages').value = book.pageCount || '';
+          document.getElementById('edit-language').value = book.language || '';
+          document.getElementById('edit-isbn').value = book.isbn || '';
+          document.getElementById('edit-categories').value = (book.categories && book.categories.join(', ')) || '';
+          document.getElementById('edit-cover').value = book.coverUrl || '';
+          document.getElementById('edit-rating').value = book.averageRating || '';
+          
+          // Mostrar JSON completo
+          document.getElementById('json-preview').textContent = JSON.stringify(book, null, 2);
+          
+          document.getElementById('edit-modal').classList.add('active');
+        })
+        .catch(e => alert('Error al cargar libro: ' + e.message));
+    }
+    
+    function closeEditModal() {
+      document.getElementById('edit-modal').classList.remove('active');
+    }
+    
+    // Funciones para diálogo de confirmación
+    function showConfirmDialog(title, message, onConfirm) {
+      document.getElementById('confirm-title').textContent = title;
+      document.getElementById('confirm-message').textContent = message;
+      confirmCallback = onConfirm;
+      document.getElementById('confirm-dialog').classList.add('active');
+      
+      // Configurar botón de confirmación
+      const confirmBtn = document.getElementById('confirm-action');
+      confirmBtn.onclick = () => {
+        closeConfirmDialog();
+        if (confirmCallback) confirmCallback();
+      };
+    }
+    
+    function closeConfirmDialog() {
+      document.getElementById('confirm-dialog').classList.remove('active');
+      confirmCallback = null;
+    }
+    
+    // Guardar cambios
+    function saveBook(e) {
+      e.preventDefault();
+      
+      const categories = document.getElementById('edit-categories').value
+        .split(',')
+        .map(c => c.trim())
+        .filter(c => c.length > 0);
+      
+      const updated = {
+        ...currentBook,
+        title: document.getElementById('edit-title').value,
+        author: document.getElementById('edit-author').value,
+        saga: {
+          name: document.getElementById('edit-saga').value || null,
+          number: parseInt(document.getElementById('edit-saga-number').value) || null
+        },
+        description: document.getElementById('edit-description').value || null,
+        publishedDate: document.getElementById('edit-date').value || null,
+        publisher: document.getElementById('edit-publisher').value || null,
+        pageCount: parseInt(document.getElementById('edit-pages').value) || null,
+        language: document.getElementById('edit-language').value || null,
+        isbn: document.getElementById('edit-isbn').value || null,
+        categories: categories.length > 0 ? categories : null,
+        coverUrl: document.getElementById('edit-cover').value || null,
+        averageRating: parseFloat(document.getElementById('edit-rating').value) || null
+      };
+      
+      const bookTitle = updated.title || 'este libro';
+      showConfirmDialog(
+        '💾 Guardar Cambios',
+        \`¿Confirmas guardar los cambios en "\${bookTitle}"?\`,
+        () => {
+          fetch('/api/books/' + currentBookId, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(updated)
+          })
+            .then(r => {
+              if (r.ok) {
+                showConfirmDialog(
+                  '✅ Éxito',
+                  'Los cambios se guardaron correctamente.',
+                  () => location.reload()
+                );
+              } else {
+                showConfirmDialog('❌ Error', 'No se pudieron guardar los cambios.', null);
+              }
+            })
+            .catch(e => showConfirmDialog('❌ Error', 'Error de conexión: ' + e.message, null));
+        }
+      );
+    }
+    
+    // Eliminar libro
+    function deleteBook(bookId) {
+      const book = allBooks.find(b => b.id === bookId);
+      const bookTitle = book?.title || 'este libro';
+      
+      showConfirmDialog(
+        '⚠️ Eliminar Libro',
+        \`¿Estás seguro de eliminar "\${bookTitle}" permanentemente? Esta acción no se puede deshacer.\`,
+        () => {
+          fetch('/api/books/' + bookId, { method: 'DELETE' })
+            .then(r => {
+              if (r.ok) {
+                showConfirmDialog(
+                  '✅ Eliminado',
+                  'El libro ha sido eliminado exitosamente.',
+                  () => location.reload()
+                );
+              } else {
+                showConfirmDialog('❌ Error', 'No se pudo eliminar el libro.', null);
+              }
+            })
+            .catch(e => showConfirmDialog('❌ Error', 'Error de conexión: ' + e.message, null));
+        }
+      );
+    }
+    
+    console.log('Dashboard cargado. ${bookMetadata.length} libros disponibles.');
+  </script>
 
 </body>
 </html>`);
@@ -2559,6 +2941,7 @@ app.post('/api/upload-to-drive', upload.single('file'), async (req, res) => {
     bookMetadata.push(book);
     await fs.promises.writeFile(BOOKS_FILE, JSON.stringify(bookMetadata, null, 2));
 
+    uploadCount++;
     console.log(`[UPLOAD] ✅ Libro registrado: ${fileName} (ID: ${driveFileId})`);
     console.log(`[UPLOAD] 📚 Libro agregado con portada: ${book.coverUrl ? '✅ Encontrada' : '❌ Fallback'}`);
     
