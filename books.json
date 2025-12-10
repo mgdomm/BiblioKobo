@@ -1117,13 +1117,19 @@
     "title": "Indómita",
     "author": "Raisa Martin Espinosa",
     "saga": {
-      "name": "",
+      "name": "Rubí de Sangre",
       "number": 1
     },
-    "coverUrl": "/cover/23.png",
-    "description": "Fantasía épica de Raisa Martin Espinosa.",
-    "language": "es",
-    "createdTime": "2025-05-03T08:59:35.786Z"
+    "coverUrl": "https://sirenbooks.es/wp-content/uploads/2024/06/029_Indomita-e1731604704531.webp",
+    "description": "En un mundo llamado Drystia, hace siglos que habitan criaturas de piel pálida y colmillos afilados, seres poderosos cuyo dominio ha transformado la vida humana. Su poder es tal que obligan a los humanos a entregar a sus primogénitos en la primera luna llena tras alcanzar la mayoría de edad, para convertirlos en sus “saciadores”. \n\nLa protagonista, Sierra Ruggiero, nace con un destino marcado por esa tradición ancestral: uno que jamás imaginó, ni aceptó. \n\n Pero todo cambia cuando entra en escena Viktor Vitalle: misterioso, poderoso y aparentemente indiferente. Sierra descubrirá que detrás de su frialdad se oculta algo mucho más oscuro, peligroso… y atrayente. \n\nMientras Sierra lucha por su supervivencia, deberá enfrentarse no solo al horror que la rodea, sino también a deseos y decisiones que pondrán a prueba su voluntad, su miedo y sus convicciones. El libro te atrapa con una atmósfera de fantasía oscura, horror y romance, donde cada paso puede acercarla al abismo o a una peligrosa redención.",
+    "language": "ES",
+    "createdTime": "2025-05-03T08:59:35.786Z",
+    "publishedDate": null,
+    "publisher": null,
+    "pageCount": null,
+    "isbn": null,
+    "categories": null,
+    "averageRating": null
   },
   {
     "id": "1166pUTkkMH3kPLmQ_lfXNwdjyyM345Rz",
@@ -1250,13 +1256,21 @@
     "title": "Inquebrantable",
     "author": "Raisa Martin Espinosa",
     "saga": {
-      "name": "",
-      "number": 1
+      "name": "Rubí de Sangre",
+      "number": 2
     },
-    "coverUrl": "/cover/12.png",
-    "description": "Fantasía épica de Raisa Martin Espinosa.",
-    "language": "es",
-    "createdTime": "2025-05-03T08:59:36.727Z"
+    "coverUrl": "https://sirenbooks.es/wp-content/uploads/2024/12/Inquebrantable.webp",
+    "description": "En el mundo fantástico de Drystia, tras los devastadores sucesos que marcaron su pasado, Sierra Ruggiero desaparece sin dejar rastro, dejando atrás a Viktor Vitalle, el vampiro más poderoso, sumido en la desesperación. Viktor rehúsa aceptar la pérdida: intentará traerla de regreso mientras lidia con amenazas crecientes —rebeldes, metamorfos y una guerra interna entre los Puros— que amenazan con destruir todo lo que conoce.\n\nPor su parte, Sierra está atrapada en un lugar del que nadie ha regresado; su realidad está fracturada, sus convicciones se tambalean, y la venganza quema en su interior. En medio de la oscuridad, ambos deberán enfrentarse a lo más duro: sus miedos, sus cicatrices y la persona en que se han convertido. Todo mientras intentan decidir si aún quieren salvar lo que fue… o destruirlo.",
+    "language": "ES",
+    "createdTime": "2025-05-03T08:59:36.727Z",
+    "publishedDate": null,
+    "publisher": null,
+    "pageCount": null,
+    "isbn": null,
+    "categories": [
+      "Dark Romance"
+    ],
+    "averageRating": null
   },
   {
     "id": "13A57JQney9wAY6SUVsnzaIGMeqt42fLP",
@@ -2788,9 +2802,13 @@
     "createdTime": "2025-05-03T09:00:06.448Z",
     "publishedDate": "2015-02",
     "pageCount": 353,
-    "categories": [],
+    "categories": null,
     "language": "es",
-    "previewLink": "http://books.google.es/books?id=J1hJrgEACAAJ&dq=intitle:%22Harry+Potter+y+El+Prisionero+de+Azkaban%22+inauthor:%22J+K+Rowling%22&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+    "previewLink": "http://books.google.es/books?id=J1hJrgEACAAJ&dq=intitle:%22Harry+Potter+y+El+Prisionero+de+Azkaban%22+inauthor:%22J+K+Rowling%22&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "description": "En su tercer año en Hogwarts, Harry descubre que un peligroso fugitivo, Sirius Black, ha escapado de la prisión de Azkaban y parece estar tras él. Mientras el colegio es vigilado por los inquietantes dementores, Harry y sus amigos se ven envueltos en misterios que conectan el pasado con amenazas presentes. Entre clases de magia, criaturas extraordinarias y secretos ocultos, Harry deberá enfrentar verdades que cambiarán su visión del mundo y de sí mismo.",
+    "publisher": null,
+    "isbn": null,
+    "averageRating": null
   },
   {
     "id": "178KsreY7HOVuk4-V5F6FWrR6XiSM_v1Z",
@@ -3862,5 +3880,11 @@
     "averageRating": null,
     "ratingsCount": 0,
     "previewLink": "http://books.google.es/books?id=N0TODwAAQBAJ&printsec=frontcover&dq=intitle:%22Ma%C3%B1ana+Azul%22+inauthor:%22Pierce+Brown%22&hl=&as_pt=BOOKS&cd=1&source=gbs_api"
+  },
+  {
+    "id": "19crSoVroIQ-dUUOLFA_p7kcZ_KE5sw6m",
+    "title": "Jugando fuerte",
+    "author": "Liz Tomforde (La Ciudad de los Vientos #2)",
+    "saga": null
   }
 ]
