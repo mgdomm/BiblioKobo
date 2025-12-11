@@ -987,19 +987,43 @@ function renderBookPage({ libros, titlePage, tipo, nombre, req, noResultsHtml })
     </div>
   </div>
   <form method="get" action="/${tipo}" style="display:flex;flex-direction:column;align-items:center;gap:8px;margin-top:12px;">
-    <div style="display:flex;gap:8px;align-items:center;"><input type="search" name="buscar" placeholder="Buscar título o autor" value="${req && req.query.buscar ? req.query.buscar.replace(/"/g,'&quot;') : ''}" /><button type="submit">Buscar</button></div>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <input type="search" name="buscar" placeholder="Buscar título o autor" value="${req && req.query.buscar ? req.query.buscar.replace(/"/g,'&quot;') : ''}" />
+      <button type="submit">Buscar</button>
+      <button type="button" id="sort-btn" style="padding:8px 12px;border-radius:6px;border:2px solid #19E6D6;background:#111;color:#19E6D6;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;transition:0.2s;" title="Ordenar">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+      </button>
+    </div>
+    <div id="sort-menu" style="display:none;position:absolute;background:linear-gradient(135deg, rgba(18,18,18,0.95), rgba(12,12,12,0.9));border:2px solid rgba(25,230,214,0.5);border-radius:8px;padding:0;z-index:100;min-width:140px;box-shadow:0 4px 12px rgba(0,0,0,0.6);">
+      <a href="?${new URLSearchParams({...req.query, ordenar: 'alfabetico', page: 1}).toString()}" style="display:block;padding:12px 16px;color:#fff;text-decoration:none;font-family:'MedievalSharp', cursive;font-size:15px;border-bottom:1px solid rgba(25,230,214,0.2);transition:0.2s;${orden==='alfabetico'?'background:rgba(25,230,214,0.2);':''}" onmouseover="this.style.background='rgba(25,230,214,0.3)';" onmouseout="this.style.background='${orden==='alfabetico'?'rgba(25,230,214,0.2);':''}'" >A → Z</a>
+      <a href="?${new URLSearchParams({...req.query, ordenar: 'alfabetico-desc', page: 1}).toString()}" style="display:block;padding:12px 16px;color:#fff;text-decoration:none;font-family:'MedievalSharp', cursive;font-size:15px;border-bottom:1px solid rgba(25,230,214,0.2);transition:0.2s;${orden==='alfabetico-desc'?'background:rgba(25,230,214,0.2);':''}" onmouseover="this.style.background='rgba(25,230,214,0.3)';" onmouseout="this.style.background='${orden==='alfabetico-desc'?'rgba(25,230,214,0.2);':''}'" >Z → A</a>
+      <a href="?${new URLSearchParams({...req.query, ordenar: 'recientes', page: 1}).toString()}" style="display:block;padding:12px 16px;color:#fff;text-decoration:none;font-family:'MedievalSharp', cursive;font-size:15px;${tipo==='saga'?'border-bottom:1px solid rgba(25,230,214,0.2);':''}transition:0.2s;${orden==='recientes'?'background:rgba(25,230,214,0.2);':''}" onmouseover="this.style.background='rgba(25,230,214,0.3)';" onmouseout="this.style.background='${orden==='recientes'?'rgba(25,230,214,0.2);':''}'" >Más recientes</a>
+      ${tipo==='saga'?`<a href="?${new URLSearchParams({...req.query, ordenar: 'numero', page: 1}).toString()}" style="display:block;padding:12px 16px;color:#fff;text-decoration:none;font-family:'MedievalSharp', cursive;font-size:15px;transition:0.2s;${orden==='numero'?'background:rgba(25,230,214,0.2);':''}" onmouseover="this.style.background='rgba(25,230,214,0.3)';" onmouseout="this.style.background='${orden==='numero'?'rgba(25,230,214,0.2);':''}'" ># Número</a>`:''}
+    </div>
     <div style="margin-top:6px;display:flex;gap:8px;align-items:center;">
-      <select id="orden" name="ordenar" onchange="this.form.submit()" style="width:auto;min-width:0;padding:4px 8px;border-radius:6px;">
-        <option value="alfabetico" ${orden==='alfabetico'?'selected':''}>A→Z</option>
-        <option value="alfabetico-desc" ${orden==='alfabetico-desc'?'selected':''}>Z→A</option>
-        <option value="recientes" ${orden==='recientes'?'selected':''}>Más recientes</option>
-        ${tipo==='saga'?`<option value="numero" ${orden==='numero'?'selected':''}>#Número</option>`:''}
-      </select>
       <button type="button" id="multi-download-btn" style="display:none;padding:8px 16px;border-radius:8px;border:1px solid #19E6D6;background:#19E6D6;color:#000;font-family:'MedievalSharp', cursive;font-size:17px;cursor:pointer;text-shadow:0 1px 2px rgba(255,255,255,0.8);box-shadow:0 4px 12px rgba(0,0,0,0.4);">Descarga múltiple</button>
     </div>
     <input type="hidden" name="name" value="${nombre}" />
     <input type="hidden" name="page" value="${currentPage}" />
   </form>
+  
+  <script>
+    const sortBtn = document.getElementById('sort-btn');
+    const sortMenu = document.getElementById('sort-menu');
+    
+    sortBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      sortMenu.style.display = sortMenu.style.display === 'none' ? 'block' : 'none';
+    });
+    
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('#sort-btn') && !e.target.closest('#sort-menu')) {
+        sortMenu.style.display = 'none';
+      }
+    });
+  </script>
   <div id="grid">${booksHtml}</div>
   
   ${totalPages > 1 ? `
