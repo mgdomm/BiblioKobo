@@ -308,7 +308,7 @@ function checkAuth(req, res, next) {
 <html lang="es">
 <head><meta charset="UTF-8"><title>Acceso Denegado</title><style>${css}</style></head>
 <body>
-  <div class="header-banner top" style="background-image:url('/cover/secuendarias/portada11.png');"></div>
+  <div class="header-banner top" style="background-image:url('/cover/secuendarias/portada11.webp');"></div>
   <div class="overlay top">
     <div class="top-buttons secondary"><a href="/">Inicio</a></div>
     <h1>Azkaban</h1>
@@ -976,7 +976,7 @@ function renderBookPage({ libros, titlePage, tipo, nombre, req, noResultsHtml })
 <html lang="es">
 <head><meta charset="UTF-8"><title>${titlePage}</title><style>${css}</style></head>
 <body>
-  <div class="header-banner top" style="background-image:url('/cover/secuendarias/portada11.png');"></div>
+  <div class="header-banner top" style="background-image:url('/cover/secuendarias/portada11.webp');"></div>
   <div class="overlay top">
     <div class="top-buttons secondary"><a href="/">Inicio</a></div>
     <h1>${titlePage}</h1>
@@ -1375,7 +1375,7 @@ app.get('/autores', (req,res)=>{
 <html lang="es">
 <head><meta charset="UTF-8"><title>Autores</title><style>${css}</style></head>
 <body>
-  <div class="header-banner top" style="background-image:url('/cover/secuendarias/portada11.png');"></div>
+  <div class="header-banner top" style="background-image:url('/cover/secuendarias/portada11.webp');"></div>
   <div class="overlay top">
     <div class="top-buttons secondary"><a href="/">Inicio</a></div>
     <h1>Autores</h1>
@@ -1459,7 +1459,7 @@ app.get('/sagas', (req,res)=>{
 <html lang="es">
 <head><meta charset="UTF-8"><title>Sagas</title><style>${css}</style></head>
 <body>
-  <div class="header-banner top" style="background-image:url('/cover/secuendarias/portada11.png');"></div>
+  <div class="header-banner top" style="background-image:url('/cover/secuendarias/portada11.webp');"></div>
   <div class="overlay top">
     <div class="top-buttons secondary"><a href="/">Inicio</a></div>
     <h1>Sagas</h1>
@@ -1607,7 +1607,7 @@ app.get('/recomendados', async (req,res)=>{
 <html lang="es">
 <head><meta charset="UTF-8"><title>Recomendados (Top 5)</title><style>${css}</style></head>
 <body>
-  <div class="header-banner top" style="background-image:url('/cover/secuendarias/portada11.png');"></div>
+  <div class="header-banner top" style="background-image:url('/cover/secuendarias/portada11.webp');"></div>
   <div class="overlay top">
     <div class="top-buttons secondary"><a href="/">Inicio</a></div>
     <h1>Top 5 recomendados</h1>
@@ -1677,7 +1677,7 @@ app.get('/libro', async (req, res) => {
 <html lang="es">
 <head><meta charset="utf-8"><title>${title}</title><style>${css}</style></head>
 <body>
-  <div class="header-banner top" style="background-image:url('${cover || '/cover/secuendarias/portada11.png'}');"></div>
+  <div class="header-banner top" style="background-image:url('${cover || '/cover/secuendarias/portada11.webp'}');"></div>
   <div class="overlay top">
     <div class="top-buttons secondary"><a href="/">Inicio</a></div>
     <h1>${title}</h1>
@@ -1921,7 +1921,7 @@ app.get('/stats', async (req, res) => {
   </style>
 </head>
 <body>
-  <div class="header-banner top" style="background-image:url('/cover/secuendarias/portada11.png');"></div>
+  <div class="header-banner top" style="background-image:url('/cover/secuendarias/portada11.webp');"></div>
   <div class="overlay top">
     <div class="top-buttons secondary"><a href="/">Inicio</a></div>
     <h1>Dashboard Editor</h1>
@@ -2640,7 +2640,7 @@ app.get('/upload', (req, res) => {
 <head>
   <meta charset="UTF-8">
   <title>Cargar EPUB - Azkaban Reads</title>
-  <link rel="preload" as="image" href="/cover/secuendarias/portada11.png">
+  <link rel="preload" as="image" href="/cover/secuendarias/portada11.webp">
   <style>${css}</style>
   <style>
     .upload-container { max-width: 900px; margin: 40px auto; padding: 40px; }
@@ -2665,7 +2665,7 @@ app.get('/upload', (req, res) => {
   </style>
 </head>
 <body>
-  <div class="header-banner top" style="background-image:url('/cover/secuendarias/portada11.png');"></div>
+  <div class="header-banner top" style="background-image:url('/cover/secuendarias/portada11.webp');"></div>
   <div class="overlay top">
     <div class="top-buttons secondary"><a href="/">Inicio</a></div>
     <h1 style="display:flex;align-items:center;gap:12px;"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:#19E6D6;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>Uploads</h1>
