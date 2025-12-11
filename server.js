@@ -429,6 +429,7 @@ body { padding-top:220px; }
   .header-banner.top { height:220px; }
   .overlay.top { height:220px; }
   body { padding-top:220px; }
+  h1 { font-size:38px; }
 }
 `;
 
