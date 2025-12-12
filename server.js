@@ -3199,6 +3199,15 @@ app.put('/api/books/:id', async (req, res) => {
     const googleBooksData = await fetchGoogleBooksData(validated.title, validated.author);
     if (googleBooksData) {
       mergeGoogleDataIntoBook(validated, googleBooksData);
+
+      // Si la portada actual es local (/cover/...) o está vacía, reemplazar con la de Google
+      const imageUrl = googleBooksData.imageLinks?.thumbnail || googleBooksData.imageLinks?.smallThumbnail || null;
+      const hasLocalCover = validated.coverUrl && validated.coverUrl.startsWith('/cover');
+      if (imageUrl && (!validated.coverUrl || hasLocalCover)) {
+        validated.coverUrl = imageUrl;
+        validated.imageLinks = googleBooksData.imageLinks || validated.imageLinks;
+      }
+
       console.log(`[API /books/:id PUT] ✅ Google Books data merged - Cover: ${validated.coverUrl ? '✅' : '❌'}`);
     }
   } catch (err) {
