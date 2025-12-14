@@ -694,25 +694,10 @@ async function fetchGoogleBooksData(title, author, isbn = null) {
       if (isbn) {
         query = `isbn:${isbn}`;
       } else {
-        // Normalizar título y autor: remover acentos pero preservar ñ/Ñ
-        const normalizeText = (text) => {
-          return text
-            .replace(/ñ/g, 'ñ') // Preservar ñ minúscula
-            .replace(/Ñ/g, 'Ñ') // Preservar Ñ mayúscula
-            .normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '') // Remover otros acentos
-            .replace(/[^a-zA-ZñÑ0-9\s]/g, ' ') // Permitir ñ/Ñ en caracteres válidos
-            .replace(/\s+/g, ' ')              // Normalizar espacios múltiples
-            .trim();
-        };
-        
-        const cleanTitle = normalizeText(title);
-        const cleanAuthor = normalizeText(author);
-        
-        // Intentar con título y autor exactos primero
+        // Escapar caracteres especiales y usar búsqueda por título e autor
+        const cleanTitle = title.replace(/[:"()]/g, '');
+        const cleanAuthor = author.replace(/[:"()]/g, '');
         query = `intitle:"${cleanTitle}" inauthor:"${cleanAuthor}"`;
-        
-        console.log(`[fetchGoogleBooksData] Query: ${query}`);
       }
       const keyParam = GOOGLE_BOOKS_API_KEY ? `&key=${GOOGLE_BOOKS_API_KEY}` : '';
       const url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&maxResults=1&printType=books${keyParam}`;
@@ -722,7 +707,6 @@ async function fetchGoogleBooksData(title, author, isbn = null) {
       
       if (item?.volumeInfo) {
         const vol = item.volumeInfo;
-        console.log(`[fetchGoogleBooksData] ✅ Encontrado: ${vol.title} (${vol.imageLinks?.thumbnail ? 'con portada' : 'sin portada'})`);
         return {
           title: vol.title || null,
           authors: vol.authors || [],
@@ -738,47 +722,6 @@ async function fetchGoogleBooksData(title, author, isbn = null) {
           previewLink: vol.previewLink || null
         };
       }
-      
-      // Si no encuentra nada con búsqueda exacta, intentar búsqueda más flexible
-      if (!isbn && retries === 0) {
-        const flexibleTitle = title.split(' ').slice(0, 4).join(' '); // Primeras 4 palabras (era 3)
-        const flexibleAuthor = author.split(' ')[0]; // Solo primer apellido
-        const flexibleQuery = `intitle:${flexibleTitle} inauthor:${flexibleAuthor}`;
-        console.log(`[fetchGoogleBooksData] Reintentando con query flexible: ${flexibleQuery}`);
-        
-        const flexUrl = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(flexibleQuery)}&maxResults=5&printType=books${keyParam}`;
-        const flexResp = await axios.get(flexUrl, { timeout: 5000 });
-        const items = flexResp.data?.items || [];
-        
-        // Buscar el mejor match por similitud de título
-        for (const candidate of items) {
-          const candTitle = (candidate.volumeInfo?.title || '').toLowerCase();
-          const candAuthor = (candidate.volumeInfo?.authors?.[0] || '').toLowerCase();
-          const searchTitle = title.toLowerCase();
-          const searchAuthor = author.toLowerCase();
-          
-          // Match flexible: título contiene o autor coincide
-          if (candTitle.includes(searchTitle.substring(0, 15)) || searchTitle.includes(candTitle.substring(0, 15)) || candAuthor.includes(searchAuthor.split(' ')[0])) {
-            const vol = candidate.volumeInfo;
-            console.log(`[fetchGoogleBooksData] ✅ Match flexible encontrado: ${vol.title}`);
-            return {
-              title: vol.title || null,
-              authors: vol.authors || [],
-              publisher: vol.publisher || null,
-              publishedDate: vol.publishedDate || null,
-              description: vol.description || null,
-              pageCount: vol.pageCount || null,
-              categories: vol.categories || [],
-              averageRating: vol.averageRating || null,
-              ratingsCount: vol.ratingsCount || null,
-              language: vol.language || null,
-              imageLinks: vol.imageLinks || null,
-              previewLink: vol.previewLink || null
-            };
-          }
-        }
-      }
-      
       return null;
     } catch (err) {
       retries++;
@@ -800,548 +743,801 @@ async function fetchGoogleBooksData(title, author, isbn = null) {
   return null;
 }
 
-// API: Sincronizar datos de Google Books para libros sin portada/descripción
-app.get('/api/sync-google-books', async (req, res) => {
+async function fetchRatingOpenLibrary(title, author) {
   try {
-    const pass = req.query.pass || '';
-    if (pass !== '252914') {
-      return res.status(403).json({ error: 'Acceso denegado' });
-    }
+    const sUrl = `https://openlibrary.org/search.json?title=${encodeURIComponent(title||'')}&author=${encodeURIComponent(author||'')}&limit=3`;
+    const sr = await axios.get(sUrl, { timeout: 5000 });
+    const docs = sr.data.docs || [];
+    if (!docs.length || !docs[0].key) return 0;
+    const workKey = docs[0].key.startsWith('/works/') ? docs[0].key : `/works/${docs[0].key}`;
+    const rUrl = `https://openlibrary.org${workKey}/ratings.json`;
+    const rr = await axios.get(rUrl, { timeout: 5000 });
+    const avg = rr.data?.summary?.average || rr.data?.average || 0;
+    return Number(avg) || 0;
+  } catch (err) {
+    return 0;
+  }
+}
 
-    reloadBooksMetadata();
-    
-    // Encontrar libros sin datos completos de Google Books
-    const booksToSync = bookMetadata.filter(b => 
-      !b.coverUrl || !b.description || !b.publisher || !b.pageCount || !b.categories || b.categories.length === 0
-    );
-    
-    if (booksToSync.length === 0) {
-      return res.json({ 
-        success: true, 
-        message: 'Todos los libros tienen datos completos de Google Books',
-        updated: 0,
-        total: bookMetadata.length
-      });
-    }
+function setRatingCache(key, value) {
+  ratingsCache.set(key, value);
+  persistRatingsCacheSoon();
+}
 
-    console.log(`[SYNC-GBOOKS] 🔍 Sincronizando ${booksToSync.length} libros...`);
+function hasRatingCache(title, author, isbn = null) {
+  const key = `${(title||'').toLowerCase()}|${(author||'').toLowerCase()}|${isbn||''}`;
+  return ratingsCache.has(key);
+}
+
+async function fetchGoodreadsPageRating(pageId) {
+  if (!pageId) return 0;
+  try {
+    const pageUrl = `https://www.goodreads.com/book/show/${pageId}`;
+    console.log(`[Page Rating] Fetching ${pageUrl}`);
+    const html = await axios.get(pageUrl, { timeout: 8000, headers: { 'User-Agent': 'Mozilla/5.0' } }).then(r => r.data || '');
     
-    let updated = 0;
-    for (const book of booksToSync) {
+    // Strategy 1: Look for data-rating attributes
+    let match = /data-rating="([0-9.]+)"/i.exec(html);
+    if (match && match[1]) {
+      const num = parseFloat(match[1]);
+      if (num && num > 0 && num <= 5) {
+        console.log(`[Page Rating] Found data-rating: ${num}`);
+        return num;
+      }
+    }
+    
+    // Strategy 2: Look in JSON-LD structured data
+    const jsonLdMatch = /(<script[^>]+type="application\/ld\+json"[^>]*>[\s\S]*?<\/script>)/gi;
+    let m;
+    while ((m = jsonLdMatch.exec(html)) !== null) {
       try {
-        const googleBooksData = await fetchGoogleBooksData(book.title, book.author);
-        if (googleBooksData) {
-          // Actualizar todos los campos de Google Books
-          book.coverUrl = googleBooksData.imageLinks?.thumbnail || googleBooksData.imageLinks?.smallThumbnail || book.coverUrl || null;
-          book.description = googleBooksData.description || book.description || null;
-          book.publisher = googleBooksData.publisher || book.publisher || null;
-          book.publishedDate = googleBooksData.publishedDate || book.publishedDate || null;
-          book.pageCount = googleBooksData.pageCount || book.pageCount || null;
-          book.categories = googleBooksData.categories || book.categories || [];
-          book.language = googleBooksData.language || book.language || null;
-          book.averageRating = googleBooksData.averageRating !== undefined ? googleBooksData.averageRating : (book.averageRating || null);
-          book.ratingsCount = googleBooksData.ratingsCount || book.ratingsCount || 0;
-          book.previewLink = googleBooksData.previewLink || book.previewLink || null;
-          book.imageLinks = googleBooksData.imageLinks || book.imageLinks || null;
-          
-          // Guardar cambios en JSON
-          await fs.promises.writeFile(BOOKS_FILE, JSON.stringify(bookMetadata, null, 2));
-          console.log(`[SYNC-GBOOKS] ✅ Datos guardados: ${book.title}`);
-          updated++;
-        }
-      } catch (err) {
-        console.warn(`[SYNC-GBOOKS] Error sincronizando ${book.title}:`, err.message);
-      }
-    }
-
-    // Eliminar duplicados antes de guardar
-    const beforeCount = bookMetadata.length;
-    bookMetadata = removeDuplicateBooks(bookMetadata);
-    const duplicatesRemoved = beforeCount - bookMetadata.length;
-
-    // Guardar cambios
-    await fs.promises.writeFile(BOOKS_FILE, JSON.stringify(bookMetadata, null, 2));
-    console.log(`[SYNC-GBOOKS] ✅ Sincronización completada: ${updated}/${booksToSync.length} libros actualizados`);
-
-    res.json({ 
-      success: true, 
-      message: `Se actualizaron ${updated} libros con datos de Google Books`,
-      updated,
-      total: bookMetadata.length,
-      synced: updated > 0
-    });
-  } catch (err) {
-    console.error('[SYNC-GBOOKS] Error:', err.message);
-    res.status(500).json({ error: 'Error sincronizando con Google Books: ' + err.message });
-  }
-});
-
-// API: Actualizar libro
-app.put('/api/books/:id', async (req, res) => {
-  const { id } = req.params;
-  const updatedData = req.body;
-  
-  reloadBooksMetadata();
-  
-  const bookIndex = bookMetadata.findIndex(b => b.id === id);
-  if (bookIndex === -1) return res.status(404).json({ error: 'Libro no encontrado' });
-  
-  // Validar que no se pierdan campos críticos
-  const book = bookMetadata[bookIndex];
-  const validated = {
-    ...book,
-    ...updatedData,
-    id: book.id,
-    uploadDate: book.uploadDate,
-    createdTime: book.createdTime
-  };
-  
-  // Obtener datos actualizados de Google Books ANTES de guardar
-  try {
-    console.log(`[API /books/:id PUT] Fetching Google Books data for: ${validated.title} by ${validated.author}`);
-    const googleBooksData = await fetchGoogleBooksData(validated.title, validated.author);
-    
-    if (googleBooksData) {
-      console.log(`[API /books/:id PUT] ✅ Datos recibidos de Google Books:`, {
-        title: googleBooksData.title,
-        hasCover: !!googleBooksData.imageLinks?.thumbnail,
-        hasDescription: !!googleBooksData.description,
-        hasPublisher: !!googleBooksData.publisher
-      });
-      
-      // Merge datos de Google Books (solo campos vacíos)
-      const merged = mergeGoogleDataIntoBook(validated, googleBooksData);
-      
-      // Actualizar portada si no tiene una válida
-      const imageUrl = googleBooksData.imageLinks?.thumbnail || googleBooksData.imageLinks?.smallThumbnail || null;
-      const hasLocalCover = validated.coverUrl && validated.coverUrl.startsWith('/cover');
-      const hasNoCover = !validated.coverUrl || validated.coverUrl.trim() === '';
-      
-      if (imageUrl && (hasNoCover || hasLocalCover)) {
-        validated.coverUrl = imageUrl;
-        validated.imageLinks = googleBooksData.imageLinks || validated.imageLinks;
-        console.log(`[API /books/:id PUT] ✅ Portada actualizada: ${imageUrl}`);
-      }
-      
-      console.log(`[API /books/:id PUT] ✅ Google Books data merged - Cover: ${validated.coverUrl ? '✅' : '❌'}, Description: ${validated.description ? '✅' : '❌'}`);
-    } else {
-      console.log(`[API /books/:id PUT] ⚠️ No se encontraron datos en Google Books para "${validated.title}"`);
-      
-      // Si no hay portada y Google Books no encontró nada, asignar fallback
-      if (!validated.coverUrl || validated.coverUrl.startsWith('/cover')) {
-        const fallback = getRandomCoverImage();
-        if (fallback) {
-          validated.coverUrl = fallback;
-          console.log(`[API /books/:id PUT] 🎲 Fallback asignado: ${fallback}`);
-        }
-      }
-    }
-  } catch (err) {
-    console.error(`[API /books/:id PUT] Error fetching Google Books data:`, err.message);
-  }
-  
-  // Actualizar en memoria DESPUÉS de enriquecer con Google Books
-  bookMetadata[bookIndex] = validated;
-  
-  // Guardar a disco
-  try {
-    await fs.promises.writeFile(BOOKS_FILE, JSON.stringify(bookMetadata, null, 2));
-    console.log(`[API /books/:id PUT] ✅ Libro guardado: ${validated.title} (ID: ${id})`);
-    console.log(`[API /books/:id PUT] 📊 Estado final - Cover: ${validated.coverUrl}, Description length: ${validated.description?.length || 0}`);
-    res.json({ success: true, book: validated });
-  } catch (err) {
-    console.error('[API /books/:id PUT] Error al guardar:', err.message);
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// API: Sincronizar desde carpeta local a Google Drive
-app.post('/api/sync-folder-to-drive', upload.single('epubFile'), async (req, res) => {
-  try {
-    const pass = req.body.pass || '';
-    if (pass !== '252914') {
-      return res.status(403).json({ error: 'Acceso denegado' });
-    }
-
-    const file = req.file;
-    if (!file) {
-      return res.status(400).json({ error: 'No se recibió ningún archivo' });
-    }
-
-    // Verificar que el archivo sea un EPUB
-    if (!file.originalname.toLowerCase().endsWith('.epub')) {
-      return res.status(400).json({ error: 'El archivo debe ser un EPUB' });
-    }
-
-    // Leer el archivo como buffer
-    const fileBuffer = file.buffer;
-
-    // Subir a Google Drive
-    if (!driveUpload) {
-      throw new Error('Google Drive no está inicializado para subida');
-    }
-
-    // Crear archivo en Google Drive
-    const fileMetadata = {
-      name: file.originalname,
-      mimeType: 'application/epub+zip',
-      parents: [folderId]
-    };
-
-    const media = {
-      mimeType: 'application/epub+zip',
-      body: bufferToStream(fileBuffer)
-    };
-
-    const driveResponse = await driveUpload.files.create({
-      resource: fileMetadata,
-      media: media,
-      fields: 'id'
-    });
-
-    const fileId = driveResponse.data.id;
-    console.log(`✅ Archivo subido a Drive con ID: ${fileId}`);
-
-    // Guardar metadata básica en books.json
-    const newBook = {
-      id: fileId,
-      title: file.originalname.replace('.epub', ''),
-      author: 'Desconocido',
-      uploadDate: new Date().toISOString(),
-      createdTime: new Date().toISOString(),
-      coverUrl: null,
-      description: null,
-      publisher: null,
-      publishedDate: null,
-      pageCount: null,
-      categories: [],
-      language: null,
-      averageRating: null,
-      ratingsCount: 0,
-      previewLink: null,
-      imageLinks: null
-    };
-
-    // Agregar a metadata existente
-    bookMetadata.push(newBook);
-    await fs.promises.writeFile(BOOKS_FILE, JSON.stringify(bookMetadata, null, 2));
-
-    res.json({ success: true, id: fileId });
-  } catch (err) {
-    console.error('Error en sincronización de carpeta a Drive:', err.message);
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// API: Forzar actualización de metadata desde Google Books
-app.post('/api/force-update-metadata', async (req, res) => {
-  try {
-    const pass = req.body.pass || '';
-    if (pass !== '252914') {
-      return res.status(403).json({ error: 'Acceso denegado' });
-    }
-
-    reloadBooksMetadata();
-    
-    let updatedCount = 0;
-    for (const book of bookMetadata) {
-      try {
-        const googleBooksData = await fetchGoogleBooksData(book.title, book.author);
-        if (googleBooksData) {
-          const merged = mergeGoogleDataIntoBook(book, googleBooksData);
-          if (merged) {
-            updatedCount++;
-            console.log(`✅ Metadata actualizada para: ${book.title}`);
+        const jsonStr = m[1].replace(/<[^>]+>/g, '');
+        const json = JSON.parse(jsonStr);
+        if (json.aggregateRating?.ratingValue) {
+          const num = parseFloat(json.aggregateRating.ratingValue);
+          if (num && num > 0 && num <= 5) {
+            console.log(`[Page Rating] Found in JSON-LD: ${num}`);
+            return num;
           }
         }
-      } catch (err) {
-        console.warn(`Error actualizando metadata para ${book.title}:`, err.message);
+      } catch (e) {}
+    }
+    
+    // Strategy 3: itemprop="ratingValue"
+    match = /itemprop="ratingValue"[^>]*>\s*([0-9.,]+)/i.exec(html);
+    if (match && match[1]) {
+      const num = parseFloat(match[1].replace(',', '.'));
+      if (num && num > 0 && num <= 5) {
+        console.log(`[Page Rating] Found itemprop ratingValue: ${num}`);
+        return num;
       }
     }
-
-    // Guardar cambios
-    await fs.promises.writeFile(BOOKS_FILE, JSON.stringify(bookMetadata, null, 2));
-    console.log(`✅ Sincronización completa. ${updatedCount} libros actualizados.`);
-
-    res.json({ 
-      success: true, 
-      message: `Sincronización completada. ${updatedCount} libros actualizados.`,
-      updated: updatedCount
-    });
-  } catch (err) {
-    console.error('Error en la sincronización forzada:', err.message);
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// API: Sincronizar todos los libros desde Drive
-app.get('/api/sync-all-drive', async (req, res) => {
-  try {
-    const pass = req.query.pass || '';
-    if (pass !== '252914') {
-      return res.status(403).json({ error: 'Acceso denegado' });
-    }
-
-    if (!driveRead) {
-      throw new Error('Google Drive no está inicializado para lectura');
-    }
-
-    // Listar todos los archivos en la carpeta de Drive
-    const files = await listAllFiles(folderId);
-    console.log(`Encontrados ${files.length} archivos en Google Drive`);
-
-    // Filtrar solo los EPUB
-    const epubFiles = files.filter(f => f.name.toLowerCase().endsWith('.epub'));
-    console.log(`Se encontraron ${epubFiles.length} archivos EPUB`);
-
-    // Sincronizar con la metadata existente
-    const nuevosLibros = [];
-    const librosActualizados = [];
-    const librosDuplicados = [];
     
-    for (const file of epubFiles) {
-      const exists = bookMetadata.find(b => b.id === file.id);
-      if (!exists) {
-        // Nuevo libro
-        const newBook = {
-          id: file.id,
-          title: file.name.replace('.epub', ''),
-          author: 'Desconocido',
-          uploadDate: new Date().toISOString(),
-          createdTime: new Date().toISOString(),
-          coverUrl: null,
-          description: null,
-          publisher: null,
-          publishedDate: null,
-          pageCount: null,
-          categories: [],
-          language: null,
-          averageRating: null,
-          ratingsCount: 0,
-          previewLink: null,
-          imageLinks: null
-        };
-        nuevosLibros.push(newBook);
+    // Strategy 4: "average_rating":"4.00" pattern
+    match = /"average_rating"\s*:\s*"([0-9.]+)"/i.exec(html);
+    if (match && match[1]) {
+      const num = parseFloat(match[1]);
+      if (num && num > 0 && num <= 5) {
+        console.log(`[Page Rating] Found average_rating: ${num}`);
+        return num;
+      }
+    }
+    
+    // Strategy 5: "avgRating":4.00 pattern
+    match = /"avgRating"\s*:\s*([0-9.]+)/i.exec(html);
+    if (match && match[1]) {
+      const num = parseFloat(match[1]);
+      if (num && num > 0 && num <= 5) {
+        console.log(`[Page Rating] Found avgRating: ${num}`);
+        return num;
+      }
+    }
+    
+    // Strategy 6: rating in JSON object
+    match = /"rating"\s*:\s*"?([0-9.]+)"?/i.exec(html);
+    if (match && match[1]) {
+      const num = parseFloat(match[1]);
+      if (num && num > 0 && num <= 5) {
+        console.log(`[Page Rating] Found rating field: ${num}`);
+        return num;
+      }
+    }
+    
+    console.log(`[Page Rating] No rating found in page ${pageId}`);
+  } catch (err) {
+    console.warn(`[Page Rating] Error for ${pageId}: ${err.message}`);
+  }
+  return 0;
+}
+
+async function fetchGoodreadsSearchRating(title, author) {
+  // DEPRECATED - Now using autocomplete API in fetchRating
+  return 0;
+}
+
+async function fetchGoodreadsByIsbn(isbn) {
+  // DEPRECATED - Now using autocomplete API in fetchRating
+  return 0;
+}
+
+function ordenarBooks(books, criterio, tipo = null) {
+  let sorted = [...books];
+  if (tipo === 'autor' || tipo === 'saga') {
+    if (criterio === 'alfabetico') sorted.sort((a, b) => a.title.toLowerCase().localeCompare(b.title.toLowerCase()));
+    else if (criterio === 'alfabetico-desc') sorted.sort((a, b) => b.title.toLowerCase().localeCompare(a.title.toLowerCase()));
+    else if (criterio === 'numero') sorted.sort((a, b) => (a.saga?.number || 0) - (b.saga?.number || 0));
+    else if (criterio === 'recientes') sorted.sort((a, b) => new Date(b.createdTime || 0) - new Date(a.createdTime || 0));
+  } else {
+    if (criterio === 'alfabetico') sorted.sort((a, b) => (bookMetadata.find(x => x.id === a.id)?.title || a.name)
+      .localeCompare(bookMetadata.find(x => x.id === b.id)?.title || b.name));
+    else if (criterio === 'alfabetico-desc') sorted.sort((a, b) => (bookMetadata.find(x => x.id === b.id)?.title || b.name)
+      .localeCompare(bookMetadata.find(x => x.id === a.id)?.title || a.name));
+    else if (criterio === 'recientes') sorted.sort((a, b) => new Date(b.createdTime) - new Date(a.createdTime));
+  }
+  return sorted;
+}
+
+// ------------------ RENDER ------------------
+function renderBookPage({ libros, titlePage, tipo, nombre, req, noResultsHtml }) {
+  const orden = (req && (req.query.ordenar || req.query.orden)) || 'alfabetico';
+  libros = ordenarBooks(libros, orden, tipo);
+  const kobo = req ? isKobo(req) : false;
+  const queryParams = req?.query || {};
+  const searchValue = queryParams.buscar ? queryParams.buscar.replace(/"/g, '&quot;') : '';
+  
+  // Paginación
+  const itemsPerPage = 25;
+  const currentPage = parseInt(req?.query?.page || '1', 10);
+  const totalItems = libros.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedLibros = libros.slice(startIndex, endIndex);
+  
+  // Versión liviana para Kobo (sin imágenes ni gradientes pesados)
+  if (kobo) {
+    const items = paginatedLibros.map(book => {
+      const title = book.title || 'Sin título';
+      const author = book.author || 'Desconocido';
+      const sagaName = book.saga?.name ? ` · ${book.saga.name}${book.saga.number ? ' #' + book.saga.number : ''}` : '';
+      return `<li>
+        <a href="/libro?id=${encodeURIComponent(book.id)}" style="font-weight:bold;">${title}</a>
+        <div style="font-size:15px;color:#bbb;">${author}${sagaName}</div>
+        <a href="/download?id=${encodeURIComponent(book.id)}" style="font-size:15px;">Descargar</a>
+      </li>`;
+    }).join('') || `<li>${noResultsHtml || getRandomNoResultHtml()}</li>`;
+
+    return `<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>${titlePage} (Kobo)</title>
+  <style>
+    body { margin:0; padding:16px; background:#000; color:#eee; font-family: Arial, sans-serif; }
+    h1 { margin:0 0 12px 0; font-size:22px; color:#19E6D6; }
+    form { margin-bottom:12px; display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
+    input[type="search"], select, button { background:#111; color:#fff; border:1px solid #19E6D6; border-radius:6px; padding:8px 12px; font-size:16px; }
+    button { cursor:pointer; }
+    ul { list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:10px; }
+    li { padding:10px; border:1px solid #222; border-radius:6px; }
+    a { color:#19E6D6; text-decoration:none; }
+  </style>
+</head>
+<body>
+  <h1>${titlePage}</h1>
+  <form method="get" action="/${tipo}">
+    <input type="search" name="buscar" placeholder="Buscar" value="${searchValue}" />
+    <select name="ordenar" onchange="this.form.submit()">
+      <option value="alfabetico" ${orden==='alfabetico'?'selected':''}>A→Z</option>
+      <option value="alfabetico-desc" ${orden==='alfabetico-desc'?'selected':''}>Z→A</option>
+      <option value="recientes" ${orden==='recientes'?'selected':''}>Recientes</option>
+      ${tipo==='saga'?`<option value="numero" ${orden==='numero'?'selected':''}>#Número</option>`:''}
+    </select>
+    <input type="hidden" name="name" value="${nombre}" />
+    <input type="hidden" name="page" value="${currentPage}" />
+    <button type="submit">Buscar</button>
+  </form>
+
+  <ul>${items}</ul>
+
+  ${totalPages > 1 ? `
+  <div style="margin-top:14px; display:flex; gap:10px; align-items:center; font-size:15px;">
+    ${currentPage > 1 ? `<a href="?${new URLSearchParams({...queryParams, page: currentPage - 1}).toString()}">← Anterior</a>` : ''}
+    <span style="color:#999;">Página ${currentPage} de ${totalPages}</span>
+    ${currentPage < totalPages ? `<a href="?${new URLSearchParams({...queryParams, page: currentPage + 1}).toString()}">Siguiente →</a>` : ''}
+  </div>
+  ` : ''}
+</body>
+</html>`;
+  }
+
+  let booksHtml = paginatedLibros.map(book => {
+    const cover = book.coverUrl || getCoverForBook(book.id);
+    const imgHtml = cover ? `<img src="${cover}" data-book-id="${book.id}" data-title="${book.title}" data-author="${book.author}" />` : `<div style="width:80px;height:120px;background:#333;border-radius:5px;" data-book-id="${book.id}" data-title="${book.title}" data-author="${book.author}"></div>`;
+    // SIEMPRE usar solo datos del JSON
+    const title = book.title || 'Sin título';
+    const author = book.author || 'Desconocido';
+    const sagaName = book.saga?.name || '';
+    const sagaNum = book.saga?.number || '';
+    // Si estamos en página de saga, mostrar número; si no, no mostrar
+    const sagaDisplay = (tipo === 'saga' && sagaNum) ? `${sagaName} #${sagaNum}` : sagaName;
+    const sagaHtml = sagaName ? `<div class="number-span"><a href="/saga?name=${encodeURIComponent(sagaName)}">${sagaDisplay}</a></div>` : '';
+    const authorHtml = `<div class="author-span"><a href="/autor?name=${encodeURIComponent(author)}">${author}</a></div>`;
+    // link image and title to detail page
+    const imgLink = `<a href="/libro?id=${encodeURIComponent(book.id)}">${imgHtml}</a>`;
+    const titleLink = `<a href="/libro?id=${encodeURIComponent(book.id)}">${title}</a>`;
+    const checkbox = `<input type="checkbox" class="book-checkbox" value="${book.id}" title="Seleccionar para descargar en ZIP">`;
+    return `<div class="book">${checkbox}${imgLink}<div class="title">${titleLink}</div>${authorHtml}${sagaHtml}<div class="meta"><a href="/download?id=${encodeURIComponent(book.id)}">Descargar</a></div></div>`;
+  }).join('');
+
+  if (!booksHtml || booksHtml.trim() === '') {
+    booksHtml = noResultsHtml || getRandomNoResultHtml();
+  }
+
+  return `<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"><title>${titlePage}</title><style>${css}</style></head>
+<body>
+  <div class="header-banner top" style="background-image:url('/cover/secuendarias/portada11.jpg');"></div>
+  <div class="overlay top">
+    <div class="top-buttons secondary"><a href="/">Inicio</a></div>
+    <h1>${titlePage}</h1>
+    <div class="top-buttons">
+      ${tipo === 'libros' ? '<a href="/sagas">Sagas</a><a href="/autores">Autores</a>' : (tipo === 'autor' ? '<a href="/sagas">Sagas</a><a href="/libros">Libros</a>' : '<a href="/autores">Autores</a><a href="/libros">Libros</a>')}
+    </div>
+  </div>
+  <form method="get" action="/${tipo}" style="display:flex;flex-direction:column;align-items:center;gap:8px;margin-top:12px;position:relative;">
+    <div style="display:flex;gap:8px;align-items:center;">
+      <input type="search" name="buscar" placeholder="Buscar título o autor" value="${req && req.query.buscar ? req.query.buscar.replace(/"/g,'&quot;') : ''}" />
+      <button type="submit">Buscar</button>
+      <div style="position:relative;display:inline-block;">
+        <button type="button" id="sort-btn" style="padding:8px 12px;border-radius:6px;border:2px solid #19E6D6;background:#111;color:#19E6D6;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;font-size:18px;transition:0.2s;" title="Ordenar">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="12 5 12 19"></polyline>
+            <polyline points="19 12 12 19 5 12"></polyline>
+          </svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="12 19 12 5"></polyline>
+            <polyline points="5 12 12 5 19 12"></polyline>
+          </svg>
+        </button>
+        <div id="sort-menu" style="display:none;position:absolute;right:0;top:100%;margin-top:4px;background:linear-gradient(135deg, rgba(18,18,18,0.95), rgba(12,12,12,0.9));border:2px solid rgba(25,230,214,0.5);border-radius:8px;padding:0;z-index:100;min-width:140px;box-shadow:0 4px 12px rgba(0,0,0,0.6);">
+          <a href="?${new URLSearchParams({...req.query, ordenar: 'alfabetico', page: 1}).toString()}" style="display:block;padding:12px 16px;color:#fff;text-decoration:none;font-family:'MedievalSharp', cursive;font-size:15px;border-bottom:1px solid rgba(25,230,214,0.2);transition:0.2s;${orden==='alfabetico'?'background:rgba(25,230,214,0.2);':''}" onmouseover="this.style.background='rgba(25,230,214,0.3)';" onmouseout="this.style.background='${orden==='alfabetico'?'rgba(25,230,214,0.2);':''}'" >A → Z</a>
+          <a href="?${new URLSearchParams({...req.query, ordenar: 'alfabetico-desc', page: 1}).toString()}" style="display:block;padding:12px 16px;color:#fff;text-decoration:none;font-family:'MedievalSharp', cursive;font-size:15px;border-bottom:1px solid rgba(25,230,214,0.2);transition:0.2s;${orden==='alfabetico-desc'?'background:rgba(25,230,214,0.2);':''}" onmouseover="this.style.background='rgba(25,230,214,0.3)';" onmouseout="this.style.background='${orden==='alfabetico-desc'?'rgba(25,230,214,0.2);':''}'" >Z → A</a>
+          <a href="?${new URLSearchParams({...req.query, ordenar: 'recientes', page: 1}).toString()}" style="display:block;padding:12px 16px;color:#fff;text-decoration:none;font-family:'MedievalSharp', cursive;font-size:15px;${tipo==='saga'?'border-bottom:1px solid rgba(25,230,214,0.2);':''}transition:0.2s;${orden==='recientes'?'background:rgba(25,230,214,0.2);':''}" onmouseover="this.style.background='rgba(25,230,214,0.3)';" onmouseout="this.style.background='${orden==='recientes'?'rgba(25,230,214,0.2);':''}'" >Más recientes</a>
+          ${tipo==='saga'?`<a href="?${new URLSearchParams({...req.query, ordenar: 'numero', page: 1}).toString()}" style="display:block;padding:12px 16px;color:#fff;text-decoration:none;font-family:'MedievalSharp', cursive;font-size:15px;transition:0.2s;${orden==='numero'?'background:rgba(25,230,214,0.2);':''}" onmouseover="this.style.background='rgba(25,230,214,0.3)';" onmouseout="this.style.background='${orden==='numero'?'rgba(25,230,214,0.2);':''}'" ># Número</a>`:''}
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:6px;display:flex;gap:8px;align-items:center;">
+      <button type="button" id="multi-download-btn" style="display:none;padding:8px 16px;border-radius:8px;border:1px solid #19E6D6;background:#19E6D6;color:#000;font-family:'MedievalSharp', cursive;font-size:17px;cursor:pointer;text-shadow:0 1px 2px rgba(255,255,255,0.8);box-shadow:0 4px 12px rgba(0,0,0,0.4);">Descarga múltiple</button>
+    </div>
+    <input type="hidden" name="name" value="${nombre}" />
+    <input type="hidden" name="page" value="${currentPage}" />
+  </form>
+  
+  <script>
+    const sortBtn = document.getElementById('sort-btn');
+    const sortMenu = document.getElementById('sort-menu');
+    
+    sortBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      sortMenu.style.display = sortMenu.style.display === 'none' ? 'block' : 'none';
+    });
+    
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('#sort-btn') && !e.target.closest('#sort-menu')) {
+        sortMenu.style.display = 'none';
+      }
+    });
+  </script>
+  <div id="grid">${booksHtml}</div>
+  
+  ${totalPages > 1 ? `
+  <div style="text-align:center;margin:30px 0;display:flex;justify-content:center;align-items:center;gap:10px;flex-wrap:wrap;">
+    ${currentPage > 1 ? `<a href="?${new URLSearchParams({...queryParams, page: currentPage - 1}).toString()}" class="button">← Anterior</a>` : ''}
+    <span style="color:#19E6D6;font-family:'MedievalSharp',cursive;font-size:16px;">Página ${currentPage} de ${totalPages}</span>
+    ${currentPage < totalPages ? `<a href="?${new URLSearchParams({...queryParams, page: currentPage + 1}).toString()}" class="button">Siguiente →</a>` : ''}
+  </div>
+  ` : ''}
+  
+  <p><a href="/${tipo==='autor'?'autores':'sagas'}" class="button">← Volver</a></p>
+
+  <script>
+    // Multi-download button appears when more than one checkbox is selected
+    const checkboxes = document.querySelectorAll('.book-checkbox');
+    const multiBtn = document.getElementById('multi-download-btn');
+    
+    function updateMultiBtn() {
+      if (!multiBtn) return;
+      const selected = Array.from(checkboxes).filter(cb => cb.checked);
+      if (selected.length > 1) {
+        multiBtn.style.display = 'inline-block';
+        multiBtn.disabled = false;
+        multiBtn.textContent = 'Descarga múltiple (' + selected.length + ')';
       } else {
-        // Libro existente, verificar si necesita actualización
-        const book = exists;
-        const googleData = await fetchGoogleBooksData(book.title, book.author);
-        if (googleData) {
-          const updated = mergeGoogleDataIntoBook(book, googleData);
-          if (updated) {
-            librosActualizados.push(book);
+        multiBtn.style.display = 'none';
+        multiBtn.disabled = true;
+      }
+    }
+    
+    checkboxes.forEach(cb => cb.addEventListener('change', updateMultiBtn));
+    
+    multiBtn?.addEventListener('click', async () => {
+      const selected = Array.from(checkboxes).filter(cb => cb.checked).map(cb => cb.value);
+      if (selected.length < 2) return;
+      
+      multiBtn.disabled = true;
+      const originalLabel = multiBtn.textContent;
+      multiBtn.textContent = 'Creando ZIP...';
+      
+      try {
+        const res = await fetch('/download-zip', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ids: selected })
+        });
+        
+        if (!res.ok) throw new Error('Error en descarga');
+        
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'libros.zip';
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        
+        // Deseleccionar checkboxes después de descargar
+        checkboxes.forEach(cb => cb.checked = false);
+        updateMultiBtn();
+      } catch (err) {
+        alert('Error al crear ZIP: ' + err.message);
+        multiBtn.textContent = originalLabel;
+      }
+      
+      multiBtn.disabled = false;
+    });
+    
+    updateMultiBtn();
+    
+    // Cargar covers desde API usando IntersectionObserver
+    const coverQueue = [];
+    let isLoadingCover = false;
+    
+    async function loadNextCover() {
+      if (isLoadingCover || coverQueue.length === 0) return;
+      isLoadingCover = true;
+      
+      const el = coverQueue.shift();
+      const id = el.getAttribute('data-book-id');
+      const title = el.getAttribute('data-title');
+      const author = el.getAttribute('data-author');
+      
+      try {
+        const url = '/api/book-cover?id=' + id + '&title=' + encodeURIComponent(title) + '&author=' + encodeURIComponent(author);
+        const res = await fetch(url);
+        const data = await res.json();
+        if (data.coverUrl && el.tagName === 'IMG') {
+          el.src = data.coverUrl;
+        }
+      } catch (err) {
+        console.error('Error loading cover:', err);
+      }
+      
+      isLoadingCover = false;
+      if (coverQueue.length > 0) {
+        setTimeout(loadNextCover, 100);
+      }
+    }
+    
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const img = entry.target;
+          if (!img.src || img.src.includes('portada')) {
+            if (!coverQueue.includes(img)) {
+              coverQueue.push(img);
+              loadNextCover();
+            }
           }
+          observer.unobserve(img);
         }
-      }
-    }
-
-    // Guardar todos los nuevos libros
-    if (nuevosLibros.length > 0) {
-      bookMetadata = [...bookMetadata, ...nuevosLibros];
-      await fs.promises.writeFile(BOOKS_FILE, JSON.stringify(bookMetadata, null, 2));
-      console.log(`Se añadieron ${nuevosLibros.length} nuevos libros`);
-    }
-
-    // Actualizar solo los libros que cambiaron
-    if (librosActualizados.length > 0) {
-      await fs.promises.writeFile(BOOKS_FILE, JSON.stringify(bookMetadata, null, 2));
-      console.log(`Se actualizaron ${librosActualizados.length} libros existentes`);
-    }
-
-    res.json({ 
-      success: true, 
-      nuevos: nuevosLibros.length, 
-      actualizados: librosActualizados.length, 
-      duplicados: librosDuplicados.length 
+      });
+    }, { rootMargin: '50px' });
+    
+    document.querySelectorAll('[data-book-id]').forEach(el => {
+      if (el.tagName === 'IMG') observer.observe(el);
     });
-  } catch (err) {
-    console.error('Error en la sincronización desde Drive:', err.message);
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// API: Eliminar libro
-app.delete('/api/books/:id', async (req, res) => {
-  const { id } = req.params;
-  
-  reloadBooksMetadata();
-  
-  const bookIndex = bookMetadata.findIndex(b => b.id === id);
-  if (bookIndex === -1) return res.status(404).json({ error: 'Libro no encontrado' });
-  
-  // Eliminar de Google Drive
-  try {
-    if (driveUpload) {
-      await driveUpload.files.delete({ fileId: id });
-      console.log(`✅ Archivo ${id} eliminado de Google Drive`);
-    } else {
-      console.warn(`⚠️ No se pudo eliminar el archivo ${id} de Google Drive: no está inicializado el cliente de subida`);
+    
+    function applyRowFade() {
+      const banner = document.querySelector('.header-banner.top');
+      const bannerBottom = banner ? banner.getBoundingClientRect().bottom : 290;
+      const cardHeight = 200; // Altura aproximada de tarjeta
+      const offset = 100; // 100px de offset (mitad de tarjeta)
+      const fadeStartPoint = bannerBottom - offset; // Comenzar fade cuando haya pasado 100px
+      const fadeLength = 150; // Transición más suave
+      const minOpacity = 0.15;
+      const books = Array.from(document.querySelectorAll('.book'));
+      if (!books.length) return;
+      const rows = {};
+      books.forEach(b => {
+        const top = Math.round(b.getBoundingClientRect().top);
+        if (!rows[top]) rows[top] = [];
+        rows[top].push(b);
+      });
+      const rowTops = Object.keys(rows).map(Number).sort((a,b)=>a-b);
+      rowTops.forEach(top => {
+        const distance = top - fadeStartPoint;
+        let opacity = 1;
+        if (distance <= 0) {
+          opacity = minOpacity;
+        } else if (distance < fadeLength) {
+          opacity = Math.max(minOpacity, distance / fadeLength);
+        } else {
+          opacity = 1;
+        }
+        rows[top].forEach(el => el.style.opacity = opacity);
+      });
+      const firstRowTop = rowTops.length ? rowTops[0] : Infinity;
+      const btns = document.querySelectorAll('.top-buttons a');
+      let btnOpacity = 1;
+      const dist = firstRowTop - fadeStartPoint;
+      if (dist <= 0) btnOpacity = minOpacity;
+      else if (dist < fadeLength) btnOpacity = Math.max(minOpacity, dist / fadeLength);
+      else btnOpacity = 1;
+      btns.forEach(b=>b.style.opacity = btnOpacity);
     }
-  } catch (err) {
-    console.error(`Error eliminando archivo de Google Drive:`, err.message);
-  }
-  
-  // Eliminar de metadata
-  bookMetadata.splice(bookIndex, 1);
-  
-  // Guardar cambios en disco
-  try {
-    await fs.promises.writeFile(BOOKS_FILE, JSON.stringify(bookMetadata, null, 2));
-    console.log(`✅ Libro ${id} eliminado de la metadata y cambios guardados`);
-    res.json({ success: true, message: 'Libro eliminado' });
-  } catch (err) {
-    console.error('Error al guardar cambios en disco:', err.message);
-    res.status(500).json({ error: err.message });
-  }
+    document.addEventListener('scroll', applyRowFade);
+    window.addEventListener('resize', applyRowFade);
+    document.addEventListener('DOMContentLoaded', applyRowFade);
+  </script>
+</body>
+</html>`;
 });
 
-// API: Obtener estadísticas simples
-app.get('/api/stats', (req, res) => {
-  const totalLibros = bookMetadata.length;
-  const totalDescargas = downloadCount;
-  const totalUploads = uploadCount;
+// Página de inicio
+app.get('/', (req,res)=>{
+  res.send(`<!DOCTYPE html>
+<html lang="es">
+  <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Azkaban Reads</title><link rel="preload" as="image" href="/cover/portada/portada1.jpg"><style>${css}</style><style>body{padding-top:0;} .header-banner.home{background-size:cover;background-position:center;will-change:transform;background-color:#0a0a0a;opacity:0;} .header-banner.home.loaded{animation:fadeInBanner 0.4s ease forwards;} .header-banner.home::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.4) 70%, #0a0a0a 100%);pointer-events:none;z-index:1;} .overlay.home{opacity:0;visibility:hidden;} .overlay.home.loaded{animation:fadeIn 0.3s ease 0.2s forwards;z-index:2;} @keyframes fadeInBanner{from{opacity:0;} to{opacity:1;}} @keyframes fadeIn{from{opacity:0;} to{opacity:1;visibility:visible;}}</style></head>
+<body>
+  <div class="header-banner home" id="home-bg" style="height:100vh; background-size:cover; background-position:center; background-image:url('/cover/portada/portada1.jpg');"></div>
+  <div class="overlay home" id="home-overlay" style="justify-content:center;">
+    <h1>Azkaban Reads</h1>
+    <div class="top-buttons">
+      <a href="/libros">Libros</a>
+      <a href="/autores">Autores</a>
+      <a href="/sagas">Sagas</a>
+    </div>
+  </div>
   
-  res.json({ 
-    success: true, 
-    stats: {
-      totalLibros,
-      totalDescargas,
-      totalUploads
-    } 
+  <script>
+    // Precargar imagen y activar animación cuando esté lista
+    const img = new Image();
+    img.onload = function() {
+      document.getElementById('home-bg').classList.add('loaded');
+      document.getElementById('home-overlay').classList.add('loaded');
+    };
+    img.src = '/cover/portada/portada1.jpg';
+  </script>
+  
+  <!-- Botón flotante de stats -->
+  <button id="stats-btn" style="position:fixed;bottom:20px;right:80px;width:48px;height:48px;border-radius:50%;background:transparent;border:2px solid #19E6D6;cursor:pointer;z-index:100;display:flex;align-items:center;justify-content:center;transition:0.25s;padding:0;color:#19E6D6;">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M13 2l-8 12h7l-7 8 12-14h-7l3-6z"></path>
+    </svg>
+  </button>
+  
+  <!-- Botón flotante de upload -->
+  <button id="upload-btn" style="position:fixed;bottom:20px;right:20px;width:48px;height:48px;border-radius:50%;background:transparent;border:2px solid #19E6D6;cursor:pointer;z-index:100;display:flex;align-items:center;justify-content:center;transition:0.25s;padding:0;color:#19E6D6;">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+      <polyline points="17 8 12 3 7 8"></polyline>
+      <line x1="12" y1="3" x2="12" y2="15"></line>
+    </svg>
+  </button>
+  
+  <!-- Modal de login para stats/upload -->
+  <div id="login-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:9999;justify-content:center;align-items:center;">
+    <div style="background:linear-gradient(135deg, rgba(18,18,18,0.95), rgba(12,12,12,0.9));border:2px solid rgba(25,230,214,0.5);border-radius:12px;padding:40px;text-align:center;max-width:400px;box-shadow:0 8px 32px rgba(0,0,0,0.8);">
+      <h2 id="modal-title" style="font-family:'MedievalSharp', cursive;color:#19E6D6;font-size:24px;margin:0 0 20px 0;">Acceso a Stats</h2>
+      <input type="password" id="pass-input" placeholder="Contraseña" style="width:100%;padding:14px;margin:10px 0;border:2px solid #19E6D6;background:rgba(25,25,25,0.8);color:#fff;border-radius:6px;font-size:17px;box-sizing:border-box;outline:none;transition:all 0.3s ease;" onkeypress="if(event.key==='Enter')document.getElementById('login-btn').click();">
+      <div id="error-message" style="display:none;margin-top:10px;color:#ff6b6b;font-family:'MedievalSharp', cursive;font-size:15px;line-height:1.5;min-height:50px;"></div>
+      <div style="margin-top:20px;">
+        <button id="login-btn" style="padding:12px 24px;margin:10px 5px;border:none;border-radius:6px;font-weight:bold;cursor:pointer;background:#19E6D6;color:#000;font-size:17px;">Entrar</button>
+        <button id="cancel-btn" style="padding:12px 24px;margin:10px 5px;border:none;border-radius:6px;font-weight:bold;cursor:pointer;background:rgba(255,255,255,0.1);color:#fff;font-size:17px;">Cancelar</button>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    const errorMessages = [
+      "La clave que murmuras no rompe mis cadenas… Inténtalo otra vez, forastero.",
+      "Ese no es el conjuro… aquí dentro lo sabríamos. Prueba de nuevo.",
+      "Tus palabras golpean la puerta, pero ninguna abre los barrotes. Contraseña incorrecta…",
+      "He escuchado miles de claves en esta celda… la tuya no es la correcta.",
+      "Si esa es tu mejor contraseña, estaremos encerrados mucho tiempo…",
+      "No… no… esa no es… la correcta sigue escapando, como mi cordura…",
+      "La contraseña… la contraseña verdadera grita en la oscuridad, pero esa no es.",
+      "¿Otra clave falsa? Me recuerda a las promesas que me trajeron aquí…",
+      "Intentas escapar, ¿verdad? Esa palabra no abriría ni una celda oxidada.",
+      "¿Contraseña? Sí. ¿Correcta? No. Aquí hasta los dementores se reirían…",
+      "Ni los dementores aceptarían esa clave… vuelve a intentarlo.",
+      "Podrías engañar a un trol, pero no a esta puerta.",
+      "La puerta permanece sellada… tu palabra carece de poder.",
+      "Has pronunciado la clave equivocada. Los muros susurran tu error.",
+      "El encantamiento no responde… quizá intentes otra vez, forastero.",
+      "La contraseña es falsa. Los espíritus de Azkaban ríen en la oscuridad.",
+      "¡No, no, no! Esa no es la clave… la clave verdadera duele recordarla…",
+      "Te equivocas… como todos… siempre se equivocan. Vuelve a intentarlo.",
+      "La contraseña… no… esa no… ¡los dementores vendrán si sigues fallando!",
+      "Otra vez mal… yo también olvidé la mía una vez… y perdí años en la neblina…",
+      "Alto ahí. La contraseña no coincide. Retrocede, visitante.",
+      "Acceso denegado. Ni siquiera los condenados usan palabras tan torpes.",
+      "Contraseña errónea. Las puertas de esta prisión no ceden tan fácil."
+    ];
+    
+    const statsBtn = document.getElementById('stats-btn');
+    const uploadBtn = document.getElementById('upload-btn');
+    const loginModal = document.getElementById('login-modal');
+    const loginBtn = document.getElementById('login-btn');
+    const cancelBtn = document.getElementById('cancel-btn');
+    const passInput = document.getElementById('pass-input');
+    const errorMessage = document.getElementById('error-message');
+    const modalTitle = document.getElementById('modal-title');
+    
+    let currentAction = null;
+    
+    statsBtn.addEventListener('click', () => {
+      currentAction = 'stats';
+      modalTitle.textContent = 'Acceso a Stats';
+      loginModal.style.display = 'flex';
+      passInput.focus();
+      errorMessage.style.display = 'none';
+      passInput.value = '';
+    });
+    
+    uploadBtn.addEventListener('click', () => {
+      currentAction = 'upload';
+      modalTitle.textContent = 'Acceder a Uploads';
+      loginModal.style.display = 'flex';
+      passInput.focus();
+      errorMessage.style.display = 'none';
+      passInput.value = '';
+    });
+    
+    cancelBtn.addEventListener('click', () => {
+      loginModal.style.display = 'none';
+      passInput.value = '';
+      errorMessage.style.display = 'none';
+      currentAction = null;
+    });
+    
+    loginBtn.addEventListener('click', () => {
+      if (passInput.value === '252914') {
+        if (currentAction === 'stats') {
+          window.location.href = '/stats?pass=' + encodeURIComponent(passInput.value);
+        } else if (currentAction === 'upload') {
+          window.location.href = '/upload?pass=' + encodeURIComponent(passInput.value);
+        }
+      } else {
+        const randomMsg = errorMessages[Math.floor(Math.random() * errorMessages.length)];
+        errorMessage.textContent = randomMsg;
+        errorMessage.style.display = 'block';
+        passInput.value = '';
+        passInput.focus();
+      }
+    });
+    
+    passInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') loginBtn.click();
+    });
+    
+    statsBtn.addEventListener('mouseenter', () => {
+      statsBtn.style.boxShadow = '0 0 15px rgba(25,230,214,0.5)';
+      statsBtn.style.transform = 'scale(1.1)';
+    });
+    
+    statsBtn.addEventListener('mouseleave', () => {
+      statsBtn.style.boxShadow = 'none';
+      statsBtn.style.transform = 'scale(1)';
+    });
+    
+    uploadBtn.addEventListener('mouseenter', () => {
+      uploadBtn.style.boxShadow = '0 0 15px rgba(25,230,214,0.5)';
+      uploadBtn.style.transform = 'scale(1.1)';
+    });
+    
+    uploadBtn.addEventListener('mouseleave', () => {
+      uploadBtn.style.boxShadow = 'none';
+      uploadBtn.style.transform = 'scale(1)';
+    });
+  </script>
+</body>
+</html>`);
+});
+
+// Libros
+app.get('/libros', async (req,res)=>{
+  try {
+    const query = (req.query.buscar||'').trim().toLowerCase();
+    const orden = req.query.ordenar||'alfabetico';
+    
+    reloadBooksMetadata();
+    const files = await listAllFiles(folderId);
+    actualizarBooksJSON(files);
+
+    let librosForRender = bookMetadata.filter(book => {
+      return files.some(f => f.id === book.id);
+    });
+
+    if(query){
+      librosForRender = librosForRender.filter(book => {
+        const title = (book.title || '').toLowerCase();
+        const author = (book.author || '').toLowerCase();
+        return title.includes(query) || author.includes(query);
+      });
+    }
+
+    res.send(renderBookPage({libros:librosForRender,titlePage:'Libros',tipo:'libros',nombre:'libros',req,noResultsHtml:getRandomNoResultHtml()}));
+  } catch(err){console.error(err); res.send('<p>Error al cargar libros.</p>');}
+});
+
+// Autores
+app.get('/autores', async (req,res)=>{
+  // Auth: verificar acceso
+  checkAuth(req,res,async () => {
+    // Leer metadata de libros
+    reloadBooksMetadata();
+    
+    // Agrupar por autor
+    const autoresMap = new Map();
+    bookMetadata.forEach(b => {
+      if (b.author) {
+        if (!autoresMap.has(b.author)) {
+          autoresMap.set(b.author, { 
+            name: b.author, 
+            books: [], 
+            cover: b.coverUrl || getCoverForBook(b.id) 
+          });
+        }
+        autoresMap.get(b.author).books.push(b);
+      }
+    });
+    
+    const autores = Array.from(autoresMap.values());
+    
+    // Ordenar autores alfabéticamente
+    autores.sort((a, b) => a.name.localeCompare(b.name));
+    
+    // Renderizar
+    const noResultsHtml = getRandomNoResultHtml();
+    const html = renderBookPage({ libros: autores, titlePage: 'Todos los Autores', tipo: 'autor', nombre: 'Biblioteca', req, noResultsHtml });
+    res.send(html);
   });
 });
 
-// API: Obtener listado de libros
-app.get('/api/books', (req, res) => {
-  // Solo devolver campos básicos por ahora
-  const librosBasicos = bookMetadata.map(b => ({
-    id: b.id,
-    title: b.title,
-    author: b.author,
-    coverUrl: b.coverUrl,
-    description: b.description,
-    publisher: b.publisher,
-    publishedDate: b.publishedDate,
-    pageCount: b.pageCount,
-    categories: b.categories,
-    language: b.language,
-    averageRating: b.averageRating,
-    ratingsCount: b.ratingsCount,
-    previewLink: b.previewLink
-  }));
-  
-  res.json({ success: true, books: librosBasicos });
-});
-
-// API: Obtener libro por ID
-app.get('/api/books/:id', (req, res) => {
-  const { id } = req.params;
-  
-  const book = bookMetadata.find(b => b.id === id);
-  if (!book) {
-    return res.status(404).json({ error: 'Libro no encontrado' });
-  }
-  
-  res.json({ success: true, book });
-});
-
-// API: Subir archivo EPUB
-app.post('/api/upload', upload.single('epubFile'), async (req, res) => {
-  try {
-    const file = req.file;
-    if (!file) {
-      return res.status(400).json({ error: 'No se recibió ningún archivo' });
-    }
-
-    // Verificar que el archivo sea un EPUB
-    if (!file.originalname.toLowerCase().endsWith('.epub')) {
-      return res.status(400).json({ error: 'El archivo debe ser un EPUB' });
-    }
-
-    // Leer el archivo como buffer
-    const fileBuffer = file.buffer;
-
-    // Subir a Google Drive
-    if (!driveUpload) {
-      throw new Error('Google Drive no está inicializado para subida');
-    }
-
-    // Crear archivo en Google Drive
-    const fileMetadata = {
-      name: file.originalname,
-      mimeType: 'application/epub+zip',
-      parents: [folderId]
-    };
-
-    const media = {
-      mimeType: 'application/epub+zip',
-      body: bufferToStream(fileBuffer)
-    };
-
-    const driveResponse = await driveUpload.files.create({
-      resource: fileMetadata,
-      media: media,
-      fields: 'id'
-    });
-
-    const fileId = driveResponse.data.id;
-    console.log(`✅ Archivo subido a Drive con ID: ${fileId}`);
-
-    // Guardar metadata básica en books.json
-    const newBook = {
-      id: fileId,
-      title: file.originalname.replace('.epub', ''),
-      author: 'Desconocido',
-      uploadDate: new Date().toISOString(),
-      createdTime: new Date().toISOString(),
-      coverUrl: null,
-      description: null,
-      publisher: null,
-      publishedDate: null,
-      pageCount: null,
-      categories: [],
-      language: null,
-      averageRating: null,
-      ratingsCount: 0,
-      previewLink: null,
-      imageLinks: null
-    };
-
-    // Agregar a metadata existente
-    bookMetadata.push(newBook);
-    await fs.promises.writeFile(BOOKS_FILE, JSON.stringify(bookMetadata, null, 2));
-
-    res.json({ success: true, id: fileId });
-  } catch (err) {
-    console.error('Error en la subida de archivo:', err.message);
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// API: Obtener libro por ID (detailed)
-app.get('/api/books/detail/:id', async (req, res) => {
-  const { id } = req.params;
-  
-  const book = bookMetadata.find(b => b.id === id);
-  if (!book) {
-    return res.status(404).json({ error: 'Libro no encontrado' });
-  }
-  
-  // Intentar obtener datos adicionales de Google Books si faltan
-  let googleBooksData = null;
-  if (!book.description || !book.publisher || !book.pageCount || !book.categories || book.categories.length === 0) {
-    try {
-      googleBooksData = await fetchGoogleBooksData(book.title, book.author);
-      if (googleBooksData) {
-        mergeGoogleDataIntoBook(book, googleBooksData);
-        console.log(`Datos de Google Books añadidos para: ${book.title}`);
+// Sagas
+app.get('/sagas', async (req,res)=>{
+  // Auth: verificar acceso
+  checkAuth(req,res,async () => {
+    // Leer metadata de libros
+    reloadBooksMetadata();
+    
+    // Agrupar por saga
+    const sagasMap = new Map();
+    bookMetadata.forEach(b => {
+      if (b.saga && b.saga.name) {
+        const sagaKey = b.saga.name + (b.saga.number ? `#${b.saga.number}` : '');
+        if (!sagasMap.has(sagaKey)) {
+          sagasMap.set(sagaKey, { 
+            name: b.saga.name, 
+            number: b.saga.number || 0, 
+            books: [], 
+            cover: b.coverUrl || getCoverForBook(b.id) 
+          });
+        }
+        sagasMap.get(sagaKey).books.push(b);
       }
-    } catch (err) {
-      console.warn(`Error obteniendo datos de Google Books para ${book.title}:`, err.message);
-    }
+    });
+    
+    const sagas = Array.from(sagasMap.values());
+    
+    // Ordenar sagas alfabéticamente
+    sagas.sort((a, b) => a.name.localeCompare(b.name));
+    
+    // Renderizar
+    const noResultsHtml = getRandomNoResultHtml();
+    const html = renderBookPage({ libros: sagas, titlePage: 'Todas las Sagas', tipo: 'saga', nombre: 'Biblioteca', req, noResultsHtml });
+    res.send(html);
+  });
+});
+
+// Auth: login simple para admin
+app.post('/login', (req, res) => {
+  const { password } = req.body;
+  if (password === ADMIN_PASSWORD) {
+    // Generar token simple (en producción, usar JWT u otro método seguro)
+    const token = Date.now().toString();
+    res.json({ success: true, token });
+  } else {
+    res.status(403).json({ success: false, message: 'Contraseña incorrecta' });
   }
+});
+
+// Middleware de autenticación por token
+function authMiddleware(req, res, next) {
+  const token = req.headers['x-auth-token'];
+  if (token) {
+    // Validar token (en producción, verificar firma y validez)
+    if (token.length === 13) {
+      next();
+    } else {
+      return res.status(403).json({ success: false, message: 'Token inválido' });
+    }
+  } else {
+    return res.status(403).json({ success: false, message: 'Se requiere autenticación' });
+  }
+}
+
+// API: Obtener todos los libros
+app.get('/api/books', async (req, res) => {
+  reloadBooksMetadata();
+  res.json(bookMetadata);
+});
+
+// API: Obtener libros incompletos (con campos faltantes)
+app.get('/api/books/incomplete', async (req, res) => {
+  reloadBooksMetadata();
   
-  res.json({ success: true, book, googleBooksData });
+  // Definir campos requeridos para considerar un libro COMPLETO
+  // Un libro es incompleto si le falta: título, autor, saga, descripción o año
+  const requiredFields = ['title', 'author', 'saga', 'description', 'publishedDate'];
+  
+  // Función para verificar si un campo está vacío
+  const isEmpty = (value, fieldName) => {
+    if (fieldName === 'saga') {
+      return !value || !value.name || (typeof value.name === 'string' && value.name.trim() === '');
+    }
+    if (fieldName === 'publishedDate') {
+      return !value || (typeof value === 'string' && value.trim() === '');
+    }
+    // Para otros campos
+    return !value || (typeof value === 'string' && value.trim() === '');
+  };
+  
+  // Encontrar libros incompletos
+  const incompleteBooks = bookMetadata.filter(book => {
+    const missingFields = requiredFields.filter(field => isEmpty(book[field], field));
+    return missingFields.length > 0;
+  }).map(book => {
+    const missingFields = requiredFields.filter(field => isEmpty(book[field], field));
+    return {
+      id: book.id,
+      title: book.title || 'Sin título',
+      author: book.author || 'Desconocido',
+      saga: book.saga || { name: 'Sin saga', number: 0 },
+      description: book.description || null,
+      publishedDate: book.publishedDate || null,
+      missingFields
+    };
+  }).sort((a, b) => b.missingFields.length - a.missingFields.length);
+  
+  res.json({ total: incompleteBooks.length, books: incompleteBooks });
+});
+
+// API: Obtener libro individual
+app.get('/api/books/:id', async (req, res) => {
+  const { id } = req.params;
+  reloadBooksMetadata();
+  
+  const book = bookMetadata.find(b => b.id === id);
+  if (!book) return res.status(404).json({ error: 'Libro no encontrado' });
+  
+  res.json(book);
 });
 
 // API: Actualizar libro
@@ -1359,147 +1555,50 @@ app.put('/api/books/:id', async (req, res) => {
   const validated = {
     ...book,
     ...updatedData,
-    id: book.id,
-    uploadDate: book.uploadDate,
-    createdTime: book.createdTime
+    id: book.id, // Proteger el ID
+    uploadDate: book.uploadDate, // Proteger fecha original
+    createdTime: book.createdTime // Proteger timestamp de Drive
   };
   
   // Obtener datos actualizados de Google Books ANTES de guardar
   try {
-    console.log(`[API /books/:id PUT] Fetching Google Books data for: ${validated.title} by ${validated.author}`);
+    console.log(`[API /books/:id PUT] Buscando datos en Google Books: ${validated.title} - ${validated.author}`);
     const googleBooksData = await fetchGoogleBooksData(validated.title, validated.author);
     
     if (googleBooksData) {
-      console.log(`[API /books/:id PUT] ✅ Datos recibidos de Google Books:`, {
-        title: googleBooksData.title,
-        hasCover: !!googleBooksData.imageLinks?.thumbnail,
-        hasDescription: !!googleBooksData.description,
-        hasPublisher: !!googleBooksData.publisher
-      });
-      
-      // Merge datos de Google Books (solo campos vacíos)
-      const merged = mergeGoogleDataIntoBook(validated, googleBooksData);
-      
-      // Actualizar portada si no tiene una válida
+      // Forzar actualización de portada si viene de Google Books
       const imageUrl = googleBooksData.imageLinks?.thumbnail || googleBooksData.imageLinks?.smallThumbnail || null;
-      const hasLocalCover = validated.coverUrl && validated.coverUrl.startsWith('/cover');
-      const hasNoCover = !validated.coverUrl || validated.coverUrl.trim() === '';
-      
-      if (imageUrl && (hasNoCover || hasLocalCover)) {
+      if (imageUrl) {
         validated.coverUrl = imageUrl;
-        validated.imageLinks = googleBooksData.imageLinks || validated.imageLinks;
-        console.log(`[API /books/:id PUT] ✅ Portada actualizada: ${imageUrl}`);
+        validated.imageLinks = googleBooksData.imageLinks;
+        console.log(`[API /books/:id PUT] ✅ Portada actualizada desde Google Books: ${imageUrl}`);
       }
       
-      console.log(`[API /books/:id PUT] ✅ Google Books data merged - Cover: ${validated.coverUrl ? '✅' : '❌'}, Description: ${validated.description ? '✅' : '❌'}`);
+      // Mezclar resto de datos (sin sobrescribir lo editado manualmente)
+      mergeGoogleDataIntoBook(validated, googleBooksData);
+      console.log(`[API /books/:id PUT] ✅ Metadata enriquecida con Google Books`);
     } else {
-      console.log(`[API /books/:id PUT] ⚠️ No se encontraron datos en Google Books para "${validated.title}"`);
-      
-      // Si no hay portada y Google Books no encontró nada, asignar fallback
-      if (!validated.coverUrl || validated.coverUrl.startsWith('/cover')) {
-        const fallback = getRandomCoverImage();
-        if (fallback) {
-          validated.coverUrl = fallback;
-          console.log(`[API /books/:id PUT] 🎲 Fallback asignado: ${fallback}`);
-        }
-      }
+      console.log(`[API /books/:id PUT] ⚠️ No se encontraron datos en Google Books para: ${validated.title}`);
     }
   } catch (err) {
-    console.error(`[API /books/:id PUT] Error fetching Google Books data:`, err.message);
+    console.warn(`[API /books/:id PUT] Error buscando en Google Books: ${err.message}`);
   }
   
-  // Actualizar en memoria DESPUÉS de enriquecer con Google Books
+  // Actualizar en memoria
   bookMetadata[bookIndex] = validated;
   
   // Guardar a disco
   try {
     await fs.promises.writeFile(BOOKS_FILE, JSON.stringify(bookMetadata, null, 2));
     console.log(`[API /books/:id PUT] ✅ Libro guardado: ${validated.title} (ID: ${id})`);
-    console.log(`[API /books/:id PUT] 📊 Estado final - Cover: ${validated.coverUrl}, Description length: ${validated.description?.length || 0}`);
     res.json({ success: true, book: validated });
   } catch (err) {
-    console.error('[API /books/:id PUT] Error al guardar:', err.message);
+    console.error('[API /books/:id PUT] Error guardando:', err.message);
     res.status(500).json({ error: err.message });
   }
 });
 
-// API: Sincronizar datos de Google Books para libros sin portada/descripción
-app.get('/api/sync-google-books', async (req, res) => {
-  try {
-    const pass = req.query.pass || '';
-    if (pass !== '252914') {
-      return res.status(403).json({ error: 'Acceso denegado' });
-    }
-
-    reloadBooksMetadata();
-    
-    // Encontrar libros sin datos completos de Google Books
-    const booksToSync = bookMetadata.filter(b => 
-      !b.coverUrl || !b.description || !b.publisher || !b.pageCount || !b.categories || b.categories.length === 0
-    );
-    
-    if (booksToSync.length === 0) {
-      return res.json({ 
-        success: true, 
-        message: 'Todos los libros tienen datos completos de Google Books',
-        updated: 0,
-        total: bookMetadata.length
-      });
-    }
-
-    console.log(`[SYNC-GBOOKS] 🔍 Sincronizando ${booksToSync.length} libros...`);
-    
-    let updated = 0;
-    for (const book of booksToSync) {
-      try {
-        const googleBooksData = await fetchGoogleBooksData(book.title, book.author);
-        if (googleBooksData) {
-          // Actualizar todos los campos de Google Books
-          book.coverUrl = googleBooksData.imageLinks?.thumbnail || googleBooksData.imageLinks?.smallThumbnail || book.coverUrl || null;
-          book.description = googleBooksData.description || book.description || null;
-          book.publisher = googleBooksData.publisher || book.publisher || null;
-          book.publishedDate = googleBooksData.publishedDate || book.publishedDate || null;
-          book.pageCount = googleBooksData.pageCount || book.pageCount || null;
-          book.categories = googleBooksData.categories || book.categories || [];
-          book.language = googleBooksData.language || book.language || null;
-          book.averageRating = googleBooksData.averageRating !== undefined ? googleBooksData.averageRating : (book.averageRating || null);
-          book.ratingsCount = googleBooksData.ratingsCount || book.ratingsCount || 0;
-          book.previewLink = googleBooksData.previewLink || book.previewLink || null;
-          book.imageLinks = googleBooksData.imageLinks || book.imageLinks || null;
-          
-          // Guardar cambios en JSON
-          await fs.promises.writeFile(BOOKS_FILE, JSON.stringify(bookMetadata, null, 2));
-          console.log(`[SYNC-GBOOKS] ✅ Datos guardados: ${book.title}`);
-          updated++;
-        }
-      } catch (err) {
-        console.warn(`[SYNC-GBOOKS] Error sincronizando ${book.title}:`, err.message);
-      }
-    }
-
-    // Eliminar duplicados antes de guardar
-    const beforeCount = bookMetadata.length;
-    bookMetadata = removeDuplicateBooks(bookMetadata);
-    const duplicatesRemoved = beforeCount - bookMetadata.length;
-
-    // Guardar cambios
-    await fs.promises.writeFile(BOOKS_FILE, JSON.stringify(bookMetadata, null, 2));
-    console.log(`[SYNC-GBOOKS] ✅ Sincronización completada: ${updated}/${booksToSync.length} libros actualizados`);
-
-    res.json({ 
-      success: true, 
-      message: `Se actualizaron ${updated} libros con datos de Google Books`,
-      updated,
-      total: bookMetadata.length,
-      synced: updated > 0
-    });
-  } catch (err) {
-    console.error('[SYNC-GBOOKS] Error:', err.message);
-    res.status(500).json({ error: 'Error sincronizando con Google Books: ' + err.message });
-  }
-});
-
-// API: Eliminar libro
+// API: Eliminar libro por ID
 app.delete('/api/books/:id', async (req, res) => {
   const { id } = req.params;
   
@@ -1508,332 +1607,20 @@ app.delete('/api/books/:id', async (req, res) => {
   const bookIndex = bookMetadata.findIndex(b => b.id === id);
   if (bookIndex === -1) return res.status(404).json({ error: 'Libro no encontrado' });
   
-  // Eliminar de Google Drive
-  try {
-    if (driveUpload) {
-      await driveUpload.files.delete({ fileId: id });
-      console.log(`✅ Archivo ${id} eliminado de Google Drive`);
-    } else {
-      console.warn(`⚠️ No se pudo eliminar el archivo ${id} de Google Drive: no está inicializado el cliente de subida`);
-    }
-  } catch (err) {
-    console.error(`Error eliminando archivo de Google Drive:`, err.message);
-  }
+  const deletedBook = bookMetadata[bookIndex];
   
-  // Eliminar de metadata
+  // Eliminar del array
   bookMetadata.splice(bookIndex, 1);
-  
-  // Guardar cambios en disco
-  try {
-    await fs.promises.writeFile(BOOKS_FILE, JSON.stringify(bookMetadata, null, 2));
-    console.log(`✅ Libro ${id} eliminado de la metadata y cambios guardados`);
-    res.json({ success: true, message: 'Libro eliminado' });
-  } catch (err) {
-    console.error('Error al guardar cambios en disco:', err.message);
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// API: Obtener estadísticas simples
-app.get('/api/stats', (req, res) => {
-  const totalLibros = bookMetadata.length;
-  const totalDescargas = downloadCount;
-  const totalUploads = uploadCount;
-  
-  res.json({ 
-    success: true, 
-    stats: {
-      totalLibros,
-      totalDescargas,
-      totalUploads
-    } 
-  });
-});
-
-// API: Obtener listado de libros
-app.get('/api/books', (req, res) => {
-  // Solo devolver campos básicos por ahora
-  const librosBasicos = bookMetadata.map(b => ({
-    id: b.id,
-    title: b.title,
-    author: b.author,
-    coverUrl: b.coverUrl,
-    description: b.description,
-    publisher: b.publisher,
-    publishedDate: b.publishedDate,
-    pageCount: b.pageCount,
-    categories: b.categories,
-    language: b.language,
-    averageRating: b.averageRating,
-    ratingsCount: b.ratingsCount,
-    previewLink: b.previewLink
-  }));
-  
-  res.json({ success: true, books: librosBasicos });
-});
-
-// API: Obtener libro por ID
-app.get('/api/books/:id', (req, res) => {
-  const { id } = req.params;
-  
-  const book = bookMetadata.find(b => b.id === id);
-  if (!book) {
-    return res.status(404).json({ error: 'Libro no encontrado' });
-  }
-  
-  res.json({ success: true, book });
-});
-
-// API: Subir archivo EPUB
-app.post('/api/upload', upload.single('epubFile'), async (req, res) => {
-  try {
-    const file = req.file;
-    if (!file) {
-      return res.status(400).json({ error: 'No se recibió ningún archivo' });
-    }
-
-    // Verificar que el archivo sea un EPUB
-    if (!file.originalname.toLowerCase().endsWith('.epub')) {
-      return res.status(400).json({ error: 'El archivo debe ser un EPUB' });
-    }
-
-    // Leer el archivo como buffer
-    const fileBuffer = file.buffer;
-
-    // Subir a Google Drive
-    if (!driveUpload) {
-      throw new Error('Google Drive no está inicializado para subida');
-    }
-
-    // Crear archivo en Google Drive
-    const fileMetadata = {
-      name: file.originalname,
-      mimeType: 'application/epub+zip',
-      parents: [folderId]
-    };
-
-    const media = {
-      mimeType: 'application/epub+zip',
-      body: bufferToStream(fileBuffer)
-    };
-
-    const driveResponse = await driveUpload.files.create({
-      resource: fileMetadata,
-      media: media,
-      fields: 'id'
-    });
-
-    const fileId = driveResponse.data.id;
-    console.log(`✅ Archivo subido a Drive con ID: ${fileId}`);
-
-    // Guardar metadata básica en books.json
-    const newBook = {
-      id: fileId,
-      title: file.originalname.replace('.epub', ''),
-      author: 'Desconocido',
-      uploadDate: new Date().toISOString(),
-      createdTime: new Date().toISOString(),
-      coverUrl: null,
-      description: null,
-      publisher: null,
-      publishedDate: null,
-      pageCount: null,
-      categories: [],
-      language: null,
-      averageRating: null,
-      ratingsCount: 0,
-      previewLink: null,
-      imageLinks: null
-    };
-
-    // Agregar a metadata existente
-    bookMetadata.push(newBook);
-    await fs.promises.writeFile(BOOKS_FILE, JSON.stringify(bookMetadata, null, 2));
-
-    res.json({ success: true, id: fileId });
-  } catch (err) {
-    console.error('Error en la subida de archivo:', err.message);
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// API: Obtener libro por ID (detailed)
-app.get('/api/books/detail/:id', async (req, res) => {
-  const { id } = req.params;
-  
-  const book = bookMetadata.find(b => b.id === id);
-  if (!book) {
-    return res.status(404).json({ error: 'Libro no encontrado' });
-  }
-  
-  // Intentar obtener datos adicionales de Google Books si faltan
-  let googleBooksData = null;
-  if (!book.description || !book.publisher || !book.pageCount || !book.categories || book.categories.length === 0) {
-    try {
-      googleBooksData = await fetchGoogleBooksData(book.title, book.author);
-      if (googleBooksData) {
-        mergeGoogleDataIntoBook(book, googleBooksData);
-        console.log(`Datos de Google Books añadidos para: ${book.title}`);
-      }
-    } catch (err) {
-      console.warn(`Error obteniendo datos de Google Books para ${book.title}:`, err.message);
-    }
-  }
-  
-  res.json({ success: true, book, googleBooksData });
-});
-
-// API: Actualizar libro
-app.put('/api/books/:id', async (req, res) => {
-  const { id } = req.params;
-  const updatedData = req.body;
-  
-  reloadBooksMetadata();
-  
-  const bookIndex = bookMetadata.findIndex(b => b.id === id);
-  if (bookIndex === -1) return res.status(404).json({ error: 'Libro no encontrado' });
-  
-  // Validar que no se pierdan campos críticos
-  const book = bookMetadata[bookIndex];
-  const validated = {
-    ...book,
-    ...updatedData,
-    id: book.id,
-    uploadDate: book.uploadDate,
-    createdTime: book.createdTime
-  };
-  
-  // Obtener datos actualizados de Google Books ANTES de guardar
-  try {
-    console.log(`[API /books/:id PUT] Fetching Google Books data for: ${validated.title} by ${validated.author}`);
-    const googleBooksData = await fetchGoogleBooksData(validated.title, validated.author);
-    
-    if (googleBooksData) {
-      console.log(`[API /books/:id PUT] ✅ Datos recibidos de Google Books:`, {
-        title: googleBooksData.title,
-        hasCover: !!googleBooksData.imageLinks?.thumbnail,
-        hasDescription: !!googleBooksData.description,
-        hasPublisher: !!googleBooksData.publisher
-      });
-      
-      // Merge datos de Google Books (solo campos vacíos)
-      const merged = mergeGoogleDataIntoBook(validated, googleBooksData);
-      
-      // Actualizar portada si no tiene una válida
-      const imageUrl = googleBooksData.imageLinks?.thumbnail || googleBooksData.imageLinks?.smallThumbnail || null;
-      const hasLocalCover = validated.coverUrl && validated.coverUrl.startsWith('/cover');
-      const hasNoCover = !validated.coverUrl || validated.coverUrl.trim() === '';
-      
-      if (imageUrl && (hasNoCover || hasLocalCover)) {
-        validated.coverUrl = imageUrl;
-        validated.imageLinks = googleBooksData.imageLinks || validated.imageLinks;
-        console.log(`[API /books/:id PUT] ✅ Portada actualizada: ${imageUrl}`);
-      }
-      
-      console.log(`[API /books/:id PUT] ✅ Google Books data merged - Cover: ${validated.coverUrl ? '✅' : '❌'}, Description: ${validated.description ? '✅' : '❌'}`);
-    } else {
-      console.log(`[API /books/:id PUT] ⚠️ No se encontraron datos en Google Books para "${validated.title}"`);
-      
-      // Si no hay portada y Google Books no encontró nada, asignar fallback
-      if (!validated.coverUrl || validated.coverUrl.startsWith('/cover')) {
-        const fallback = getRandomCoverImage();
-        if (fallback) {
-          validated.coverUrl = fallback;
-          console.log(`[API /books/:id PUT] 🎲 Fallback asignado: ${fallback}`);
-        }
-      }
-    }
-  } catch (err) {
-    console.error(`[API /books/:id PUT] Error fetching Google Books data:`, err.message);
-  }
-  
-  // Actualizar en memoria DESPUÉS de enriquecer con Google Books
-  bookMetadata[bookIndex] = validated;
   
   // Guardar a disco
   try {
     await fs.promises.writeFile(BOOKS_FILE, JSON.stringify(bookMetadata, null, 2));
-    console.log(`[API /books/:id PUT] ✅ Libro guardado: ${validated.title} (ID: ${id})`);
-    console.log(`[API /books/:id PUT] 📊 Estado final - Cover: ${validated.coverUrl}, Description length: ${validated.description?.length || 0}`);
-    res.json({ success: true, book: validated });
+    console.log(`[API /books/:id DELETE] ✅ Libro eliminado: ${deletedBook.title} (ID: ${id})`);
+    res.json({ success: true, message: 'Libro eliminado correctamente' });
   } catch (err) {
-    console.error('[API /books/:id PUT] Error al guardar:', err.message);
+    console.error('[API /books/:id DELETE] Error:', err.message);
     res.status(500).json({ error: err.message });
   }
 });
 
-// API: Sincronizar datos de Google Books para libros sin portada/descripción
-app.get('/api/sync-google-books', async (req, res) => {
-  try {
-    const pass = req.query.pass || '';
-    if (pass !== '252914') {
-      return res.status(403).json({ error: 'Acceso denegado' });
-    }
-
-    reloadBooksMetadata();
-    
-    // Encontrar libros sin datos completos de Google Books
-    const booksToSync = bookMetadata.filter(b => 
-      !b.coverUrl || !b.description || !b.publisher || !b.pageCount || !b.categories || b.categories.length === 0
-    );
-    
-    if (booksToSync.length === 0) {
-      return res.json({ 
-        success: true, 
-        message: 'Todos los libros tienen datos completos de Google Books',
-        updated: 0,
-        total: bookMetadata.length
-      });
-    }
-
-    console.log(`[SYNC-GBOOKS] 🔍 Sincronizando ${booksToSync.length} libros...`);
-    
-    let updated = 0;
-    for (const book of booksToSync) {
-      try {
-        const googleBooksData = await fetchGoogleBooksData(book.title, book.author);
-        if (googleBooksData) {
-          // Actualizar todos los campos de Google Books
-          book.coverUrl = googleBooksData.imageLinks?.thumbnail || googleBooksData.imageLinks?.smallThumbnail || book.coverUrl || null;
-          book.description = googleBooksData.description || book.description || null;
-          book.publisher = googleBooksData.publisher || book.publisher || null;
-          book.publishedDate = googleBooksData.publishedDate || book.publishedDate || null;
-          book.pageCount = googleBooksData.pageCount || book.pageCount || null;
-          book.categories = googleBooksData.categories || book.categories || [];
-          book.language = googleBooksData.language || book.language || null;
-          book.averageRating = googleBooksData.averageRating !== undefined ? googleBooksData.averageRating : (book.averageRating || null);
-          book.ratingsCount = googleBooksData.ratingsCount || book.ratingsCount || 0;
-          book.previewLink = googleBooksData.previewLink || book.previewLink || null;
-          book.imageLinks = googleBooksData.imageLinks || book.imageLinks || null;
-          
-          // Guardar cambios en JSON
-          await fs.promises.writeFile(BOOKS_FILE, JSON.stringify(bookMetadata, null, 2));
-          console.log(`[SYNC-GBOOKS] ✅ Datos guardados: ${book.title}`);
-          updated++;
-        }
-      } catch (err) {
-        console.warn(`[SYNC-GBOOKS] Error sincronizando ${book.title}:`, err.message);
-      }
-    }
-
-    // Eliminar duplicados antes de guardar
-    const beforeCount = bookMetadata.length;
-    bookMetadata = removeDuplicateBooks(bookMetadata);
-    const duplicatesRemoved = beforeCount - bookMetadata.length;
-
-    // Guardar cambios
-    await fs.promises.writeFile(BOOKS_FILE, JSON.stringify(bookMetadata, null, 2));
-    console.log(`[SYNC-GBOOKS] ✅ Sincronización completada: ${updated}/${booksToSync.length} libros actualizados`);
-
-    res.json({ 
-      success: true, 
-      message: `Se actualizaron ${updated} libros con datos de Google Books`,
-      updated,
-      total: bookMetadata.length,
-      synced: updated > 0
-    });
-  } catch (err) {
-    console.error('[SYNC-GBOOKS] Error:', err.message);
-    res.status(500).json({ error: 'Error sincronizando con Google Books: ' + err.message });
-  }
-});
+app.listen(PORT,()=>console.log(`Servidor escuchando en puerto ${PORT}`));
