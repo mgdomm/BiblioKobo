@@ -1837,3 +1837,8 @@ app.get('/api/sync-google-books', async (req, res) => {
     res.status(500).json({ error: 'Error sincronizando con Google Books: ' + err.message });
   }
 });
+// Iniciar servidor
+app.listen(PORT, () => {
+  console.log(`🚀 Servidor ejecutándose en puerto ${PORT}`);
+  console.log(`📚 BiblioKobo activo en http://localhost:${PORT}`);
+});
