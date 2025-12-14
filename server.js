@@ -694,25 +694,10 @@ async function fetchGoogleBooksData(title, author, isbn = null) {
       if (isbn) {
         query = `isbn:${isbn}`;
       } else {
-        // Normalizar título y autor: remover acentos pero preservar ñ/Ñ
-        const normalizeText = (text) => {
-          return text
-            .replace(/ñ/g, 'ñ') // Preservar ñ minúscula
-            .replace(/Ñ/g, 'Ñ') // Preservar Ñ mayúscula
-            .normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '') // Remover otros acentos
-            .replace(/[^a-zA-ZñÑ0-9\s]/g, ' ') // Permitir ñ/Ñ en caracteres válidos
-            .replace(/\s+/g, ' ')              // Normalizar espacios múltiples
-            .trim();
-        };
-        
-        const cleanTitle = normalizeText(title);
-        const cleanAuthor = normalizeText(author);
-        
-        // Intentar con título y autor exactos primero
+        // Escapar caracteres especiales y usar búsqueda por título e autor
+        const cleanTitle = title.replace(/[:"()]/g, '');
+        const cleanAuthor = author.replace(/[:"()]/g, '');
         query = `intitle:"${cleanTitle}" inauthor:"${cleanAuthor}"`;
-        
-        console.log(`[fetchGoogleBooksData] Query: ${query}`);
       }
       const keyParam = GOOGLE_BOOKS_API_KEY ? `&key=${GOOGLE_BOOKS_API_KEY}` : '';
       const url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&maxResults=1&printType=books${keyParam}`;
@@ -722,7 +707,6 @@ async function fetchGoogleBooksData(title, author, isbn = null) {
       
       if (item?.volumeInfo) {
         const vol = item.volumeInfo;
-        console.log(`[fetchGoogleBooksData] ✅ Encontrado: ${vol.title} (${vol.imageLinks?.thumbnail ? 'con portada' : 'sin portada'})`);
         return {
           title: vol.title || null,
           authors: vol.authors || [],
@@ -738,47 +722,6 @@ async function fetchGoogleBooksData(title, author, isbn = null) {
           previewLink: vol.previewLink || null
         };
       }
-      
-      // Si no encuentra nada con búsqueda exacta, intentar búsqueda más flexible
-      if (!isbn && retries === 0) {
-        const flexibleTitle = title.split(' ').slice(0, 4).join(' '); // Primeras 4 palabras (era 3)
-        const flexibleAuthor = author.split(' ')[0]; // Solo primer apellido
-        const flexibleQuery = `intitle:${flexibleTitle} inauthor:${flexibleAuthor}`;
-        console.log(`[fetchGoogleBooksData] Reintentando con query flexible: ${flexibleQuery}`);
-        
-        const flexUrl = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(flexibleQuery)}&maxResults=5&printType=books${keyParam}`;
-        const flexResp = await axios.get(flexUrl, { timeout: 5000 });
-        const items = flexResp.data?.items || [];
-        
-        // Buscar el mejor match por similitud de título
-        for (const candidate of items) {
-          const candTitle = (candidate.volumeInfo?.title || '').toLowerCase();
-          const candAuthor = (candidate.volumeInfo?.authors?.[0] || '').toLowerCase();
-          const searchTitle = title.toLowerCase();
-          const searchAuthor = author.toLowerCase();
-          
-          // Match flexible: título contiene o autor coincide
-          if (candTitle.includes(searchTitle.substring(0, 15)) || searchTitle.includes(candTitle.substring(0, 15)) || candAuthor.includes(searchAuthor.split(' ')[0])) {
-            const vol = candidate.volumeInfo;
-            console.log(`[fetchGoogleBooksData] ✅ Match flexible encontrado: ${vol.title}`);
-            return {
-              title: vol.title || null,
-              authors: vol.authors || [],
-              publisher: vol.publisher || null,
-              publishedDate: vol.publishedDate || null,
-              description: vol.description || null,
-              pageCount: vol.pageCount || null,
-              categories: vol.categories || [],
-              averageRating: vol.averageRating || null,
-              ratingsCount: vol.ratingsCount || null,
-              language: vol.language || null,
-              imageLinks: vol.imageLinks || null,
-              previewLink: vol.previewLink || null
-            };
-          }
-        }
-      }
-      
       return null;
     } catch (err) {
       retries++;
@@ -799,6 +742,2162 @@ async function fetchGoogleBooksData(title, author, isbn = null) {
   
   return null;
 }
+
+async function fetchRatingOpenLibrary(title, author) {
+  try {
+    const sUrl = `https://openlibrary.org/search.json?title=${encodeURIComponent(title||'')}&author=${encodeURIComponent(author||'')}&limit=3`;
+    const sr = await axios.get(sUrl, { timeout: 5000 });
+    const docs = sr.data.docs || [];
+    if (!docs.length || !docs[0].key) return 0;
+    const workKey = docs[0].key.startsWith('/works/') ? docs[0].key : `/works/${docs[0].key}`;
+    const rUrl = `https://openlibrary.org${workKey}/ratings.json`;
+    const rr = await axios.get(rUrl, { timeout: 5000 });
+    const avg = rr.data?.summary?.average || rr.data?.average || 0;
+    return Number(avg) || 0;
+  } catch (err) {
+    return 0;
+  }
+}
+
+function setRatingCache(key, value) {
+  ratingsCache.set(key, value);
+  persistRatingsCacheSoon();
+}
+
+function hasRatingCache(title, author, isbn = null) {
+  const key = `${(title||'').toLowerCase()}|${(author||'').toLowerCase()}|${isbn||''}`;
+  return ratingsCache.has(key);
+}
+
+async function fetchGoodreadsPageRating(pageId) {
+  if (!pageId) return 0;
+  try {
+    const pageUrl = `https://www.goodreads.com/book/show/${pageId}`;
+    console.log(`[Page Rating] Fetching ${pageUrl}`);
+    const html = await axios.get(pageUrl, { timeout: 8000, headers: { 'User-Agent': 'Mozilla/5.0' } }).then(r => r.data || '');
+    
+    // Strategy 1: Look for data-rating attributes
+    let match = /data-rating="([0-9.]+)"/i.exec(html);
+    if (match && match[1]) {
+      const num = parseFloat(match[1]);
+      if (num && num > 0 && num <= 5) {
+        console.log(`[Page Rating] Found data-rating: ${num}`);
+        return num;
+      }
+    }
+    
+    // Strategy 2: Look in JSON-LD structured data
+    const jsonLdMatch = /(<script[^>]+type="application\/ld\+json"[^>]*>[\s\S]*?<\/script>)/gi;
+    let m;
+    while ((m = jsonLdMatch.exec(html)) !== null) {
+      try {
+        const jsonStr = m[1].replace(/<[^>]+>/g, '');
+        const json = JSON.parse(jsonStr);
+        if (json.aggregateRating?.ratingValue) {
+          const num = parseFloat(json.aggregateRating.ratingValue);
+          if (num && num > 0 && num <= 5) {
+            console.log(`[Page Rating] Found in JSON-LD: ${num}`);
+            return num;
+          }
+        }
+      } catch (e) {}
+    }
+    
+    // Strategy 3: itemprop="ratingValue"
+    match = /itemprop="ratingValue"[^>]*>\s*([0-9.,]+)/i.exec(html);
+    if (match && match[1]) {
+      const num = parseFloat(match[1].replace(',', '.'));
+      if (num && num > 0 && num <= 5) {
+        console.log(`[Page Rating] Found itemprop ratingValue: ${num}`);
+        return num;
+      }
+    }
+    
+    // Strategy 4: "average_rating":"4.00" pattern
+    match = /"average_rating"\s*:\s*"([0-9.]+)"/i.exec(html);
+    if (match && match[1]) {
+      const num = parseFloat(match[1]);
+      if (num && num > 0 && num <= 5) {
+        console.log(`[Page Rating] Found average_rating: ${num}`);
+        return num;
+      }
+    }
+    
+    // Strategy 5: "avgRating":4.00 pattern
+    match = /"avgRating"\s*:\s*([0-9.]+)/i.exec(html);
+    if (match && match[1]) {
+      const num = parseFloat(match[1]);
+      if (num && num > 0 && num <= 5) {
+        console.log(`[Page Rating] Found avgRating: ${num}`);
+        return num;
+      }
+    }
+    
+    // Strategy 6: rating in JSON object
+    match = /"rating"\s*:\s*"?([0-9.]+)"?/i.exec(html);
+    if (match && match[1]) {
+      const num = parseFloat(match[1]);
+      if (num && num > 0 && num <= 5) {
+        console.log(`[Page Rating] Found rating field: ${num}`);
+        return num;
+      }
+    }
+    
+    console.log(`[Page Rating] No rating found in page ${pageId}`);
+  } catch (err) {
+    console.warn(`[Page Rating] Error for ${pageId}: ${err.message}`);
+  }
+  return 0;
+}
+
+async function fetchGoodreadsSearchRating(title, author) {
+  // DEPRECATED - Now using autocomplete API in fetchRating
+  return 0;
+}
+
+async function fetchGoodreadsByIsbn(isbn) {
+  // DEPRECATED - Now using autocomplete API in fetchRating
+  return 0;
+}
+
+function ordenarBooks(books, criterio, tipo = null) {
+  let sorted = [...books];
+  if (tipo === 'autor' || tipo === 'saga') {
+    if (criterio === 'alfabetico') sorted.sort((a, b) => a.title.toLowerCase().localeCompare(b.title.toLowerCase()));
+    else if (criterio === 'alfabetico-desc') sorted.sort((a, b) => b.title.toLowerCase().localeCompare(a.title.toLowerCase()));
+    else if (criterio === 'numero') sorted.sort((a, b) => (a.saga?.number || 0) - (b.saga?.number || 0));
+    else if (criterio === 'recientes') sorted.sort((a, b) => new Date(b.createdTime || 0) - new Date(a.createdTime || 0));
+  } else {
+    if (criterio === 'alfabetico') sorted.sort((a, b) => (bookMetadata.find(x => x.id === a.id)?.title || a.name)
+      .localeCompare(bookMetadata.find(x => x.id === b.id)?.title || b.name));
+    else if (criterio === 'alfabetico-desc') sorted.sort((a, b) => (bookMetadata.find(x => x.id === b.id)?.title || b.name)
+      .localeCompare(bookMetadata.find(x => x.id === a.id)?.title || a.name));
+    else if (criterio === 'recientes') sorted.sort((a, b) => new Date(b.createdTime) - new Date(a.createdTime));
+  }
+  return sorted;
+}
+
+// ------------------ RENDER ------------------
+function renderBookPage({ libros, titlePage, tipo, nombre, req, noResultsHtml }) {
+  const orden = (req && (req.query.ordenar || req.query.orden)) || 'alfabetico';
+  libros = ordenarBooks(libros, orden, tipo);
+  const kobo = req ? isKobo(req) : false;
+  const queryParams = req?.query || {};
+  const searchValue = queryParams.buscar ? queryParams.buscar.replace(/"/g, '&quot;') : '';
+  
+  // Paginación
+  const itemsPerPage = 25;
+  const currentPage = parseInt(req?.query?.page || '1', 10);
+  const totalItems = libros.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedLibros = libros.slice(startIndex, endIndex);
+  
+  // Versión liviana para Kobo (sin imágenes ni gradientes pesados)
+  if (kobo) {
+    const items = paginatedLibros.map(book => {
+      const title = book.title || 'Sin título';
+      const author = book.author || 'Desconocido';
+      const sagaName = book.saga?.name ? ` · ${book.saga.name}${book.saga.number ? ' #' + book.saga.number : ''}` : '';
+      return `<li>
+        <a href="/libro?id=${encodeURIComponent(book.id)}" style="font-weight:bold;">${title}</a>
+        <div style="font-size:15px;color:#bbb;">${author}${sagaName}</div>
+        <a href="/download?id=${encodeURIComponent(book.id)}" style="font-size:15px;">Descargar</a>
+      </li>`;
+    }).join('') || `<li>${noResultsHtml || getRandomNoResultHtml()}</li>`;
+
+    return `<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>${titlePage} (Kobo)</title>
+  <style>
+    body { margin:0; padding:16px; background:#000; color:#eee; font-family: Arial, sans-serif; }
+    h1 { margin:0 0 12px 0; font-size:22px; color:#19E6D6; }
+    form { margin-bottom:12px; display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
+    input[type="search"], select, button { background:#111; color:#fff; border:1px solid #19E6D6; border-radius:6px; padding:8px 12px; font-size:16px; }
+    button { cursor:pointer; }
+    ul { list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:10px; }
+    li { padding:10px; border:1px solid #222; border-radius:6px; }
+    a { color:#19E6D6; text-decoration:none; }
+  </style>
+</head>
+<body>
+  <h1>${titlePage}</h1>
+  <form method="get" action="/${tipo}">
+    <input type="search" name="buscar" placeholder="Buscar" value="${searchValue}" />
+    <select name="ordenar" onchange="this.form.submit()">
+      <option value="alfabetico" ${orden==='alfabetico'?'selected':''}>A→Z</option>
+      <option value="alfabetico-desc" ${orden==='alfabetico-desc'?'selected':''}>Z→A</option>
+      <option value="recientes" ${orden==='recientes'?'selected':''}>Recientes</option>
+      ${tipo==='saga'?`<option value="numero" ${orden==='numero'?'selected':''}>#Número</option>`:''}
+    </select>
+    <input type="hidden" name="name" value="${nombre}" />
+    <input type="hidden" name="page" value="${currentPage}" />
+    <button type="submit">Buscar</button>
+  </form>
+
+  <ul>${items}</ul>
+
+  ${totalPages > 1 ? `
+  <div style="margin-top:14px; display:flex; gap:10px; align-items:center; font-size:15px;">
+    ${currentPage > 1 ? `<a href="?${new URLSearchParams({...queryParams, page: currentPage - 1}).toString()}">← Anterior</a>` : ''}
+    <span style="color:#999;">Página ${currentPage} de ${totalPages}</span>
+    ${currentPage < totalPages ? `<a href="?${new URLSearchParams({...queryParams, page: currentPage + 1}).toString()}">Siguiente →</a>` : ''}
+  </div>
+  ` : ''}
+</body>
+</html>`;
+  }
+
+  let booksHtml = paginatedLibros.map(book => {
+    const cover = book.coverUrl || getCoverForBook(book.id);
+    const imgHtml = cover ? `<img src="${cover}" data-book-id="${book.id}" data-title="${book.title}" data-author="${book.author}" />` : `<div style="width:80px;height:120px;background:#333;border-radius:5px;" data-book-id="${book.id}" data-title="${book.title}" data-author="${book.author}"></div>`;
+    // SIEMPRE usar solo datos del JSON
+    const title = book.title || 'Sin título';
+    const author = book.author || 'Desconocido';
+    const sagaName = book.saga?.name || '';
+    const sagaNum = book.saga?.number || '';
+    // Si estamos en página de saga, mostrar número; si no, no mostrar
+    const sagaDisplay = (tipo === 'saga' && sagaNum) ? `${sagaName} #${sagaNum}` : sagaName;
+    const sagaHtml = sagaName ? `<div class="number-span"><a href="/saga?name=${encodeURIComponent(sagaName)}">${sagaDisplay}</a></div>` : '';
+    const authorHtml = `<div class="author-span"><a href="/autor?name=${encodeURIComponent(author)}">${author}</a></div>`;
+    // link image and title to detail page
+    const imgLink = `<a href="/libro?id=${encodeURIComponent(book.id)}">${imgHtml}</a>`;
+    const titleLink = `<a href="/libro?id=${encodeURIComponent(book.id)}">${title}</a>`;
+    const checkbox = `<input type="checkbox" class="book-checkbox" value="${book.id}" title="Seleccionar para descargar en ZIP">`;
+    return `<div class="book">${checkbox}${imgLink}<div class="title">${titleLink}</div>${authorHtml}${sagaHtml}<div class="meta"><a href="/download?id=${encodeURIComponent(book.id)}">Descargar</a></div></div>`;
+  }).join('');
+
+  if (!booksHtml || booksHtml.trim() === '') {
+    booksHtml = noResultsHtml || getRandomNoResultHtml();
+  }
+
+  return `<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"><title>${titlePage}</title><style>${css}</style></head>
+<body>
+  <div class="header-banner top" style="background-image:url('/cover/secuendarias/portada11.jpg');"></div>
+  <div class="overlay top">
+    <div class="top-buttons secondary"><a href="/">Inicio</a></div>
+    <h1>${titlePage}</h1>
+    <div class="top-buttons">
+      ${tipo === 'libros' ? '<a href="/sagas">Sagas</a><a href="/autores">Autores</a>' : (tipo === 'autor' ? '<a href="/sagas">Sagas</a><a href="/libros">Libros</a>' : '<a href="/autores">Autores</a><a href="/libros">Libros</a>')}
+    </div>
+  </div>
+  <form method="get" action="/${tipo}" style="display:flex;flex-direction:column;align-items:center;gap:8px;margin-top:12px;position:relative;">
+    <div style="display:flex;gap:8px;align-items:center;">
+      <input type="search" name="buscar" placeholder="Buscar título o autor" value="${req && req.query.buscar ? req.query.buscar.replace(/"/g,'&quot;') : ''}" />
+      <button type="submit">Buscar</button>
+      <div style="position:relative;display:inline-block;">
+        <button type="button" id="sort-btn" style="padding:8px 12px;border-radius:6px;border:2px solid #19E6D6;background:#111;color:#19E6D6;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;font-size:18px;transition:0.2s;" title="Ordenar">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="12 5 12 19"></polyline>
+            <polyline points="19 12 12 19 5 12"></polyline>
+          </svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="12 19 12 5"></polyline>
+            <polyline points="5 12 12 5 19 12"></polyline>
+          </svg>
+        </button>
+        <div id="sort-menu" style="display:none;position:absolute;right:0;top:100%;margin-top:4px;background:linear-gradient(135deg, rgba(18,18,18,0.95), rgba(12,12,12,0.9));border:2px solid rgba(25,230,214,0.5);border-radius:8px;padding:0;z-index:100;min-width:140px;box-shadow:0 4px 12px rgba(0,0,0,0.6);">
+          <a href="?${new URLSearchParams({...req.query, ordenar: 'alfabetico', page: 1}).toString()}" style="display:block;padding:12px 16px;color:#fff;text-decoration:none;font-family:'MedievalSharp', cursive;font-size:15px;border-bottom:1px solid rgba(25,230,214,0.2);transition:0.2s;${orden==='alfabetico'?'background:rgba(25,230,214,0.2);':''}" onmouseover="this.style.background='rgba(25,230,214,0.3)';" onmouseout="this.style.background='${orden==='alfabetico'?'rgba(25,230,214,0.2);':''}'" >A → Z</a>
+          <a href="?${new URLSearchParams({...req.query, ordenar: 'alfabetico-desc', page: 1}).toString()}" style="display:block;padding:12px 16px;color:#fff;text-decoration:none;font-family:'MedievalSharp', cursive;font-size:15px;border-bottom:1px solid rgba(25,230,214,0.2);transition:0.2s;${orden==='alfabetico-desc'?'background:rgba(25,230,214,0.2);':''}" onmouseover="this.style.background='rgba(25,230,214,0.3)';" onmouseout="this.style.background='${orden==='alfabetico-desc'?'rgba(25,230,214,0.2);':''}'" >Z → A</a>
+          <a href="?${new URLSearchParams({...req.query, ordenar: 'recientes', page: 1}).toString()}" style="display:block;padding:12px 16px;color:#fff;text-decoration:none;font-family:'MedievalSharp', cursive;font-size:15px;${tipo==='saga'?'border-bottom:1px solid rgba(25,230,214,0.2);':''}transition:0.2s;${orden==='recientes'?'background:rgba(25,230,214,0.2);':''}" onmouseover="this.style.background='rgba(25,230,214,0.3)';" onmouseout="this.style.background='${orden==='recientes'?'rgba(25,230,214,0.2);':''}'" >Más recientes</a>
+          ${tipo==='saga'?`<a href="?${new URLSearchParams({...req.query, ordenar: 'numero', page: 1}).toString()}" style="display:block;padding:12px 16px;color:#fff;text-decoration:none;font-family:'MedievalSharp', cursive;font-size:15px;transition:0.2s;${orden==='numero'?'background:rgba(25,230,214,0.2);':''}" onmouseover="this.style.background='rgba(25,230,214,0.3)';" onmouseout="this.style.background='${orden==='numero'?'rgba(25,230,214,0.2);':''}'" ># Número</a>`:''}
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:6px;display:flex;gap:8px;align-items:center;">
+      <button type="button" id="multi-download-btn" style="display:none;padding:8px 16px;border-radius:8px;border:1px solid #19E6D6;background:#19E6D6;color:#000;font-family:'MedievalSharp', cursive;font-size:17px;cursor:pointer;text-shadow:0 1px 2px rgba(255,255,255,0.8);box-shadow:0 4px 12px rgba(0,0,0,0.4);">Descarga múltiple</button>
+    </div>
+    <input type="hidden" name="name" value="${nombre}" />
+    <input type="hidden" name="page" value="${currentPage}" />
+  </form>
+  
+  <script>
+    const sortBtn = document.getElementById('sort-btn');
+    const sortMenu = document.getElementById('sort-menu');
+    
+    sortBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      sortMenu.style.display = sortMenu.style.display === 'none' ? 'block' : 'none';
+    });
+    
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('#sort-btn') && !e.target.closest('#sort-menu')) {
+        sortMenu.style.display = 'none';
+      }
+    });
+  </script>
+  <div id="grid">${booksHtml}</div>
+  
+  ${totalPages > 1 ? `
+  <div style="text-align:center;margin:30px 0;display:flex;justify-content:center;align-items:center;gap:10px;flex-wrap:wrap;">
+    ${currentPage > 1 ? `<a href="?${new URLSearchParams({...req.query, page: currentPage - 1}).toString()}" class="button">← Anterior</a>` : ''}
+    <span style="color:#19E6D6;font-family:'MedievalSharp',cursive;font-size:16px;">Página ${currentPage} de ${totalPages}</span>
+    ${currentPage < totalPages ? `<a href="?${new URLSearchParams({...req.query, page: currentPage + 1}).toString()}" class="button">Siguiente →</a>` : ''}
+  </div>
+  ` : ''}
+  
+  <p><a href="/${tipo==='autor'?'autores':'sagas'}" class="button">← Volver</a></p>
+
+  <script>
+    // Multi-download button appears when more than one checkbox is selected
+    const checkboxes = document.querySelectorAll('.book-checkbox');
+    const multiBtn = document.getElementById('multi-download-btn');
+    
+    function updateMultiBtn() {
+      if (!multiBtn) return;
+      const selected = Array.from(checkboxes).filter(cb => cb.checked);
+      if (selected.length > 1) {
+        multiBtn.style.display = 'inline-block';
+        multiBtn.disabled = false;
+        multiBtn.textContent = 'Descarga múltiple (' + selected.length + ')';
+      } else {
+        multiBtn.style.display = 'none';
+        multiBtn.disabled = true;
+      }
+    }
+    
+    checkboxes.forEach(cb => cb.addEventListener('change', updateMultiBtn));
+    
+    multiBtn?.addEventListener('click', async () => {
+      const selected = Array.from(checkboxes).filter(cb => cb.checked).map(cb => cb.value);
+      if (selected.length < 2) return;
+      
+      multiBtn.disabled = true;
+      const originalLabel = multiBtn.textContent;
+      multiBtn.textContent = 'Creando ZIP...';
+      
+      try {
+        const res = await fetch('/download-zip', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ids: selected })
+        });
+        
+        if (!res.ok) throw new Error('Error en descarga');
+        
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'libros.zip';
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        
+        // Deseleccionar checkboxes después de descargar
+        checkboxes.forEach(cb => cb.checked = false);
+        updateMultiBtn();
+      } catch (err) {
+        alert('Error al crear ZIP: ' + err.message);
+        multiBtn.textContent = originalLabel;
+      }
+      
+      multiBtn.disabled = false;
+    });
+    
+    updateMultiBtn();
+    
+    // Cargar covers desde API usando IntersectionObserver
+    const coverQueue = [];
+    let isLoadingCover = false;
+    
+    async function loadNextCover() {
+      if (isLoadingCover || coverQueue.length === 0) return;
+      isLoadingCover = true;
+      
+      const el = coverQueue.shift();
+      const id = el.getAttribute('data-book-id');
+      const title = el.getAttribute('data-title');
+      const author = el.getAttribute('data-author');
+      
+      try {
+        const url = '/api/book-cover?id=' + id + '&title=' + encodeURIComponent(title) + '&author=' + encodeURIComponent(author);
+        const res = await fetch(url);
+        const data = await res.json();
+        if (data.coverUrl && el.tagName === 'IMG') {
+          el.src = data.coverUrl;
+        }
+      } catch (err) {
+        console.error('Error loading cover:', err);
+      }
+      
+      isLoadingCover = false;
+      if (coverQueue.length > 0) {
+        setTimeout(loadNextCover, 100);
+      }
+    }
+    
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const img = entry.target;
+          if (!img.src || img.src.includes('portada')) {
+            if (!coverQueue.includes(img)) {
+              coverQueue.push(img);
+              loadNextCover();
+            }
+          }
+          observer.unobserve(img);
+        }
+      });
+    }, { rootMargin: '50px' });
+    
+    document.querySelectorAll('[data-book-id]').forEach(el => {
+      if (el.tagName === 'IMG') observer.observe(el);
+    });
+    
+    function applyRowFade() {
+      const banner = document.querySelector('.header-banner.top');
+      const bannerBottom = banner ? banner.getBoundingClientRect().bottom : 290;
+      const cardHeight = 200; // Altura aproximada de tarjeta
+      const offset = 100; // 100px de offset (mitad de tarjeta)
+      const fadeStartPoint = bannerBottom - offset; // Comenzar fade cuando haya pasado 100px
+      const fadeLength = 150; // Transición más suave
+      const minOpacity = 0.15;
+      const books = Array.from(document.querySelectorAll('.book'));
+      if (!books.length) return;
+      const rows = {};
+      books.forEach(b => {
+        const top = Math.round(b.getBoundingClientRect().top);
+        if (!rows[top]) rows[top] = [];
+        rows[top].push(b);
+      });
+      const rowTops = Object.keys(rows).map(Number).sort((a,b)=>a-b);
+      rowTops.forEach(top => {
+        const distance = top - fadeStartPoint;
+        let opacity = 1;
+        if (distance <= 0) {
+          opacity = minOpacity;
+        } else if (distance < fadeLength) {
+          opacity = Math.max(minOpacity, distance / fadeLength);
+        } else {
+          opacity = 1;
+        }
+        rows[top].forEach(el => el.style.opacity = opacity);
+      });
+      const firstRowTop = rowTops.length ? rowTops[0] : Infinity;
+      const btns = document.querySelectorAll('.top-buttons a');
+      let btnOpacity = 1;
+      const dist = firstRowTop - fadeStartPoint;
+      if (dist <= 0) btnOpacity = minOpacity;
+      else if (dist < fadeLength) btnOpacity = Math.max(minOpacity, dist / fadeLength);
+      else btnOpacity = 1;
+      btns.forEach(b=>b.style.opacity = btnOpacity);
+    }
+    document.addEventListener('scroll', applyRowFade);
+    window.addEventListener('resize', applyRowFade);
+    document.addEventListener('DOMContentLoaded', applyRowFade);
+  </script>
+</body>
+</html>`;
+}
+
+// ------------------ RUTAS ------------------
+
+// Página de inicio
+app.get('/', (req,res)=>{
+  res.send(`<!DOCTYPE html>
+<html lang="es">
+  <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Azkaban Reads</title><link rel="preload" as="image" href="/cover/portada/portada1.jpg"><style>${css}</style><style>body{padding-top:0;} .header-banner.home{background-size:cover;background-position:center;will-change:transform;background-color:#0a0a0a;opacity:0;} .header-banner.home.loaded{animation:fadeInBanner 0.4s ease forwards;} .header-banner.home::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.4) 70%, #0a0a0a 100%);pointer-events:none;z-index:1;} .overlay.home{opacity:0;visibility:hidden;} .overlay.home.loaded{animation:fadeIn 0.3s ease 0.2s forwards;z-index:2;} @keyframes fadeInBanner{from{opacity:0;} to{opacity:1;}} @keyframes fadeIn{from{opacity:0;} to{opacity:1;visibility:visible;}}</style></head>
+<body>
+  <div class="header-banner home" id="home-bg" style="height:100vh; background-size:cover; background-position:center; background-image:url('/cover/portada/portada1.jpg');"></div>
+  <div class="overlay home" id="home-overlay" style="justify-content:center;">
+    <h1>Azkaban Reads</h1>
+    <div class="top-buttons">
+      <a href="/libros">Libros</a>
+      <a href="/autores">Autores</a>
+      <a href="/sagas">Sagas</a>
+    </div>
+  </div>
+  
+  <script>
+    // Precargar imagen y activar animación cuando esté lista
+    const img = new Image();
+    img.onload = function() {
+      document.getElementById('home-bg').classList.add('loaded');
+      document.getElementById('home-overlay').classList.add('loaded');
+    };
+    img.src = '/cover/portada/portada1.jpg';
+  </script>
+  
+  <!-- Botón flotante de stats -->
+  <button id="stats-btn" style="position:fixed;bottom:20px;right:80px;width:48px;height:48px;border-radius:50%;background:transparent;border:2px solid #19E6D6;cursor:pointer;z-index:100;display:flex;align-items:center;justify-content:center;transition:0.25s;padding:0;color:#19E6D6;">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M13 2l-8 12h7l-7 8 12-14h-7l3-6z"></path>
+    </svg>
+  </button>
+  
+  <!-- Botón flotante de upload -->
+  <button id="upload-btn" style="position:fixed;bottom:20px;right:20px;width:48px;height:48px;border-radius:50%;background:transparent;border:2px solid #19E6D6;cursor:pointer;z-index:100;display:flex;align-items:center;justify-content:center;transition:0.25s;padding:0;color:#19E6D6;">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+      <polyline points="17 8 12 3 7 8"></polyline>
+      <line x1="12" y1="3" x2="12" y2="15"></line>
+    </svg>
+  </button>
+  
+  <!-- Modal de login para stats/upload -->
+  <div id="login-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:9999;justify-content:center;align-items:center;">
+    <div style="background:linear-gradient(135deg, rgba(18,18,18,0.95), rgba(12,12,12,0.9));border:2px solid rgba(25,230,214,0.5);border-radius:12px;padding:40px;text-align:center;max-width:400px;box-shadow:0 8px 32px rgba(0,0,0,0.8);">
+      <h2 id="modal-title" style="font-family:'MedievalSharp', cursive;color:#19E6D6;font-size:24px;margin:0 0 20px 0;">Acceso a Stats</h2>
+      <input type="password" id="pass-input" placeholder="Contraseña" style="width:100%;padding:14px;margin:10px 0;border:2px solid #19E6D6;background:rgba(25,25,25,0.8);color:#fff;border-radius:6px;font-size:17px;box-sizing:border-box;outline:none;transition:all 0.3s ease;" onkeypress="if(event.key==='Enter')document.getElementById('login-btn').click();">
+      <div id="error-message" style="display:none;margin-top:10px;color:#ff6b6b;font-family:'MedievalSharp', cursive;font-size:15px;line-height:1.5;min-height:50px;"></div>
+      <div style="margin-top:20px;">
+        <button id="login-btn" style="padding:12px 24px;margin:10px 5px;border:none;border-radius:6px;font-weight:bold;cursor:pointer;background:#19E6D6;color:#000;font-size:17px;">Entrar</button>
+        <button id="cancel-btn" style="padding:12px 24px;margin:10px 5px;border:none;border-radius:6px;font-weight:bold;cursor:pointer;background:rgba(255,255,255,0.1);color:#fff;font-size:17px;">Cancelar</button>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    const errorMessages = [
+      "La clave que murmuras no rompe mis cadenas… Inténtalo otra vez, forastero.",
+      "Ese no es el conjuro… aquí dentro lo sabríamos. Prueba de nuevo.",
+      "Tus palabras golpean la puerta, pero ninguna abre los barrotes. Contraseña incorrecta…",
+      "He escuchado miles de claves en esta celda… la tuya no es la correcta.",
+      "Si esa es tu mejor contraseña, estaremos encerrados mucho tiempo…",
+      "No… no… esa no es… la correcta sigue escapando, como mi cordura…",
+      "La contraseña… la contraseña verdadera grita en la oscuridad, pero esa no es.",
+      "¿Otra clave falsa? Me recuerda a las promesas que me trajeron aquí…",
+      "Intentas escapar, ¿verdad? Esa palabra no abriría ni una celda oxidada.",
+      "¿Contraseña? Sí. ¿Correcta? No. Aquí hasta los dementores se reirían…",
+      "Ni los dementores aceptarían esa clave… vuelve a intentarlo.",
+      "Podrías engañar a un trol, pero no a esta puerta.",
+      "La puerta permanece sellada… tu palabra carece de poder.",
+      "Has pronunciado la clave equivocada. Los muros susurran tu error.",
+      "El encantamiento no responde… quizá intentes otra vez, forastero.",
+      "La contraseña es falsa. Los espíritus de Azkaban ríen en la oscuridad.",
+      "¡No, no, no! Esa no es la clave… la clave verdadera duele recordarla…",
+      "Te equivocas… como todos… siempre se equivocan. Vuelve a intentarlo.",
+      "La contraseña… no… esa no… ¡los dementores vendrán si sigues fallando!",
+      "Otra vez mal… yo también olvidé la mía una vez… y perdí años en la neblina…",
+      "Alto ahí. La contraseña no coincide. Retrocede, visitante.",
+      "Acceso denegado. Ni siquiera los condenados usan palabras tan torpes.",
+      "Contraseña errónea. Las puertas de esta prisión no ceden tan fácil."
+    ];
+    
+    const statsBtn = document.getElementById('stats-btn');
+    const uploadBtn = document.getElementById('upload-btn');
+    const loginModal = document.getElementById('login-modal');
+    const loginBtn = document.getElementById('login-btn');
+    const cancelBtn = document.getElementById('cancel-btn');
+    const passInput = document.getElementById('pass-input');
+    const errorMessage = document.getElementById('error-message');
+    const modalTitle = document.getElementById('modal-title');
+    
+    let currentAction = null;
+    
+    statsBtn.addEventListener('click', () => {
+      currentAction = 'stats';
+      modalTitle.textContent = 'Acceso a Stats';
+      loginModal.style.display = 'flex';
+      passInput.focus();
+      errorMessage.style.display = 'none';
+      passInput.value = '';
+    });
+    
+    uploadBtn.addEventListener('click', () => {
+      currentAction = 'upload';
+      modalTitle.textContent = 'Acceder a Uploads';
+      loginModal.style.display = 'flex';
+      passInput.focus();
+      errorMessage.style.display = 'none';
+      passInput.value = '';
+    });
+    
+    cancelBtn.addEventListener('click', () => {
+      loginModal.style.display = 'none';
+      passInput.value = '';
+      errorMessage.style.display = 'none';
+      currentAction = null;
+    });
+    
+    loginBtn.addEventListener('click', () => {
+      if (passInput.value === '252914') {
+        if (currentAction === 'stats') {
+          window.location.href = '/stats?pass=' + encodeURIComponent(passInput.value);
+        } else if (currentAction === 'upload') {
+          window.location.href = '/upload?pass=' + encodeURIComponent(passInput.value);
+        }
+      } else {
+        const randomMsg = errorMessages[Math.floor(Math.random() * errorMessages.length)];
+        errorMessage.textContent = randomMsg;
+        errorMessage.style.display = 'block';
+        passInput.value = '';
+        passInput.focus();
+      }
+    });
+    
+    passInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') loginBtn.click();
+    });
+    
+    statsBtn.addEventListener('mouseenter', () => {
+      statsBtn.style.boxShadow = '0 0 15px rgba(25,230,214,0.5)';
+      statsBtn.style.transform = 'scale(1.1)';
+    });
+    
+    statsBtn.addEventListener('mouseleave', () => {
+      statsBtn.style.boxShadow = 'none';
+      statsBtn.style.transform = 'scale(1)';
+    });
+    
+    uploadBtn.addEventListener('mouseenter', () => {
+      uploadBtn.style.boxShadow = '0 0 15px rgba(25,230,214,0.5)';
+      uploadBtn.style.transform = 'scale(1.1)';
+    });
+    
+    uploadBtn.addEventListener('mouseleave', () => {
+      uploadBtn.style.boxShadow = 'none';
+      uploadBtn.style.transform = 'scale(1)';
+    });
+  </script>
+</body>
+</html>`);
+});
+
+// Libros
+app.get('/libros', async (req,res)=>{
+  try {
+    const query = (req.query.buscar||'').trim().toLowerCase();
+    const orden = req.query.ordenar||'alfabetico';
+    
+    // Recargar bookMetadata desde el JSON más reciente
+    reloadBooksMetadata();
+    
+    // Sincronizar con Drive para asegurar que tenemos todos los libros
+    const files = await listAllFiles(folderId);
+    actualizarBooksJSON(files);
+
+    // Trabajar SOLO con datos del JSON
+    let librosForRender = bookMetadata.filter(book => {
+      // Verificar que el libro existe en Drive
+      return files.some(f => f.id === book.id);
+    });
+
+    // Aplicar búsqueda
+    if(query){
+      librosForRender = librosForRender.filter(book => {
+        const title = (book.title || '').toLowerCase();
+        const author = (book.author || '').toLowerCase();
+        return title.includes(query) || author.includes(query);
+      });
+    }
+
+    res.send(renderBookPage({libros:librosForRender,titlePage:'Libros',tipo:'libros',nombre:'libros',req,noResultsHtml:getRandomNoResultHtml()}));
+  } catch(err){console.error(err); res.send('<p>Error al cargar libros.</p>');}
+});
+
+// Autores
+app.get('/autores', (req,res)=>{
+  reloadBooksMetadata();
+  const query = (req.query.buscar||'').trim().toLowerCase();
+  let autores = [...new Set(bookMetadata.map(b=>b.author).filter(a=>a))].sort();
+  if(query) autores = autores.filter(a=>a.toLowerCase().includes(query));
+  const authorsHtml = autores.length ? autores.map(a=>{
+    const initials = a.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0, 3);
+    return `<div class="book"><div style="width:50px; height:50px; border:2px solid #19E6D6; border-radius:50%; display:flex; align-items:center; justify-content:center; margin-bottom:8px;"><span style="font-family:'MedievalSharp', cursive; color:#19E6D6; font-size:18px; font-weight:normal;">${initials}</span></div><div class="title">${a}</div><div class="meta"><a href="/autor?name=${encodeURIComponent(a)}">Ver libros</a></div></div>`;
+  }).join('') : getRandomNoResultHtml();
+  res.send(`<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"><title>Autores</title><style>${css}</style></head>
+<body>
+  <div class="header-banner top" style="background-image:url('/cover/secuendarias/portada11.jpg');"></div>
+  <div class="overlay top">
+    <div class="top-buttons secondary"><a href="/">Inicio</a></div>
+    <h1>Autores</h1>
+    <div class="top-buttons">
+      <a href="/libros">Libros</a>
+      <a href="/sagas">Sagas</a>
+    </div>
+  </div>
+  <form method="get" action="/autores" style="display:flex;flex-direction:column;align-items:center;gap:8px;margin-top:12px;">
+    <div style="display:flex;gap:8px;align-items:center;"><input type="search" name="buscar" placeholder="Buscar autor" value="${req.query.buscar?req.query.buscar.replace(/\"/g,'&quot;'):''}" /><button type="submit">Buscar</button></div>
+    <div style="margin-top:6px">
+      <select id="orden-autores" name="ordenar" onchange="this.form.submit()" style="width:auto;min-width:0;padding:4px 8px;border-radius:6px;">
+        <option value="alfabetico">A→Z</option>
+        <option value="alfabetico-desc">Z→A</option>
+        <option value="recientes">Más recientes</option>
+      </select>
+    </div>
+  </form>
+  <div id="grid">${authorsHtml}</div>
+  <p><a href="/libros" class="button">← Volver</a></p>
+
+  <script>
+    function applyRowFade() {
+      const banner = document.querySelector('.header-banner.top');
+      const bannerBottom = banner ? banner.getBoundingClientRect().bottom : 290;
+      const cardHeight = 200;
+      const offset = 100;
+      const fadeStartPoint = bannerBottom - offset;
+      const fadeLength = 150;
+      const minOpacity = 0.15;
+      const books = Array.from(document.querySelectorAll('.book'));
+      if (!books.length) return;
+      const rows = {};
+      books.forEach(b => {
+        const top = Math.round(b.getBoundingClientRect().top);
+        if (!rows[top]) rows[top] = [];
+        rows[top].push(b);
+      });
+      const rowTops = Object.keys(rows).map(Number).sort((a,b)=>a-b);
+      rowTops.forEach(top => {
+        const distance = top - fadeStartPoint;
+        let opacity = 1;
+        if (distance <= 0) {
+          opacity = minOpacity;
+        } else if (distance < fadeLength) {
+          opacity = Math.max(minOpacity, distance / fadeLength);
+        } else {
+          opacity = 1;
+        }
+        rows[top].forEach(el => el.style.opacity = opacity);
+      });
+      const firstRowTop = rowTops.length ? rowTops[0] : Infinity;
+      const btns = document.querySelectorAll('.top-buttons a');
+      let btnOpacity = 1;
+      const dist = firstRowTop - fadeStartPoint;
+      if (dist <= 0) btnOpacity = minOpacity;
+      else if (dist < fadeLength) btnOpacity = Math.max(minOpacity, dist / fadeLength);
+      else btnOpacity = 1;
+      btns.forEach(b=>b.style.opacity = btnOpacity);
+    }
+    document.addEventListener('scroll', applyRowFade);
+    window.addEventListener('resize', applyRowFade);
+    document.addEventListener('DOMContentLoaded', applyRowFade);
+  </script>
+</body>
+</html>`);
+});
+
+// Sagas
+app.get('/sagas', (req,res)=>{
+  reloadBooksMetadata();
+  const query = (req.query.buscar||'').trim().toLowerCase();
+  let sagas = [...new Set(bookMetadata.map(b=>b.saga?.name).filter(a=>a))].sort();
+  if(query) sagas = sagas.filter(s=>s.toLowerCase().includes(query));
+  const runes = uniqueRunes(sagas.length);
+  const sagasHtml = sagas.length ? sagas.map((s, idx)=>{
+    const symbol = runes[idx];
+    return `<div class="book"><div style="width:50px; height:50px; border:2px solid #19E6D6; border-radius:50%; display:flex; align-items:center; justify-content:center; margin-bottom:8px;">${symbol}</div><div class="title">${s}</div><div class="meta"><a href="/saga?name=${encodeURIComponent(s)}">Ver libros</a></div></div>`;
+  }).join('') : getRandomNoResultHtml();
+  res.send(`<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"><title>Sagas</title><style>${css}</style></head>
+<body>
+  <div class="header-banner top" style="background-image:url('/cover/secuendarias/portada11.jpg');"></div>
+  <div class="overlay top">
+    <div class="top-buttons secondary"><a href="/">Inicio</a></div>
+    <h1>Sagas</h1>
+    <div class="top-buttons">
+      <a href="/libros">Libros</a>
+      <a href="/autores">Autores</a>
+    </div>
+  </div>
+  <form method="get" action="/sagas" style="display:flex;flex-direction:column;align-items:center;gap:8px;margin-top:12px;">
+    <div style="display:flex;gap:8px;align-items:center;"><input type="search" name="buscar" placeholder="Buscar saga" value="${req.query.buscar?req.query.buscar.replace(/\"/g,'&quot;'):''}" /><button type="submit">Buscar</button></div>
+    <div style="margin-top:6px">
+      <select id="orden-sagas" name="ordenar" onchange="this.form.submit()" style="width:auto;min-width:0;padding:4px 8px;border-radius:6px;">
+        <option value="alfabetico">A→Z</option>
+        <option value="alfabetico-desc">Z→A</option>
+        <option value="recientes">Más recientes</option>
+      </select>
+    </div>
+  </form>
+  <div id="grid">${sagasHtml}</div>
+  <p><a href="/libros" class="button">← Volver</a></p>
+
+  <script>
+    function applyRowFade() {
+      const banner = document.querySelector('.header-banner.top');
+      const bannerBottom = banner ? banner.getBoundingClientRect().bottom : 290;
+      const cardHeight = 200;
+      const offset = 100;
+      const fadeStartPoint = bannerBottom - offset;
+      const fadeLength = 150;
+      const minOpacity = 0.15;
+      const books = Array.from(document.querySelectorAll('.book'));
+      if (!books.length) return;
+      const rows = {};
+      books.forEach(b => {
+        const top = Math.round(b.getBoundingClientRect().top);
+        if (!rows[top]) rows[top] = [];
+        rows[top].push(b);
+      });
+      const rowTops = Object.keys(rows).map(Number).sort((a,b)=>a-b);
+      rowTops.forEach(top => {
+        const distance = top - fadeStartPoint;
+        let opacity = 1;
+        if (distance <= 0) {
+          opacity = minOpacity;
+        } else if (distance < fadeLength) {
+          opacity = Math.max(minOpacity, distance / fadeLength);
+        } else {
+          opacity = 1;
+        }
+        rows[top].forEach(el => el.style.opacity = opacity);
+      });
+      const firstRowTop = rowTops.length ? rowTops[0] : Infinity;
+      const btns = document.querySelectorAll('.top-buttons a');
+      let btnOpacity = 1;
+      const dist = firstRowTop - fadeStartPoint;
+      if (dist <= 0) btnOpacity = minOpacity;
+      else if (dist < fadeLength) btnOpacity = Math.max(minOpacity, dist / fadeLength);
+      else btnOpacity = 1;
+      btns.forEach(b=>b.style.opacity = btnOpacity);
+    }
+    document.addEventListener('scroll', applyRowFade);
+    window.addEventListener('resize', applyRowFade);
+    document.addEventListener('DOMContentLoaded', applyRowFade);
+  </script>
+</body>
+</html>`);
+});
+
+// Autor individual
+app.get('/autor', (req,res)=>{
+  const nombreAutor = req.query.name;
+  if(!nombreAutor) return res.redirect('/autores');
+  const query = (req.query.buscar||'').trim().toLowerCase();
+  const orden = req.query.ordenar || 'alfabetico';
+  let libros = bookMetadata.filter(b=>b.author===nombreAutor);
+  if (query) {
+    libros = libros.filter(b=>{
+      const title = (b.title||'').toLowerCase();
+      const author = (b.author||'').toLowerCase();
+      return title.includes(query) || author.includes(query);
+    });
+  }
+  libros = ordenarBooks(libros, orden, 'autor');
+  res.send(renderBookPage({libros,titlePage:`Libros de ${nombreAutor}`,tipo:'autor',nombre:nombreAutor,req}));
+});
+
+// Saga individual
+app.get('/saga', (req,res)=>{
+  const nombreSaga = req.query.name;
+  if(!nombreSaga) return res.redirect('/sagas');
+  const query = (req.query.buscar||'').trim().toLowerCase();
+  const orden = req.query.ordenar || 'alfabetico';
+  let libros = bookMetadata.filter(b=>b.saga?.name===nombreSaga);
+  if (query) {
+    libros = libros.filter(b=>{
+      const title = (b.title||'').toLowerCase();
+      const author = (b.author||'').toLowerCase();
+      return title.includes(query) || author.includes(query);
+    });
+  }
+  libros = ordenarBooks(libros, orden, 'saga');
+  res.send(renderBookPage({libros,titlePage:`Libros de ${nombreSaga}`,tipo:'saga',nombre:nombreSaga,req}));
+});
+
+// Recomendados por rating (Goodreads) - Top 5
+app.get('/recomendados', async (req,res)=>{
+  try {
+    const books = shuffleArray(bookMetadata.filter(b=>b && b.title && b.author)).slice(0, 200); // muestreo para respuesta rápida
+
+    const results = [];
+    const maxConcurrent = 8;
+    let idx = 0;
+
+    const worker = async () => {
+      while (idx < books.length) {
+        const myIndex = idx++;
+        const book = books[myIndex];
+        if (!book) continue;
+        const rating = await fetchRating(book.title, book.author, book.isbn);
+        results.push({ ...book, rating });
+      }
+    };
+
+    await Promise.all(Array.from({ length: maxConcurrent }, worker));
+
+    const top = results
+      .filter(r=>r.rating > 0)
+      .sort((a,b)=> b.rating - a.rating)
+      .slice(0,5);
+
+    const cards = top.map(r=>{
+      const cover = getCoverForBook(r.id);
+      const imgHtml = cover ? `<img src="${cover}" />` : `<div style="width:80px;height:120px;background:#333;border-radius:5px;"></div>`;
+      return `<div class="book" style="align-items:flex-start;gap:6px;">
+        <div style="position:absolute;top:4px;right:6px;background:#19E6D6;color:#000;padding:3px 8px;border-radius:6px;font-size:13px;font-family:'MedievalSharp', cursive;">GR ${r.rating.toFixed(2)}</div>
+        ${imgHtml}
+        <div class="title" style="margin-top:6px;">${r.title}</div>
+        <div class="author-span" style="margin-top:2px;">${r.author}</div>
+        ${r.saga?.name ? `<div class="number-span" style="margin-top:2px;">${r.saga.name}${r.saga.number?` #${r.saga.number}`:''}</div>` : ''}
+        <div class="meta" style="margin-top:4px;"><a href="/libro?id=${encodeURIComponent(r.id)}">Ver</a></div>
+      </div>`;
+    }).join('') || getRandomNoResultHtml();
+
+    res.send(`<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"><title>Recomendados (Top 5)</title><style>${css}</style></head>
+<body>
+  <div class="header-banner top" style="background-image:url('/cover/secuendarias/portada11.jpg');"></div>
+  <div class="overlay top">
+    <div class="top-buttons secondary"><a href="/">Inicio</a></div>
+    <h1>Top 5 recomendados</h1>
+    <div class="top-buttons">
+      <a href="/libros">Libros</a>
+      <a href="/sagas">Sagas</a>
+      <a href="/autores">Autores</a>
+    </div>
+  </div>
+
+  <div style="padding:30px 20px 20px 20px; max-width:1100px; margin:0 auto;">
+    <p style="color:#ccc; font-family:'MedievalSharp', cursive;">Ranking calculado con ratings de Goodreads (autocomplete). Se muestran solo libros con puntaje disponible.</p>
+    <div id="grid">${cards}</div>
+    <p><a href="/" class="button">← Volver</a></p>
+  </div>
+</body>
+</html>`);
+  } catch (err) {
+    console.error(err);
+    res.send('<p>Error al cargar recomendados.</p>');
+  }
+});
+
+// Libro individual -> muestra sinopsis + portada
+app.get('/libro', async (req, res) => {
+  const id = req.query.id;
+  if (!id) return res.redirect('/libros');
+  
+  // Usar endpoint /api/book-data para obtener/cachear datos
+  let meta = bookMetadata.find(b => b.id === id);
+  if (!meta) return res.redirect('/libros');
+  
+  // Si no tiene datos completos, buscarlos
+  if (!meta.description || meta.averageRating === undefined) {
+    try {
+      const response = await axios.get(`http://localhost:${PORT}/api/book-data?id=${id}`);
+      meta = response.data;
+    } catch (err) {
+      console.error('[/libro] Error al obtener datos:', err.message);
+    }
+  }
+  
+  const cover = meta.coverUrl || getCoverForBook(id);
+  const title = meta.title || 'Sin título';
+  const author = meta.author || 'Desconocido';
+  const saga = meta.saga?.name || null;
+  const synopsis = meta.description || 'No se encontró sinopsis.';
+  const rating = meta.averageRating ? `⭐ ${meta.averageRating}/5 (${meta.ratingsCount || 'sin votos'})` : '';
+  const publisher = meta.publisher || null;
+  const publishedDate = meta.publishedDate || null;
+  const pageCount = meta.pageCount || null;
+  const categories = meta.categories || [];
+  const language = meta.language || null;
+
+  const synopsisHtml = `<div style="max-width:760px;margin:18px auto;color:#ddd;line-height:1.8;font-size:27px;">${synopsis}</div>`;
+  
+  // Info de Google Books para mostrar arriba (junto a autor y saga)
+  const googleBooksInfoHtml = `
+    ${publisher ? `<div style="color:#ddd;margin-bottom:6px;">Editorial: ${publisher}</div>` : ''}
+    ${publishedDate ? `<div style="color:#ddd;margin-bottom:6px;">Publicado: ${publishedDate}</div>` : ''}
+    ${pageCount ? `<div style="color:#ddd;margin-bottom:6px;">Páginas: ${pageCount}</div>` : ''}
+    ${language ? `<div style="color:#ddd;margin-bottom:6px;">Idioma: ${language === 'es' ? 'Español' : language.toUpperCase()}</div>` : ''}
+    ${categories.length > 0 ? `<div style="color:#ddd;margin-bottom:12px;">Categorías: ${categories.join(', ')}</div>` : ''}
+  `;
+
+  res.send(`<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="utf-8"><title>${title}</title><style>${css}</style></head>
+<body>
+  <div class="header-banner top" style="background-image:url('${cover || '/cover/secuendarias/portada11.jpg'}');"></div>
+  <div class="overlay top">
+    <div class="top-buttons secondary"><a href="/">Inicio</a></div>
+    <h1>${title}</h1>
+    <div class="top-buttons"><a href="/libros">Libros</a><a href="/autores">Autores</a></div>
+  </div>
+  <div style="max-width:900px;margin:20px auto;padding:12px;color:#fff;">
+    <p style="margin-bottom:20px;"><a href="javascript:history.back()" class="button" style="display:inline-block;">← Volver</a></p>
+    <div style="display:flex;gap:18px;align-items:flex-start;flex-wrap:wrap;">
+      <div style="flex:0 0 200px;text-align:center;"><img src="${cover || '/cover/portada/portada1.jpg'}" style="width:180px;height:auto;border-radius:8px;display:block;margin:0 auto;"/></div>
+      <div style="flex:1 1 400px;">
+        <h2 style="margin:0 0 8px;color:#fff;font-family:'MedievalSharp',cursive;">${title}</h2>
+        <div style="color:#ddd;margin-bottom:6px;">Autor: <a href="/autor?name=${encodeURIComponent(author)}" style="color:#fff;text-decoration:none;">${author}</a></div>
+        ${saga?`<div style="color:#19E6D6;margin-bottom:12px;">Saga: <a href="/saga?name=${encodeURIComponent(saga)}" style="color:#19E6D6;text-decoration:none;">${saga}</a></div>`:''}
+        ${googleBooksInfoHtml}
+        ${rating?`<div style="color:#FFD700;margin-bottom:12px;font-size:18px;">${rating}</div>`:''}
+        <p><a href="/download?id=${encodeURIComponent(id)}" class="button">Descargar</a></p>
+      </div>
+    </div>
+    ${synopsisHtml}
+  </div>
+</body>
+</html>`);
+});
+
+// Iniciar servidor
+// Ruta para descargar archivos desde Google Drive y forzar descarga en la misma pestaña
+app.get('/download', async (req, res) => {
+  const id = req.query.id;
+  if (!id) return res.status(400).send('Falta id');
+  try {
+    // obtener metadatos para el nombre y mimeType
+    const meta = await driveRead.files.get({ fileId: id, fields: 'name,mimeType' });
+    const filename = (meta.data && meta.data.name) ? meta.data.name.replace(/\"/g, '') : `file-${id}`;
+    const mime = (meta.data && meta.data.mimeType) ? meta.data.mimeType : 'application/octet-stream';
+    res.setHeader('Content-Type', mime);
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+
+    // stream del contenido
+    const r = await driveRead.files.get({ fileId: id, alt: 'media' }, { responseType: 'stream' });
+    r.data.on('error', err => {
+      console.error('Stream error:', err);
+      try { res.status(500).end(); } catch (e) {}
+    });
+    r.data.pipe(res);
+    downloadCount++;
+  } catch (err) {
+    console.error('Download failed, falling back to Drive URL:', err && err.message ? err.message : err);
+    // fallback: redirect al enlace público de Drive
+    return res.redirect(`https://drive.google.com/uc?export=download&id=${id}`);
+  }
+});
+
+// Descargar múltiples archivos como ZIP
+app.post('/download-zip', async (req, res) => {
+  const { ids } = req.body;
+  if (!ids || !Array.isArray(ids) || ids.length === 0) {
+    return res.status(400).json({ error: 'IDs inválidos' });
+  }
+
+  try {
+    const archive = archiver('zip', { zlib: { level: 5 } });
+
+    res.setHeader('Content-Type', 'application/zip');
+    res.setHeader('Content-Disposition', 'attachment; filename="libros.zip"');
+
+    archive.on('error', (err) => {
+      console.error('Archive error:', err);
+      if (!res.headersSent) {
+        res.status(500).json({ error: 'Error en ZIP' });
+      }
+    });
+
+    res.on('error', (err) => {
+      console.error('Response error:', err);
+      archive.abort();
+    });
+
+    archive.pipe(res);
+
+    for (const id of ids) {
+      try {
+        const meta = await driveRead.files.get({ fileId: id, fields: 'name' });
+        const filename = (meta.data && meta.data.name) ? meta.data.name : `file-${id}`;
+        const stream = await driveRead.files.get({ fileId: id, alt: 'media' }, { responseType: 'stream' });
+        
+        archive.append(stream.data, { name: filename });
+      } catch (err) {
+        console.warn(`Error agregando archivo ${id}:`, err.message);
+      }
+    }
+
+    await archive.finalize();
+    downloadCount++;
+  } catch (err) {
+    console.error('ZIP creation failed:', err);
+    if (!res.headersSent) {
+      res.status(500).json({ error: 'Error creando ZIP: ' + err.message });
+    }
+  }
+});
+
+// Stats dashboard - protegido con contraseña
+app.get('/stats', async (req, res) => {
+  const pass = req.query.pass || '';
+  if (pass !== '252914') {
+    const randomMsg = deniedMessages[Math.floor(Math.random() * deniedMessages.length)];
+    return res.status(403).send(`<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"><title>Acceso Denegado</title><style>body{background:#111;color:#fff}</style></head>
+<body style="padding:40px;">
+  <h1>🔒 Acceso Denegado</h1>
+  <p>${randomMsg}</p>
+  <p><a href="/">Volver al inicio</a></p>
+</body>
+</html>`);
+  }
+  
+  // Calcular estadísticas generales
+  const totalLibros = bookMetadata.length;
+  const totalAutores = [...new Set(bookMetadata.map(b => b.author))].length;
+  const totalSagas = [...new Set(bookMetadata.filter(b => b.saga?.name).map(b => b.saga.name))].length;
+  
+  // Contar uploads reales desde el JSON (libros con uploadDate)
+  const uploadsReales = bookMetadata.filter(b => b.uploadDate).length;
+  
+  // Top autores
+  const autorCount = {};
+  bookMetadata.forEach(b => {
+    if (b.author) autorCount[b.author] = (autorCount[b.author] || 0) + 1;
+  });
+  const topAutores = Object.entries(autorCount)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5);
+  
+  // Top sagas
+  const sagaCount = {};
+  bookMetadata.filter(b => b.saga?.name).forEach(b => {
+    sagaCount[b.saga.name] = (sagaCount[b.saga.name] || 0) + 1;
+  });
+  const topSagas = Object.entries(sagaCount)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5);
+  
+  const librosConISBN = bookMetadata.filter(b => b.isbn && b.isbn.length > 0).length;
+  const librosConPublisher = bookMetadata.filter(b => b.publisher && b.publisher.length > 0).length;
+  const librosConPageCount = bookMetadata.filter(b => b.pageCount && b.pageCount > 0).length;
+  const librosConCategories = bookMetadata.filter(b => b.categories && b.categories.length > 0).length;
+  const librosConFecha = bookMetadata.filter(b => b.publishedDate && b.publishedDate.length > 0).length;
+  const librosConIdioma = bookMetadata.filter(b => b.language && b.language.length > 0).length;
+  
+  // Calcular libros incompletos
+  const isEmpty = (value, fieldName) => {
+    if (fieldName === 'saga') return !value || !value.name || value.name.trim() === '';
+    if (fieldName === 'publishedDate') return !value || (typeof value === 'string' && value.trim() === '');
+    return !value || (typeof value === 'string' && value.trim() === '');
+  };
+  
+  let incompleteBooks = bookMetadata.filter(book => {
+    const missing = [];
+    if (isEmpty(book.title, 'title')) missing.push('title');
+    if (isEmpty(book.author, 'author')) missing.push('author');
+    if (isEmpty(book.saga, 'saga')) missing.push('saga');
+    if (isEmpty(book.description, 'description')) missing.push('description');
+    if (isEmpty(book.publishedDate, 'publishedDate')) missing.push('publishedDate');
+    return missing.length > 0;
+  });
+
+  res.send(`<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard Editor</title>
+  <style>${css}
+    
+    /* Estilos adicionales para dashboard */
+    .dashboard-content { padding: 30px 20px; max-width: 1400px; margin: 0 auto; }
+    .section { background: rgba(18,18,18,0.95); border: 1px solid rgba(25,230,214,0.3); border-radius: 10px; padding: 25px; margin-bottom: 30px; }
+    .section h2 { font-family: 'MedievalSharp', cursive; color: #19E6D6; font-size: 24px; margin: 0 0 20px 0; }
+    
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 16px; }
+    th, td { padding: 12px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 15px; }
+    th { background: rgba(25,230,214,0.2); color: #19E6D6; font-weight: bold; font-family: 'MedievalSharp', cursive; }
+    tr:hover { background: rgba(255,255,255,0.05); }
+    
+    button { padding: 8px 15px; margin: 3px; cursor: pointer; border: none; border-radius: 4px; font-family: 'MedievalSharp', cursive; transition: 0.2s; }
+    .btn-edit { background: #19E6D6; color: #000; }
+    .btn-edit:hover { background: #1dd4c8; }
+    .btn-delete { background: #ff6b6b; color: #fff; }
+    .btn-delete:hover { background: #ff5252; }
+    
+    .search-box { display: flex; gap: 10px; align-items: center; margin-bottom: 15px; }
+    .search-box input { flex: 1; padding: 10px; background: rgba(0,0,0,0.5); border: 2px solid #19E6D6; color: #fff; border-radius: 6px; font-family: 'MedievalSharp', cursive; }
+    .search-box input:focus { outline: none; box-shadow: 0 0 10px rgba(25,230,214,0.4); }
+    
+    .suggestions { position: absolute; background: rgba(18,18,18,0.98); border: 2px solid #19E6D6; border-top: none; border-radius: 0 0 6px 6px; max-height: 300px; overflow-y: auto; z-index: 1000; width: calc(100% - 24px); }
+    .suggestion-item { padding: 10px 15px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.1); transition: 0.2s; }
+    .suggestion-item:hover { background: rgba(25,230,214,0.2); }
+    .suggestion-item strong { color: #19E6D6; }
+    
+    .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.95); z-index: 9999; align-items: center; justify-content: center; overflow-y: auto; padding: 20px; }
+    .modal.active { display: flex; }
+    .modal-content { background: linear-gradient(135deg, rgba(18,18,18,0.98), rgba(12,12,12,0.95)); padding: 30px; border-radius: 12px; max-width: 900px; width: 100%; border: 2px solid #19E6D6; max-height: 90vh; overflow-y: auto; }
+    .modal-content h2 { font-family: 'MedievalSharp', cursive; color: #19E6D6; margin: 0 0 20px 0; }
+    
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    .form-grid.full { grid-template-columns: 1fr; }
+    .form-field { margin-bottom: 15px; }
+    .form-field label { display: block; margin-bottom: 5px; color: #19E6D6; font-weight: bold; font-family: 'MedievalSharp', cursive; font-size: 16px; }
+    .form-field input, .form-field textarea, .form-field select { width: 100%; padding: 10px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.3); color: #fff; border-radius: 4px; box-sizing: border-box; font-family: Garamond, serif; font-size: 16px; }
+    .form-field input:focus, .form-field textarea:focus { outline: none; border-color: #19E6D6; box-shadow: 0 0 8px rgba(25,230,214,0.3); }
+    
+    .json-preview { background: rgba(0,0,0,0.5); padding: 15px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.2); max-height: 200px; overflow-y: auto; font-family: monospace; font-size: 12px; color: #19E6D6; white-space: pre-wrap; margin-top: 10px; }
+    
+    .button-row { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+    
+    /* Estilos para diálogo de confirmación estilo login-box */
+    .confirm-dialog { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 10000; justify-content: center; align-items: center; }
+    .confirm-dialog.active { display: flex; }
+    .confirm-box { background: linear-gradient(135deg, rgba(18,18,18,0.95), rgba(12,12,12,0.9)); border: 2px solid rgba(25,230,214,0.5); border-radius: 12px; padding: 40px; text-align: center; max-width: 450px; box-shadow: 0 8px 32px rgba(0,0,0,0.8); }
+    .confirm-box h3 { font-family: 'MedievalSharp', cursive; color: #19E6D6; font-size: 22px; margin: 0 0 15px 0; }
+    .confirm-box p { color: #fff; font-size: 16px; line-height: 1.5; margin: 15px 0; }
+    .confirm-box .button-group { display: flex; gap: 10px; justify-content: center; margin-top: 25px; }
+    .confirm-box button { padding: 14px 28px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-family: 'MedievalSharp', cursive; font-size: 17px; transition: 0.2s; }
+    .confirm-box button.confirm { background: #19E6D6; color: #000; }
+    .confirm-box button.confirm:hover { background: #1dd4c8; }
+    .confirm-box button.cancel { background: rgba(255,255,255,0.1); color: #fff; }
+    .confirm-box button.cancel:hover { background: rgba(255,255,255,0.2); }
+    
+    /* Estilos para estadísticas */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 20px; }
+    .stat-card { background: transparent; border: 1px solid rgba(25,230,214,0.4); border-radius: 8px; padding: 20px; text-align: center; transition: 0.3s; }
+    .stat-card:hover { transform: translateY(-3px); box-shadow: 0 5px 20px rgba(25,230,214,0.2); border-color: rgba(25,230,214,0.6); }
+    .stat-number { font-family: 'MedievalSharp', cursive; font-size: 36px; color: #19E6D6; font-weight: bold; margin: 10px 0; }
+    .stat-label { font-size: 16px; color: #999; text-transform: uppercase; letter-spacing: 1px; }
+    .stat-icon { font-size: 24px; margin-bottom: 10px; }
+    
+    .top-list { list-style: none; padding: 0; margin: 15px 0 0 0; }
+    .top-list li { display: flex; justify-content: space-between; padding: 10px; margin: 5px 0; background: rgba(0,0,0,0.3); border-radius: 6px; border-left: 3px solid #19E6D6; }
+    .top-list li span:first-child { color: #fff; font-weight: bold; }
+    .top-list li span:last-child { color: #19E6D6; font-family: 'MedievalSharp', cursive; }
+  </style>
+</head>
+<body>
+  <div class="header-banner top" style="background-image:url('/cover/secuendarias/portada11.jpg');"></div>
+  <div class="overlay top">
+    <div class="top-buttons secondary"><a href="/">Inicio</a></div>
+    <h1>Dashboard Editor</h1>
+    <div class="top-buttons">
+      <a href="/libros">Libros</a>
+      <a href="/sagas">Sagas</a>
+      <a href="/autores">Autores</a>
+    </div>
+  </div>
+
+  <div class="dashboard-content">
+    <!-- Estadísticas Generales -->
+    <div style="margin-bottom: 30px;">
+      <h2 style="font-family: 'MedievalSharp', cursive; color: #19E6D6; font-size: 24px; margin: 0 0 20px 0; padding-left: 10px;">📊 Estadísticas Generales</h2>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon">📚</div>
+          <div class="stat-number">${totalLibros}</div>
+          <div class="stat-label">Total Libros</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">✍️</div>
+          <div class="stat-number">${totalAutores}</div>
+          <div class="stat-label">Autores</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">📖</div>
+          <div class="stat-number">${totalSagas}</div>
+          <div class="stat-label">Sagas</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🔢</div>
+          <div class="stat-number">${librosConISBN}</div>
+          <div class="stat-label">Con ISBN</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🏢</div>
+          <div class="stat-number">${librosConPublisher}</div>
+          <div class="stat-label">Con Editorial</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">📄</div>
+          <div class="stat-number">${librosConPageCount}</div>
+          <div class="stat-label">Con Páginas</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🏷️</div>
+          <div class="stat-number">${librosConCategories}</div>
+          <div class="stat-label">Con Categorías</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">📅</div>
+          <div class="stat-number">${librosConFecha}</div>
+          <div class="stat-label">Con Fecha Pub.</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🌐</div>
+          <div class="stat-number">${librosConIdioma}</div>
+          <div class="stat-label">Con Idioma</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">📥</div>
+          <div class="stat-number">${downloadCount}</div>
+          <div class="stat-label">Descargas (sesión)</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">📤</div>
+          <div class="stat-number">${uploadsReales}</div>
+          <div class="stat-label">Uploads</div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Top Rankings -->
+    <div class="section">
+      <h2>🏆 Top Rankings</h2>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+        <div>
+          <h3 style="color: #19E6D6; font-family: 'MedievalSharp', cursive; font-size: 18px; margin-bottom: 15px;">Top 5 Autores</h3>
+          <ul class="top-list">
+            ${topAutores.map(([name, count]) => `
+              <li>
+                <span>${name}</span>
+                <span>${count} libros</span>
+              </li>
+            `).join('')}
+          </ul>
+        </div>
+        <div>
+          <h3 style="color: #19E6D6; font-family: 'MedievalSharp', cursive; font-size: 18px; margin-bottom: 15px;">Top 5 Sagas</h3>
+          <ul class="top-list">
+            ${topSagas.map(([name, count]) => `
+              <li>
+                <span>${name}</span>
+                <span>${count} libros</span>
+              </li>
+            `).join('')}
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sección: Libros Incompletos -->
+    <div class="section">
+      <h2>📚 Libros Incompletos (${incompleteBooks.length})</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Título</th>
+            <th>Autor</th>
+            <th>Campos Faltantes</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${incompleteBooks.map(book => `
+            <tr>
+              <td>${book.title || '(vacío)'}</td>
+              <td>${book.author || '(vacío)'}</td>
+              <td style="font-size: 11px; color: #ff6b6b;">
+                ${(!book.title ? 'título, ' : '')}
+                ${(!book.author ? 'autor, ' : '')}
+                ${(!book.saga || !book.saga.name ? 'saga, ' : '')}
+                ${(!book.description ? 'descripción, ' : '')}
+                ${(!book.publishedDate ? 'fecha' : '')}
+              </td>
+              <td>
+                <button class="btn-edit" onclick="openEditModal('${book.id}')">✏️ Editar</button>
+                <button class="btn-delete" onclick="deleteBook('${book.id}')">🗑️</button>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Sección 2: Buscar y Editar Cualquier Libro -->
+    <div class="section">
+      <h2>🔍 Buscar y Editar Cualquier Libro</h2>
+      <div style="position: relative;">
+        <div class="search-box">
+          <input 
+            type="text" 
+            id="book-search" 
+            placeholder="Escribe título o autor..." 
+            autocomplete="off"
+            oninput="searchBooks(this.value)"
+            onfocus="this.select()"
+          >
+        </div>
+        <div id="suggestions" class="suggestions" style="display: none;"></div>
+      </div>
+      <p style="font-size: 12px; color: #999; margin-top: 10px;">
+        💡 Escribe para buscar entre todos los ${bookMetadata.length} libros. Haz clic en uno para editarlo.
+      </p>
+    </div>
+  </div>
+
+  <!-- Modal de Edición Completo -->
+  <div id="edit-modal" class="modal">
+    <div class="modal-content">
+      <h2 id="modal-title">Editar Libro</h2>
+      <form onsubmit="saveBook(event)">
+        <div class="form-grid">
+          <div class="form-field">
+            <label>Título *</label>
+            <input type="text" id="edit-title" required>
+          </div>
+          <div class="form-field">
+            <label>Autor *</label>
+            <input type="text" id="edit-author" required>
+          </div>
+        </div>
+        
+        <div class="form-grid">
+          <div class="form-field">
+            <label>Saga</label>
+            <input type="text" id="edit-saga">
+          </div>
+          <div class="form-field">
+            <label>Número en Saga</label>
+            <input type="number" id="edit-saga-number" min="1">
+          </div>
+        </div>
+        
+        <div class="form-grid full">
+          <div class="form-field">
+            <label>Descripción</label>
+            <textarea id="edit-description" rows="4"></textarea>
+          </div>
+        </div>
+        
+        <div class="form-grid">
+          <div class="form-field">
+            <label>Fecha Publicación</label>
+            <input type="text" id="edit-date" placeholder="YYYY-MM-DD">
+          </div>
+          <div class="form-field">
+            <label>Editorial</label>
+            <input type="text" id="edit-publisher">
+          </div>
+        </div>
+        
+        <div class="form-grid">
+          <div class="form-field">
+            <label>Páginas</label>
+            <input type="number" id="edit-pages" min="1">
+          </div>
+          <div class="form-field">
+            <label>Idioma</label>
+            <input type="text" id="edit-language" placeholder="es, en, fr...">
+          </div>
+        </div>
+        
+        <div class="form-grid">
+          <div class="form-field">
+            <label>ISBN</label>
+            <input type="text" id="edit-isbn">
+          </div>
+          <div class="form-field">
+            <label>Categorías (separadas por coma)</label>
+            <input type="text" id="edit-categories" placeholder="Fantasía, Aventura">
+          </div>
+        </div>
+        
+        <div class="form-grid">
+          <div class="form-field">
+            <label>URL Portada</label>
+            <input type="text" id="edit-cover">
+          </div>
+          <div class="form-field">
+            <label>Calificación (0-5)</label>
+            <input type="number" id="edit-rating" min="0" max="5" step="0.1">
+          </div>
+        </div>
+        
+        <details style="margin-top: 20px;">
+          <summary style="cursor: pointer; color: #19E6D6; font-family: 'MedievalSharp', cursive;">📋 Ver JSON Completo</summary>
+          <div id="json-preview" class="json-preview"></div>
+        </details>
+        
+        <div class="button-row">
+          <button type="button" class="btn-delete" onclick="closeEditModal()">Cancelar</button>
+          <button type="submit" class="btn-edit">💾 Guardar Cambios</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  
+  <!-- Diálogo de Confirmación -->
+  <div id="confirm-dialog" class="confirm-dialog">
+    <div class="confirm-box">
+      <h3 id="confirm-title">Confirmar Acción</h3>
+      <p id="confirm-message">¿Estás seguro de realizar esta acción?</p>
+      <div class="button-group">
+        <button class="cancel" onclick="closeConfirmDialog()">Cancelar</button>
+        <button type="button" class="confirm" id="confirm-action">Confirmar</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentBookId = null;
+    let currentBook = null;
+    let allBooks = ${JSON.stringify(bookMetadata)};
+    let confirmCallback = null; // conservado por compatibilidad
+    
+    // Búsqueda con autocompletado
+    function searchBooks(query) {
+      const suggestions = document.getElementById('suggestions');
+      if (!query || query.trim().length < 2) {
+        suggestions.style.display = 'none';
+        return;
+      }
+      
+      const q = query.toLowerCase();
+      const matches = allBooks.filter(book => 
+        (book.title && book.title.toLowerCase().includes(q)) ||
+        (book.author && book.author.toLowerCase().includes(q))
+      ).slice(0, 10);
+      
+      if (matches.length === 0) {
+        suggestions.innerHTML = '<div class="suggestion-item">No se encontraron resultados</div>';
+        suggestions.style.display = 'block';
+        return;
+      }
+      
+      suggestions.innerHTML = matches.map(book => 
+        \`<div class="suggestion-item" onclick="selectBook('\${book.id}')">
+          <strong>\${book.title || '(sin título)'}</strong><br>
+          <span style="font-size: 12px; color: #999;">\${book.author || '(sin autor)'}</span>
+        </div>\`
+      ).join('');
+      suggestions.style.display = 'block';
+    }
+    
+    // Seleccionar libro de las sugerencias
+    function selectBook(bookId) {
+      document.getElementById('suggestions').style.display = 'none';
+      document.getElementById('book-search').value = '';
+      openEditModal(bookId);
+    }
+    
+    // Cerrar sugerencias al hacer clic fuera
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.search-box') && !e.target.closest('.suggestions')) {
+        document.getElementById('suggestions').style.display = 'none';
+      }
+    });
+    
+    // Abrir modal de edición
+    function openEditModal(bookId) {
+      currentBookId = bookId;
+      fetch('/api/books/' + bookId)
+        .then(r => r.json())
+        .then(book => {
+          currentBook = book;
+          document.getElementById('modal-title').textContent = 'Editar: ' + (book.title || 'Libro sin título');
+          document.getElementById('edit-title').value = book.title || '';
+          document.getElementById('edit-author').value = book.author || '';
+          document.getElementById('edit-saga').value = (book.saga && book.saga.name) || '';
+          document.getElementById('edit-saga-number').value = (book.saga && book.saga.number) || '';
+          document.getElementById('edit-description').value = book.description || '';
+          document.getElementById('edit-date').value = book.publishedDate || '';
+          document.getElementById('edit-publisher').value = book.publisher || '';
+          document.getElementById('edit-pages').value = book.pageCount || '';
+          document.getElementById('edit-language').value = book.language || '';
+          document.getElementById('edit-isbn').value = book.isbn || '';
+          document.getElementById('edit-categories').value = (book.categories && book.categories.join(', ')) || '';
+          document.getElementById('edit-cover').value = book.coverUrl || '';
+          document.getElementById('edit-rating').value = book.averageRating || '';
+          
+          // Mostrar JSON completo
+          document.getElementById('json-preview').textContent = JSON.stringify(book, null, 2);
+          
+          document.getElementById('edit-modal').classList.add('active');
+        })
+        .catch(e => alert('Error al cargar libro: ' + e.message));
+    }
+    
+    function closeEditModal() {
+      document.getElementById('edit-modal').classList.remove('active');
+    }
+    
+    // Funciones para diálogo de confirmación
+    function showConfirmDialog(title, message, onConfirm) {
+      document.getElementById('confirm-title').textContent = title;
+      document.getElementById('confirm-message').textContent = message;
+      const confirmBtn = document.getElementById('confirm-action');
+      console.log('[showConfirmDialog] Abriendo diálogo:', title);
+      // Asignar handler único por apertura
+      confirmBtn.onclick = () => {
+        console.log('[confirmBtn.onclick] Confirmado, ejecutando callback...');
+        document.getElementById('confirm-dialog').classList.remove('active');
+        if (typeof onConfirm === 'function') {
+          console.log('[confirmBtn.onclick] Callback es función, ejecutando...');
+          onConfirm();
+        } else {
+          console.log('[confirmBtn.onclick] Callback no es función:', typeof onConfirm);
+        }
+      };
+      document.getElementById('confirm-dialog').classList.add('active');
+    }
+    
+    function closeConfirmDialog() {
+      document.getElementById('confirm-dialog').classList.remove('active');
+    }
+    
+    // Guardar cambios
+    function saveBook(e) {
+      e.preventDefault();
+      
+      const categories = document.getElementById('edit-categories').value
+        .split(',')
+        .map(c => c.trim())
+        .filter(c => c.length > 0);
+      
+      const updated = {
+        ...currentBook,
+        title: document.getElementById('edit-title').value,
+        author: document.getElementById('edit-author').value,
+        saga: {
+          name: document.getElementById('edit-saga').value || null,
+          number: parseInt(document.getElementById('edit-saga-number').value) || null
+        },
+        description: document.getElementById('edit-description').value || null,
+        publishedDate: document.getElementById('edit-date').value || null,
+        publisher: document.getElementById('edit-publisher').value || null,
+        pageCount: parseInt(document.getElementById('edit-pages').value) || null,
+        language: document.getElementById('edit-language').value || null,
+        isbn: document.getElementById('edit-isbn').value || null,
+        categories: categories.length > 0 ? categories : null,
+        coverUrl: document.getElementById('edit-cover').value || null,
+        averageRating: parseFloat(document.getElementById('edit-rating').value) || null
+      };
+      
+      const bookTitle = updated.title || 'este libro';
+      console.log('[saveBook] Mostrando confirm dialog, bookId:', currentBookId);
+      showConfirmDialog(
+        '💾 Guardar Cambios',
+        '¿Confirmas guardar los cambios en "' + bookTitle + '"?',
+        () => {
+          console.log('[saveBook callback] Iniciando fetch PUT a /api/books/' + currentBookId);
+          fetch('/api/books/' + currentBookId, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(updated)
+          })
+            .then(r => {
+              console.log('[saveBook fetch] Response:', r.status, r.ok);
+              if (r.ok) {
+                console.log('[saveBook fetch] Éxito, mostrando diálogo de éxito');
+                showConfirmDialog(
+                  '✅ Éxito',
+                  'Los cambios se guardaron correctamente.',
+                  () => {
+                    console.log('[saveBook success callback] Recargando página...');
+                    location.reload();
+                  }
+                );
+              } else {
+                console.log('[saveBook fetch] Error, status:', r.status);
+                showConfirmDialog('❌ Error', 'No se pudieron guardar los cambios.', null);
+              }
+            })
+            .catch(e => {
+              console.error('[saveBook fetch error]', e);
+              showConfirmDialog('❌ Error', 'Error de conexión: ' + e.message, null);
+            });
+        }
+      );
+    }
+    
+    // Eliminar libro
+    function deleteBook(bookId) {
+      const book = allBooks.find(b => b.id === bookId);
+      const bookTitle = book?.title || 'este libro';
+      
+      showConfirmDialog(
+        '⚠️ Eliminar Libro',
+        '¿Estás seguro de eliminar "' + bookTitle + '" permanentemente? Esta acción no se puede deshacer.',
+        () => {
+          fetch('/api/books/' + bookId, { method: 'DELETE' })
+            .then(r => {
+              if (r.ok) {
+                showConfirmDialog(
+                  '✅ Eliminado',
+                  'El libro ha sido eliminado exitosamente.',
+                  () => location.reload()
+                );
+              } else {
+                showConfirmDialog('❌ Error', 'No se pudo eliminar el libro.', null);
+              }
+            })
+            .catch(e => showConfirmDialog('❌ Error', 'Error de conexión: ' + e.message, null));
+        }
+      );
+    }
+    
+    console.log('Dashboard cargado. ${bookMetadata.length} libros disponibles.');
+  </script>
+
+</body>
+</html>`);
+});
+
+// API JSON: Obtener estadísticas (para dashboard)
+app.get('/api/stats', async (req, res) => {
+  reloadBooksMetadata();
+  
+  const totalBooks = bookMetadata.length;
+  const totalAuthors = [...new Set(bookMetadata.map(b => b.author))].length;
+  const totalSagas = [...new Set(bookMetadata.filter(b => b.saga?.name).map(b => b.saga.name))].length;
+  
+  const booksWithCovers = bookMetadata.filter(b => b.coverUrl).length;
+  const incompleteBooks = bookMetadata.filter(book => {
+    const requiredFields = ['title', 'author', 'description', 'coverUrl', 'pageCount', 'language', 'categories'];
+    const missingFields = requiredFields.filter(field => {
+      if (field === 'categories') return !book[field] || !Array.isArray(book[field]) || book[field].length === 0;
+      return !book[field] || (typeof book[field] === 'string' && book[field].trim() === '');
+    });
+    return missingFields.length > 0;
+  }).length;
+  
+  const googleBooksSynced = bookMetadata.filter(b => b.averageRating).length;
+  
+  res.json({
+    totalBooks,
+    totalAuthors,
+    totalSagas,
+    booksWithCovers,
+    incompleteBooks,
+    googleBooksSynced
+  });
+});
+
+// API: Obtener portada de Google Books y guardar en JSON
+app.get('/api/book-cover', async (req, res) => {
+  const { title, author, id } = req.query;
+  if (!title || !author) return res.status(400).json({ error: 'Faltan parámetros' });
+
+  try {
+    // Buscar en books.json
+    let book = bookMetadata.find(b => b.id === id || (b.title.toLowerCase() === title.toLowerCase() && b.author.toLowerCase() === author.toLowerCase()));
+    
+    // Si ya tiene coverUrl, devolverlo
+    if (book?.coverUrl) {
+      console.log(`[API /book-cover] ✅ En caché: ${title}`);
+      return res.json({ coverUrl: book.coverUrl, cached: true });
+    }
+
+    // Buscar en Google Books
+    console.log(`[API /book-cover] Buscando: ${title}`);
+    const data = await fetchGoogleBooksData(title, author);
+    const coverUrl = data?.imageLinks?.thumbnail || data?.imageLinks?.smallThumbnail;
+
+    if (coverUrl && book) {
+      book.coverUrl = coverUrl;
+      await fs.promises.writeFile(BOOKS_FILE, JSON.stringify(bookMetadata, null, 2));
+      return res.json({ coverUrl: coverUrl, cached: false });
+    }
+
+    // Si no se encontró en Google Books, usar imagen aleatoria de fallback
+    const fallbackCover = getRandomCoverImage();
+    if (fallbackCover && book) {
+      book.coverUrl = fallbackCover;
+      await fs.promises.writeFile(BOOKS_FILE, JSON.stringify(bookMetadata, null, 2));
+      console.log(`[API /book-cover] 🎲 Fallback asignado: ${fallbackCover} para ${title}`);
+      return res.json({ coverUrl: fallbackCover, cached: false, fallback: true });
+    }
+
+    res.json({ coverUrl: coverUrl || fallbackCover || null, cached: false, fallback: !!fallbackCover });
+  } catch (err) {
+    console.error('[API /book-cover] Error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// API: Obtener datos completos del libro desde Google Books y guardar TODO en JSON
+app.get('/api/book-data', async (req, res) => {
+  const { id } = req.query;
+  if (!id) return res.status(400).json({ error: 'Falta id' });
+
+  try {
+    let book = bookMetadata.find(b => b.id === id);
+    if (!book) return res.status(404).json({ error: 'No encontrado' });
+
+    // Si ya tiene TODOS los datos principales, devolverlo sin buscar
+    if (book.description && book.averageRating !== undefined && book.publisher && book.pageCount) {
+      console.log(`[API /book-data] ✅ En caché (completo): ${book.title}`);
+      return res.json({ ...book, cached: true });
+    }
+
+    // Buscar en Google Books para rellenar datos faltantes
+    console.log(`[API /book-data] 🔄 Buscando datos de: ${book.title}`);
+    const data = await fetchGoogleBooksData(book.title, book.author);
+
+    if (data) {
+      // Actualizar TODOS los campos del libro
+      book.coverUrl = data.imageLinks?.thumbnail || data.imageLinks?.smallThumbnail || book.coverUrl || null;
+      book.description = data.description || book.description || null;
+      book.publisher = data.publisher || book.publisher || null;
+      book.publishedDate = data.publishedDate || book.publishedDate || null;
+      book.pageCount = data.pageCount || book.pageCount || null;
+      book.categories = data.categories || book.categories || [];
+      book.language = data.language || book.language || null;
+      book.averageRating = data.averageRating !== undefined ? data.averageRating : (book.averageRating || null);
+      book.ratingsCount = data.ratingsCount || book.ratingsCount || 0;
+      book.previewLink = data.previewLink || book.previewLink || null;
+      book.imageLinks = data.imageLinks || book.imageLinks || null;
+      
+      // Guardar cambios en JSON
+      await fs.promises.writeFile(BOOKS_FILE, JSON.stringify(bookMetadata, null, 2));
+      console.log(`[API /book-data] ✅ Datos guardados: ${book.title}`);
+    }
+
+    // Si no tiene coverUrl después de buscar, asignar fallback aleatorio
+    if (!book.coverUrl) {
+      const fallbackCover = getRandomCoverImage();
+      if (fallbackCover) {
+        book.coverUrl = fallbackCover;
+        await fs.promises.writeFile(BOOKS_FILE, JSON.stringify(bookMetadata, null, 2));
+        console.log(`[API /book-data] 🎲 Fallback asignado: ${fallbackCover} para ${book.title}`);
+      }
+    }
+
+    res.json({ ...book, cached: data ? false : true });
+  } catch (err) {
+    console.error('[API /book-data] Error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Función para eliminar duplicados basados en título, autor y saga
+function removeDuplicateBooks(books) {
+  const seen = new Map();
+  const unique = [];
+  let duplicatesRemoved = 0;
+
+  books.forEach(book => {
+    const key = `${(book.title || '').toLowerCase().trim()}|${(book.author || '').toLowerCase().trim()}|${(book.saga?.name || '').toLowerCase().trim()}|${book.saga?.number || 0}`;
+    
+    if (!seen.has(key)) {
+      seen.set(key, book);
+      unique.push(book);
+    } else {
+      // Ya existe, comparar cuál tiene más datos
+      const existing = seen.get(key);
+      const existingFields = [existing.coverUrl, existing.description, existing.publisher, existing.pageCount].filter(Boolean).length;
+      const newFields = [book.coverUrl, book.description, book.publisher, book.pageCount].filter(Boolean).length;
+      
+      if (newFields > existingFields) {
+        // Reemplazar con el que tiene más datos
+        const idx = unique.indexOf(existing);
+        unique[idx] = book;
+        seen.set(key, book);
+        console.log(`[DEDUP] 🔄 Reemplazando "${book.title}" (más completo)`);
+      } else {
+        console.log(`[DEDUP] ❌ Eliminando duplicado: "${book.title}" (ID: ${book.id})`);
+      }
+      duplicatesRemoved++;
+    }
+  });
+
+  if (duplicatesRemoved > 0) {
+    console.log(`[DEDUP] ✅ ${duplicatesRemoved} duplicados eliminados`);
+  }
+
+  return unique;
+}
+
+// API: Sincronizar metadatos de libros nuevos en Drive
+app.get('/api/sync-drive-metadata', async (req, res) => {
+  try {
+    console.log(`[SYNC] 🔄 Iniciando sincronización de metadatos con Drive...`);
+    
+    // Obtener archivos del Drive
+    const allFiles = await listAllFiles(folderId);
+    let librosNuevos = 0;
+    let datosActualizados = 0;
+
+    for (const file of allFiles) {
+      const parsed = parseDriveFileName(file.name);
+      let book = bookMetadata.find(b => b.id === file.id);
+      
+      if (!book) {
+        // Libro nuevo del Drive - usar datos parseados del nombre
+        book = {
+          id: file.id,
+          driveFileId: file.id,
+          title: parsed.title,
+          author: parsed.author,
+          saga: { name: parsed.sagaName, number: parsed.sagaNumber },
+          createdTime: file.createdTime || new Date().toISOString()
+        };
+        bookMetadata.push(book);
+        librosNuevos++;
+        console.log(`[SYNC] ➕ Nuevo libro: ${book.title} - ${book.author}`);
+      } else {
+        // Completar metadata básica con lo que venga del nombre de archivo
+        if (!book.title && parsed.title) book.title = parsed.title;
+        if (!book.author && parsed.author) book.author = parsed.author;
+        if (!book.saga) book.saga = { name: parsed.sagaName, number: parsed.sagaNumber };
+        if (book.saga && !book.saga.name && parsed.sagaName) book.saga.name = parsed.sagaName;
+        if (book.saga && (!book.saga.number || book.saga.number === 0) && parsed.sagaNumber) book.saga.number = parsed.sagaNumber;
+        if (!book.createdTime) book.createdTime = file.createdTime || new Date().toISOString();
+      }
+
+      // Buscar datos en Google Books si faltan campos relevantes
+      const needsGoogle = !book.description || !book.coverUrl || !book.pageCount || !book.categories || book.categories.length === 0 || !book.language || !book.publisher || !book.previewLink || book.averageRating == null;
+      if (needsGoogle) {
+        const data = await fetchGoogleBooksData(book.title, book.author);
+        const updated = mergeGoogleDataIntoBook(book, data);
+        if (!book.coverUrl) {
+          const fallback = getRandomCoverImage();
+          if (fallback) { book.coverUrl = fallback; }
+        }
+        if (updated) {
+          datosActualizados++;
+          console.log(`[SYNC] 📚 Metadatos actualizados: ${book.title}`);
+        }
+      }
+    }
+
+    // Eliminar duplicados antes de guardar
+    const beforeCount = bookMetadata.length;
+    bookMetadata = removeDuplicateBooks(bookMetadata);
+    const duplicatesRemoved = beforeCount - bookMetadata.length;
+
+    // Guardar cambios
+    await fs.promises.writeFile(BOOKS_FILE, JSON.stringify(bookMetadata, null, 2));
+    
+    res.json({ 
+      success: true, 
+      totalLibros: bookMetadata.length,
+      librosNuevos,
+      datosActualizados,
+      duplicatesRemoved,
+      mensaje: `Sincronización completada. ${librosNuevos} libros nuevos, ${datosActualizados} actualizados, ${duplicatesRemoved} duplicados eliminados.`
+    });
+  } catch (err) {
+    console.error('[SYNC] Error:', err.message);
+      res.status(500).json({ error: err.message });
+  }
+});
+
+// Página de upload de EPUB
+app.get('/upload', (req, res) => {
+  const pass = req.query.pass || '';
+  if (pass !== '252914') {
+    return res.status(403).redirect('/');
+  }
+
+  const html = `<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Cargar EPUB - Azkaban Reads</title>
+  <link rel="preload" as="image" href="/cover/secuendarias/portada11.jpg">
+  <style>${css}</style>
+  <style>
+    .upload-container { max-width: 900px; margin: 40px auto; padding: 40px; }
+    .drop-zone { border: 3px dashed #19E6D6; border-radius: 12px; padding: 40px; text-align: center; cursor: pointer; transition: all 0.3s; background: rgba(25,230,214,0.05); }
+    .drop-zone.hover { background: rgba(25,230,214,0.15); border-color: #00d4d4; }
+    .file-input { display: none; }
+    .file-list { margin-top: 30px; display: grid; gap: 20px; }
+    .file-card { padding: 20px; background: linear-gradient(135deg, rgba(25,25,25,0.95), rgba(18,18,18,0.9)); border: 1px solid rgba(25,230,214,0.2); border-radius: 12px; }
+    .file-card h4 { color: #19E6D6; margin: 0 0 15px 0; font-family: 'MedievalSharp', cursive; }
+    .form-group { margin-bottom: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    .form-group.full { grid-template-columns: 1fr; }
+    input, textarea { width: 100%; padding: 10px; border: 2px solid rgba(25,230,214,0.3); background: rgba(25,25,25,0.8); color: #fff; border-radius: 6px; font-family: inherit; box-sizing: border-box; font-size: 16px; }
+    input:focus, textarea:focus { border-color: #19E6D6; outline: none; }
+    .required::after { content: ' *'; color: #ff6b6b; }
+    .upload-btn { width: 100%; padding: 15px; margin-top: 20px; background: #19E6D6; color: #000; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 16px; font-family: 'MedievalSharp', cursive; transition: all 0.3s; }
+    .upload-btn:hover:not(:disabled) { transform: scale(1.02); box-shadow: 0 0 20px rgba(25,230,214,0.5); }
+    .upload-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .progress { display: none; margin-top: 20px; text-align: center; color: #19E6D6; }
+    .status-message { padding: 15px; border-radius: 6px; margin-top: 15px; display: none; }
+    .status-message.success { background: rgba(76, 175, 80, 0.2); border: 1px solid #4CAF50; color: #4CAF50; }
+    .status-message.error { background: rgba(255, 107, 107, 0.2); border: 1px solid #ff6b6b; color: #ff6b6b; }
+  </style>
+</head>
+<body>
+  <div class="header-banner top" style="background-image:url('/cover/secuendarias/portada11.jpg');"></div>
+  <div class="overlay top">
+    <div class="top-buttons secondary"><a href="/">Inicio</a></div>
+    <h1 style="display:flex;align-items:center;gap:12px;"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:#19E6D6;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>Uploads</h1>
+    <div class="top-buttons">
+      <a href="/libros">Libros</a>
+      <a href="/autores">Autores</a>
+      <a href="/sagas">Sagas</a>
+    </div>
+  </div>
+
+  <div class="upload-container">
+    <div class="drop-zone" id="dropZone">
+      <div style="font-size: 0px; margin-bottom: 10px;"></div>
+      <p style="color: #19E6D6; font-size: 18px; font-weight: bold; margin: 10px 0;">Arrastra archivos EPUB aquí</p>
+      <p style="color: #999; margin: 10px 0;">o haz clic para seleccionar</p>
+      <input type="file" id="fileInput" class="file-input" accept=".epub" multiple>
+    </div>
+
+    <div class="file-list" id="fileList"></div>
+    
+    <button class="upload-btn" id="submitBtn" disabled>Cargar Archivos a Drive</button>
+    <div id="statusMessage" class="status-message"></div>
+    <div class="progress" id="progress">
+      <p>Cargando... <span id="progressText">0%</span></p>
+    </div>
+  </div>
+
+  <script>
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const fileList = document.getElementById('fileList');
+    const submitBtn = document.getElementById('submitBtn');
+    const statusMessage = document.getElementById('statusMessage');
+    const progress = document.getElementById('progress');
+    const progressText = document.getElementById('progressText');
+    const passParam = new URLSearchParams(window.location.search).get('pass') || '';
+
+    let files = [];
+
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+      dropZone.addEventListener(eventName, preventDefaults, false);
+    });
+
+    function preventDefaults(e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+      dropZone.addEventListener(eventName, () => dropZone.classList.add('hover'));
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+      dropZone.addEventListener(eventName, () => dropZone.classList.remove('hover'));
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+      const dt = e.dataTransfer;
+      const newFiles = dt.files;
+      handleFiles(newFiles);
+    });
+
+    dropZone.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
+
+    function handleFiles(newFiles) {
+      files = Array.from(newFiles);
+      renderFileList();
+    }
+
+    function renderFileList() {
+      fileList.innerHTML = '';
+      files.forEach((file, index) => {
+        const fileName = file.name.replace('.epub', '');
+        const fileCard = document.createElement('div');
+        fileCard.className = 'file-card';
+        fileCard.innerHTML = '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">' +
+          '<h4>📖 ' + fileName + '</h4>' +
+          '<button onclick="removeFile(' + index + ')" style="padding: 5px 10px; background: #ff6b6b; color: #fff; border: none; border-radius: 4px; cursor: pointer;">Eliminar</button>' +
+          '</div>' +
+          '<div class="form-group full">' +
+          '<label style="color: #19E6D6; font-weight: bold;">Nombre del Libro <span class="required"></span></label>' +
+          '<input type="text" class="book-title" data-index="' + index + '" value="' + fileName + '" placeholder="Nombre">' +
+          '</div>' +
+          '<div class="form-group full">' +
+          '<label style="color: #19E6D6; font-weight: bold;">Autor <span class="required"></span></label>' +
+          '<input type="text" class="book-author" data-index="' + index + '" placeholder="Autor">' +
+          '</div>' +
+          '<div class="form-group">' +
+          '<div>' +
+          '<label style="color: #19E6D6; font-weight: bold;">Saga <span class="required"></span></label>' +
+          '<input type="text" class="book-saga" data-index="' + index + '" placeholder="Nombre de la saga">' +
+          '</div>' +
+          '<div>' +
+          '<label style="color: #19E6D6; font-weight: bold;">Número en Saga <span class="required"></span></label>' +
+          '<input type="number" class="book-saga-number" data-index="' + index + '" value="1" min="0">' +
+          '</div>' +
+          '</div>' +
+          '<div class="form-group full">' +
+          '<label style="color: #19E6D6; font-weight: bold;">Descripción (Opcional)</label>' +
+          '<textarea class="book-description" data-index="' + index + '" placeholder="Descripción del libro" rows="3"></textarea>' +
+          '</div>';
+        fileList.appendChild(fileCard);
+      });
+      updateSubmitBtn();
+    }
+
+    function removeFile(index) {
+      files.splice(index, 1);
+      renderFileList();
+    }
+
+    function updateSubmitBtn() {
+      const allValid = files.length > 0 && files.every((file, index) => {
+        const title = document.querySelector('.book-title[data-index="' + index + '"]')?.value;
+        const author = document.querySelector('.book-author[data-index="' + index + '"]')?.value;
+        const saga = document.querySelector('.book-saga[data-index="' + index + '"]')?.value;
+        return title && author && saga;
+      });
+      submitBtn.disabled = !allValid;
+    }
+
+    document.addEventListener('input', (e) => {
+      if (e.target.classList.contains('book-title') || 
+          e.target.classList.contains('book-author') || 
+          e.target.classList.contains('book-saga')) {
+        updateSubmitBtn();
+      }
+    });
+
+    submitBtn.addEventListener('click', async () => {
+      if (files.length === 0) return;
+
+      submitBtn.disabled = true;
+      progress.style.display = 'block';
+      statusMessage.style.display = 'none';
+
+      try {
+        for (let i = 0; i < files.length; i++) {
+          const file = files[i];
+          const title = document.querySelector('.book-title[data-index="' + i + '"]').value;
+          const author = document.querySelector('.book-author[data-index="' + i + '"]').value;
+          const saga = document.querySelector('.book-saga[data-index="' + i + '"]').value;
+          const sagaNumber = document.querySelector('.book-saga-number[data-index="' + i + '"]').value;
+          const description = document.querySelector('.book-description[data-index="' + i + '"]').value;
+
+          const formData = new FormData();
+          formData.append('file', file);
+          formData.append('title', title);
+          formData.append('author', author);
+          formData.append('saga', saga);
+          formData.append('sagaNumber', sagaNumber);
+          formData.append('description', description);
+
+          const uploadUrl = '/api/upload-to-drive' + (passParam ? ('?pass=' + encodeURIComponent(passParam)) : '');
+          const response = await fetch(uploadUrl, {
+            method: 'POST',
+            headers: passParam ? { 'x-api-key': passParam } : {},
+            body: formData
+          });
+
+          if (!response.ok) {
+            // Intentar mostrar el mensaje real del backend para depurar mejor
+            let errorMessage = 'Error uploading file';
+            try {
+              const errorJson = await response.json();
+              errorMessage = errorJson?.error || errorMessage;
+            } catch (_) {
+              try {
+                errorMessage = await response.text();
+              } catch (_) {
+                // ignore
+              }
+            }
+            throw new Error(errorMessage);
+          }
+          
+          progressText.textContent = Math.round(((i + 1) / files.length) * 100) + '%';
+        }
+
+        statusMessage.className = 'status-message success';
+        statusMessage.textContent = '✅ Todos los archivos cargados correctamente a Drive';
+        statusMessage.style.display = 'block';
+        progress.style.display = 'none';
+        files = [];
+        renderFileList();
+      } catch (err) {
+        statusMessage.className = 'status-message error';
+        statusMessage.textContent = '❌ Error: ' + err.message;
+        statusMessage.style.display = 'block';
+        progress.style.display = 'none';
+        submitBtn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>`;
+  res.send(html);
+});
 
 // API: Sincronizar datos de Google Books para libros sin portada/descripción
 app.get('/api/sync-google-books', async (req, res) => {
@@ -832,32 +2931,44 @@ app.get('/api/sync-google-books', async (req, res) => {
         const googleBooksData = await fetchGoogleBooksData(book.title, book.author);
         if (googleBooksData) {
           // Actualizar todos los campos de Google Books
-          book.coverUrl = googleBooksData.imageLinks?.thumbnail || googleBooksData.imageLinks?.smallThumbnail || book.coverUrl || null;
-          book.description = googleBooksData.description || book.description || null;
-          book.publisher = googleBooksData.publisher || book.publisher || null;
-          book.publishedDate = googleBooksData.publishedDate || book.publishedDate || null;
-          book.pageCount = googleBooksData.pageCount || book.pageCount || null;
-          book.categories = googleBooksData.categories || book.categories || [];
-          book.language = googleBooksData.language || book.language || null;
-          book.averageRating = googleBooksData.averageRating !== undefined ? googleBooksData.averageRating : (book.averageRating || null);
-          book.ratingsCount = googleBooksData.ratingsCount || book.ratingsCount || 0;
-          book.previewLink = googleBooksData.previewLink || book.previewLink || null;
-          book.imageLinks = googleBooksData.imageLinks || book.imageLinks || null;
-          
-          // Guardar cambios en JSON
-          await fs.promises.writeFile(BOOKS_FILE, JSON.stringify(bookMetadata, null, 2));
-          console.log(`[SYNC-GBOOKS] ✅ Datos guardados: ${book.title}`);
+          if (!book.description && googleBooksData.description) {
+            book.description = googleBooksData.description;
+          }
+          if (!book.coverUrl && googleBooksData.imageLinks?.thumbnail) {
+            book.coverUrl = googleBooksData.imageLinks.thumbnail;
+          }
+          if (!book.imageLinks && googleBooksData.imageLinks) {
+            book.imageLinks = googleBooksData.imageLinks;
+          }
+          if (!book.publisher && googleBooksData.publisher) {
+            book.publisher = googleBooksData.publisher;
+          }
+          if (!book.publishedDate && googleBooksData.publishedDate) {
+            book.publishedDate = googleBooksData.publishedDate;
+          }
+          if (!book.pageCount && googleBooksData.pageCount) {
+            book.pageCount = googleBooksData.pageCount;
+          }
+          if (!book.categories || book.categories.length === 0) {
+            book.categories = googleBooksData.categories || [];
+          }
+          if (!book.language && googleBooksData.language) {
+            book.language = googleBooksData.language;
+          }
+          if (!book.averageRating && googleBooksData.averageRating) {
+            book.averageRating = googleBooksData.averageRating;
+            book.ratingsCount = googleBooksData.ratingsCount;
+          }
+          if (!book.previewLink && googleBooksData.previewLink) {
+            book.previewLink = googleBooksData.previewLink;
+          }
+          console.log(`[SYNC-GBOOKS] ✅ ${book.title}: datos actualizados`);
           updated++;
         }
       } catch (err) {
         console.warn(`[SYNC-GBOOKS] Error sincronizando ${book.title}:`, err.message);
       }
     }
-
-    // Eliminar duplicados antes de guardar
-    const beforeCount = bookMetadata.length;
-    bookMetadata = removeDuplicateBooks(bookMetadata);
-    const duplicatesRemoved = beforeCount - bookMetadata.length;
 
     // Guardar cambios
     await fs.promises.writeFile(BOOKS_FILE, JSON.stringify(bookMetadata, null, 2));
@@ -876,7 +2987,245 @@ app.get('/api/sync-google-books', async (req, res) => {
   }
 });
 
-// API: Eliminar libro
+// API: Subir EPUB a Drive
+app.post('/api/upload-to-drive', upload.single('file'), async (req, res) => {
+  try {
+    const pass = req.query.pass || '';
+    const apiKey = req.headers['x-api-key'] || '';
+    if (pass !== '252914' && apiKey !== '252914') {
+      return res.status(403).json({ error: 'Acceso denegado' });
+    }
+
+    if (!driveUpload) {
+      return res.status(500).json({ error: 'Google Drive no está inicializado' });
+    }
+
+    // Evitar intentos con Service Account (sin cuota de subida)
+    if (!hasOAuth) {
+      return res.status(503).json({ error: 'Subidas deshabilitadas: falta OAuth configurado en el servidor (no se puede usar Service Account para subir)' });
+    }
+
+    if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+
+    const { title, author, saga, sagaNumber, description } = req.body;
+    if (!title || !author || !saga) {
+      return res.status(400).json({ error: 'Faltan campos requeridos' });
+    }
+
+    const fileName = `${title} - ${author} (${saga} #${sagaNumber || 1}).epub`;
+
+    // Subir a Drive en la carpeta compartida existente
+    let driveFileId = null;
+    let driveCreatedTime = new Date().toISOString();
+    try {
+      const uploadResp = await driveUpload.files.create({
+        requestBody: {
+          name: fileName,
+          parents: folderId ? [folderId] : []
+        },
+        media: {
+          mimeType: req.file.mimetype || 'application/epub+zip',
+          body: bufferToStream(req.file.buffer)
+        },
+        fields: 'id,name,parents,createdTime'
+      });
+
+      driveFileId = uploadResp.data.id;
+      driveCreatedTime = uploadResp.data.createdTime || driveCreatedTime;
+      console.log(`[UPLOAD] ☁️ Subido a Drive: ${fileName} (ID: ${driveFileId})`);
+    } catch (err) {
+      console.error('[UPLOAD] Error subiendo a Drive:', err.message);
+      return res.status(500).json({ error: 'No se pudo subir a Drive: ' + err.message });
+    }
+
+    // Buscar datos completos en Google Books (solo para complementar)
+    console.log(`[UPLOAD] 🔍 Buscando datos en Google Books para: ${title} - ${author}`);
+    const googleBooksData = await fetchGoogleBooksData(title, author);
+    if (googleBooksData) {
+      console.log(`[UPLOAD] ✅ Google Books: descripción=${googleBooksData.description ? '✅' : '❌'}, portada=${googleBooksData.imageLinks?.thumbnail ? '✅' : '❌'}`);
+    } else {
+      console.log(`[UPLOAD] ⚠️ No se encontraron datos en Google Books`);
+    }
+
+    // Preparar libro: usar datos del formulario y enriquecer con Google Books sin sobreescribir lo ya enviado
+    const book = {
+      id: driveFileId,
+      driveFileId,
+      title,
+      author,
+      saga: {
+        name: saga,
+        number: parseInt(sagaNumber) || 1
+      },
+      description: description || null,
+      publisher: null,
+      publishedDate: new Date().toISOString().split('T')[0],
+      pageCount: null,
+      categories: [],
+      language: 'es',
+      averageRating: null,
+      ratingsCount: null,
+      imageLinks: null,
+      previewLink: null,
+      coverUrl: null,
+      uploadDate: new Date().toISOString(),
+      createdTime: driveCreatedTime
+    };
+
+    const merged = mergeGoogleDataIntoBook(book, googleBooksData);
+    if (!book.coverUrl) {
+      const fallback = getRandomCoverImage();
+      if (fallback) book.coverUrl = fallback;
+    }
+    if (!book.categories) book.categories = [];
+    if (!book.language) book.language = 'es';
+    console.log(`[UPLOAD] 📚 Libro enriquecido: ${merged ? '✅ Google Books' : '⚠️ Sin datos de Google (fallback)'}`);
+
+    // Reemplazar si ya existe el ID en memoria
+    bookMetadata = bookMetadata.filter(b => b.id !== driveFileId);
+    bookMetadata.push(book);
+    await fs.promises.writeFile(BOOKS_FILE, JSON.stringify(bookMetadata, null, 2));
+
+    uploadCount++;
+    console.log(`[UPLOAD] ✅ Libro registrado: ${fileName} (ID: ${driveFileId})`);
+    console.log(`[UPLOAD] 📚 Libro agregado con portada: ${book.coverUrl ? '✅ Encontrada' : '❌ Fallback'}`);
+    
+    res.json({ 
+      success: true, 
+      fileId: driveFileId,
+      fileName: fileName,
+      coverUrl: book.coverUrl,
+      driveUrl: `https://drive.google.com/file/d/${driveFileId}/view`,
+      message: 'Archivo cargado correctamente a Drive'
+    });
+  } catch (err) {
+    console.error('[UPLOAD] Error:', err.message);
+    res.status(500).json({ error: err.message || 'Error procesando archivo' });
+  }
+});
+
+// Dashboard: Servir editor de libros
+app.get('/dashboard', (req, res) => {
+  const pass = req.query.pass || '';
+  if (pass !== '252914') {
+    return res.status(403).json({ error: 'Acceso denegado' });
+  }
+  res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
+});
+
+// API: Obtener todos los libros
+app.get('/api/books', async (req, res) => {
+  reloadBooksMetadata();
+  res.json(bookMetadata);
+});
+
+// API: Obtener libros incompletos (con campos faltantes)
+app.get('/api/books/incomplete', async (req, res) => {
+  reloadBooksMetadata();
+  
+  // Definir campos requeridos para considerar un libro COMPLETO
+  // Un libro es incompleto si le falta: título, autor, saga, descripción o año
+  const requiredFields = ['title', 'author', 'saga', 'description', 'publishedDate'];
+  
+  // Función para verificar si un campo está vacío
+  const isEmpty = (value, fieldName) => {
+    if (fieldName === 'saga') {
+      return !value || !value.name || (typeof value.name === 'string' && value.name.trim() === '');
+    }
+    if (fieldName === 'publishedDate') {
+      return !value || (typeof value === 'string' && value.trim() === '');
+    }
+    // Para otros campos
+    return !value || (typeof value === 'string' && value.trim() === '');
+  };
+  
+  // Encontrar libros incompletos
+  const incompleteBooks = bookMetadata.filter(book => {
+    const missingFields = requiredFields.filter(field => isEmpty(book[field], field));
+    return missingFields.length > 0;
+  }).map(book => {
+    const missingFields = requiredFields.filter(field => isEmpty(book[field], field));
+    return {
+      id: book.id,
+      title: book.title || 'Sin título',
+      author: book.author || 'Desconocido',
+      saga: book.saga || { name: 'Sin saga', number: 0 },
+      description: book.description || null,
+      publishedDate: book.publishedDate || null,
+      missingFields
+    };
+  }).sort((a, b) => b.missingFields.length - a.missingFields.length);
+  
+  res.json({ total: incompleteBooks.length, books: incompleteBooks });
+});
+
+// API: Obtener libro individual
+app.get('/api/books/:id', async (req, res) => {
+  const { id } = req.params;
+  reloadBooksMetadata();
+  
+  const book = bookMetadata.find(b => b.id === id);
+  if (!book) return res.status(404).json({ error: 'Libro no encontrado' });
+  
+  res.json(book);
+});
+
+// API: Actualizar libro
+app.put('/api/books/:id', async (req, res) => {
+  const { id } = req.params;
+  const updatedData = req.body;
+  
+  reloadBooksMetadata();
+  
+  const bookIndex = bookMetadata.findIndex(b => b.id === id);
+  if (bookIndex === -1) return res.status(404).json({ error: 'Libro no encontrado' });
+  
+  // Validar que no se pierdan campos críticos
+  const book = bookMetadata[bookIndex];
+  const validated = {
+    ...book,
+    ...updatedData,
+    id: book.id, // Proteger el ID
+    uploadDate: book.uploadDate, // Proteger fecha original
+    createdTime: book.createdTime // Proteger timestamp de Drive
+  };
+  
+  // Actualizar en memoria
+  bookMetadata[bookIndex] = validated;
+  
+  // Obtener datos actualizados de Google Books (sin sobrescribir manualmente editados)
+  try {
+    console.log(`[API /books/:id PUT] Fetching Google Books data for: ${validated.title} by ${validated.author}`);
+    const googleBooksData = await fetchGoogleBooksData(validated.title, validated.author);
+    if (googleBooksData) {
+      mergeGoogleDataIntoBook(validated, googleBooksData);
+
+      // Si la portada actual es local (/cover/...) o está vacía, reemplazar con la de Google
+      const imageUrl = googleBooksData.imageLinks?.thumbnail || googleBooksData.imageLinks?.smallThumbnail || null;
+      const hasLocalCover = validated.coverUrl && validated.coverUrl.startsWith('/cover');
+      if (imageUrl && (!validated.coverUrl || hasLocalCover)) {
+        validated.coverUrl = imageUrl;
+        validated.imageLinks = googleBooksData.imageLinks || validated.imageLinks;
+      }
+
+      console.log(`[API /books/:id PUT] ✅ Google Books data merged - Cover: ${validated.coverUrl ? '✅' : '❌'}`);
+    }
+  } catch (err) {
+    console.warn(`[API /books/:id PUT] Warning - could not fetch Google Books data: ${err.message}`);
+  }
+  
+  // Guardar a disco
+  try {
+    await fs.promises.writeFile(BOOKS_FILE, JSON.stringify(bookMetadata, null, 2));
+    console.log(`[API /books/:id PUT] ✅ Libro actualizado: ${validated.title} (ID: ${id})`);
+    res.json({ success: true, book: validated });
+  } catch (err) {
+    console.error('[API /books/:id PUT] Error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// API: Eliminar libro por ID
 app.delete('/api/books/:id', async (req, res) => {
   const { id } = req.params;
   
@@ -885,190 +3234,20 @@ app.delete('/api/books/:id', async (req, res) => {
   const bookIndex = bookMetadata.findIndex(b => b.id === id);
   if (bookIndex === -1) return res.status(404).json({ error: 'Libro no encontrado' });
   
-  // Eliminar de Google Drive
-  try {
-    if (driveUpload) {
-      await driveUpload.files.delete({ fileId: id });
-      console.log(`✅ Archivo ${id} eliminado de Google Drive`);
-    } else {
-      console.warn(`⚠️ No se pudo eliminar el archivo ${id} de Google Drive: no está inicializado el cliente de subida`);
-    }
-  } catch (err) {
-    console.error(`Error eliminando archivo de Google Drive:`, err.message);
-  }
+  const deletedBook = bookMetadata[bookIndex];
   
-  // Eliminar de metadata
+  // Eliminar del array
   bookMetadata.splice(bookIndex, 1);
   
-  // Guardar cambios en disco
+  // Guardar a disco
   try {
     await fs.promises.writeFile(BOOKS_FILE, JSON.stringify(bookMetadata, null, 2));
-    console.log(`✅ Libro ${id} eliminado de la metadata y cambios guardados`);
-    res.json({ success: true, message: 'Libro eliminado' });
+    console.log(`[API /books/:id DELETE] ✅ Libro eliminado: ${deletedBook.title} (ID: ${id})`);
+    res.json({ success: true, message: 'Libro eliminado correctamente' });
   } catch (err) {
-    console.error('Error al guardar cambios en disco:', err.message);
+    console.error('[API /books/:id DELETE] Error:', err.message);
     res.status(500).json({ error: err.message });
   }
 });
 
-// API: Obtener estadísticas simples
-app.get('/api/stats', (req, res) => {
-  const totalLibros = bookMetadata.length;
-  const totalDescargas = downloadCount;
-  const totalUploads = uploadCount;
-  
-  res.json({ 
-    success: true, 
-    stats: {
-      totalLibros,
-      totalDescargas,
-      totalUploads
-    } 
-  });
-});
-
-// API: Obtener listado de libros
-app.get('/api/books', (req, res) => {
-  // Solo devolver campos básicos por ahora
-  const librosBasicos = bookMetadata.map(b => ({
-    id: b.id,
-    title: b.title,
-    author: b.author,
-    coverUrl: b.coverUrl,
-    description: b.description,
-    publisher: b.publisher,
-    publishedDate: b.publishedDate,
-    pageCount: b.pageCount,
-    categories: b.categories,
-    language: b.language,
-    averageRating: b.averageRating,
-    ratingsCount: b.ratingsCount,
-    previewLink: b.previewLink
-  }));
-  
-  res.json({ success: true, books: librosBasicos });
-});
-
-// API: Obtener libro por ID
-app.get('/api/books/:id', (req, res) => {
-  const { id } = req.params;
-  
-  const book = bookMetadata.find(b => b.id === id);
-  if (!book) {
-    return res.status(404).json({ error: 'Libro no encontrado' });
-  }
-  
-  res.json({ success: true, book });
-});
-
-// API: Subir archivo EPUB
-app.post('/api/upload', upload.single('epubFile'), async (req, res) => {
-  try {
-    const file = req.file;
-    if (!file) {
-      return res.status(400).json({ error: 'No se recibió ningún archivo' });
-    }
-
-    // Verificar que el archivo sea un EPUB
-    if (!file.originalname.toLowerCase().endsWith('.epub')) {
-      return res.status(400).json({ error: 'El archivo debe ser un EPUB' });
-    }
-
-    // Leer el archivo como buffer
-    const fileBuffer = file.buffer;
-
-    // Subir a Google Drive
-    if (!driveUpload) {
-      throw new Error('Google Drive no está inicializado para subida');
-    }
-
-    // Crear archivo en Google Drive
-    const fileMetadata = {
-      name: file.originalname,
-      mimeType: 'application/epub+zip',
-      parents: [folderId]
-    };
-
-    const media = {
-      mimeType: 'application/epub+zip',
-      body: bufferToStream(fileBuffer)
-    };
-
-    const driveResponse = await driveUpload.files.create({
-      resource: fileMetadata,
-      media: media,
-      fields: 'id'
-    });
-
-    const fileId = driveResponse.data.id;
-    console.log(`✅ Archivo subido a Drive con ID: ${fileId}`);
-
-    // Guardar metadata básica en books.json
-    const newBook = {
-      id: fileId,
-      title: file.originalname.replace('.epub', ''),
-      author: 'Desconocido',
-      uploadDate: new Date().toISOString(),
-      createdTime: new Date().toISOString(),
-      coverUrl: null,
-      description: null,
-      publisher: null,
-      publishedDate: null,
-      pageCount: null,
-      categories: [],
-      language: null,
-      averageRating: null,
-      ratingsCount: 0,
-      previewLink: null,
-      imageLinks: null
-    };
-
-    // Agregar a metadata existente
-    bookMetadata.push(newBook);
-    await fs.promises.writeFile(BOOKS_FILE, JSON.stringify(bookMetadata, null, 2));
-
-    res.json({ success: true, id: fileId });
-  } catch (err) {
-    console.error('Error en la subida de archivo:', err.message);
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// API: Obtener libro por ID (detailed)
-app.get('/api/books/detail/:id', async (req, res) => {
-  const { id } = req.params;
-  
-  const book = bookMetadata.find(b => b.id === id);
-  if (!book) {
-    return res.status(404).json({ error: 'Libro no encontrado' });
-  }
-  
-  // Intentar obtener datos adicionales de Google Books si faltan
-  let googleBooksData = null;
-  if (!book.description || !book.publisher || !book.pageCount || !book.categories || book.categories.length === 0) {
-    try {
-      googleBooksData = await fetchGoogleBooksData(book.title, book.author);
-      if (googleBooksData) {
-        mergeGoogleDataIntoBook(book, googleBooksData);
-        console.log(`Datos de Google Books añadidos para: ${book.title}`);
-      }
-    } catch (err) {
-      console.warn(`Error obteniendo datos de Google Books para ${book.title}:`, err.message);
-    }
-  }
-  
-  res.json({ success: true, book, googleBooksData });
-});
-
-// ------------------ INICIO SERVIDOR ------------------
-if (!module.parent) {
-  app
-    .listen(PORT, () => {
-      console.log(`✅ Servidor escuchando en puerto ${PORT}`);
-      console.log(`📚 BiblioKobo activo en http://localhost:${PORT}`);
-    })
-    .on('error', (err) => {
-      console.error('❌ Error iniciando el servidor:', err.message);
-      process.exit(1);
-    });
-}
+app.listen(PORT,()=>console.log(`Servidor escuchando en puerto ${PORT}`));
