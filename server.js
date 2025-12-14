@@ -422,6 +422,14 @@ body { padding-top:220px; }
   .header-banner.top { height:230px; }
   .overlay.top { height:230px; }
   body { padding-top:230px; }
+  
+  /* Tablet responsive adjustments */
+  #grid { grid-template-columns:repeat(auto-fit, minmax(160px, 1fr)); gap:20px; }
+  .book { width:160px; padding:12px; }
+  .book img { width:120px; height:180px; }
+  .avatar-rect, .emblem-rect { width:120px; height:160px; }
+  .title { font-size:17px; }
+  .author-span, .number-span { font-size:15px; }
 }
 
 /* Mobile: 20px más que antes (200 + 20 = 220px) */
@@ -431,6 +439,30 @@ body { padding-top:220px; }
   body { padding-top:220px; }
   h1 { font-size:38px; }
   .header-banner.home { background-size:80%; background-repeat:no-repeat; }
+  
+  /* Mobile responsive adjustments */
+  #grid { grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:25px; padding:25px 15px 40px 15px; }
+  .book { width:180px; padding:20px; }
+  .book img { width:140px; height:210px; }
+  .avatar-rect, .emblem-rect { width:140px; height:190px; }
+  .title { font-size:18px; padding:8px 6px; }
+  .author-span, .number-span { font-size:16px; margin-top:6px; }
+  .number-span a { font-size:15px; }
+  .count-badge { font-size:15px; }
+  
+  /* Touch-friendly buttons */
+  .top-buttons a { font-size:20px; padding:12px 20px; min-width:44px; min-height:44px; display:inline-flex; align-items:center; justify-content:center; }
+  
+  /* Larger search input */
+  input[type="search"] { font-size:18px; padding:12px 16px; }
+  
+  /* Larger checkboxes */
+  .book-checkbox { width:24px; height:24px; top:8px; right:8px; }
+  .book-checkbox::after { width:14px; height:14px; }
+  
+  /* Larger download buttons */
+  a.button { font-size:20px; padding:14px 28px; min-height:44px; }
+  button[type="submit"] { font-size:18px; padding:12px 20px; min-height:44px; }
 }
 `;
 
