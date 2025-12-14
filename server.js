@@ -424,7 +424,7 @@ body { padding-top:220px; }
   body { padding-top:230px; }
   
   /* Tablet responsive adjustments */
-  #grid { grid-template-columns:repeat(auto-fit, minmax(160px, 1fr)); gap:20px; }
+  #grid { grid-template-columns:repeat(auto-fit, minmax(160px, 1fr)); gap:20px; padding:25px 18px 40px 18px; }
   .book { width:160px; padding:12px; }
   .book img { width:120px; height:180px; }
   .avatar-rect, .emblem-rect { width:120px; height:160px; }
