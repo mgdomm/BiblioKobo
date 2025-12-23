@@ -1227,9 +1227,18 @@ app.get('/', (req,res)=>{
   </script>
   
   <!-- Botón flotante de stats -->
-  <button id="stats-btn" style="position:fixed;bottom:20px;right:80px;width:48px;height:48px;border-radius:50%;background:transparent;border:2px solid #19E6D6;cursor:pointer;z-index:100;display:flex;align-items:center;justify-content:center;transition:0.25s;padding:0;color:#19E6D6;">
+  <button id="stats-btn" style="position:fixed;bottom:20px;right:140px;width:48px;height:48px;border-radius:50%;background:transparent;border:2px solid #19E6D6;cursor:pointer;z-index:100;display:flex;align-items:center;justify-content:center;transition:0.25s;padding:0;color:#19E6D6;">
     <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
       <path d="M13 2l-8 12h7l-7 8 12-14h-7l3-6z"></path>
+    </svg>
+  </button>
+  
+  <!-- Botón flotante de sync-kobo -->
+  <button id="sync-kobo-btn" style="position:fixed;bottom:20px;right:80px;width:48px;height:48px;border-radius:50%;background:transparent;border:2px solid #19E6D6;cursor:pointer;z-index:100;display:flex;align-items:center;justify-content:center;transition:0.25s;padding:0;color:#19E6D6;">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+      <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+      <line x1="12" y1="22.08" x2="12" y2="12"></line>
     </svg>
   </button>
   
@@ -1283,6 +1292,7 @@ app.get('/', (req,res)=>{
     ];
     
     const statsBtn = document.getElementById('stats-btn');
+    const syncKoboBtn = document.getElementById('sync-kobo-btn');
     const uploadBtn = document.getElementById('upload-btn');
     const loginModal = document.getElementById('login-modal');
     const loginBtn = document.getElementById('login-btn');
@@ -1296,6 +1306,15 @@ app.get('/', (req,res)=>{
     statsBtn.addEventListener('click', () => {
       currentAction = 'stats';
       modalTitle.textContent = 'Acceso a Stats';
+      loginModal.style.display = 'flex';
+      passInput.focus();
+      errorMessage.style.display = 'none';
+      passInput.value = '';
+    });
+    
+    syncKoboBtn.addEventListener('click', () => {
+      currentAction = 'sync-kobo';
+      modalTitle.textContent = 'Sincronizar con Kobo';
       loginModal.style.display = 'flex';
       passInput.focus();
       errorMessage.style.display = 'none';
@@ -1322,6 +1341,8 @@ app.get('/', (req,res)=>{
       if (passInput.value === '252914') {
         if (currentAction === 'stats') {
           window.location.href = '/stats?pass=' + encodeURIComponent(passInput.value);
+        } else if (currentAction === 'sync-kobo') {
+          window.location.href = '/sync-kobo?pass=' + encodeURIComponent(passInput.value);
         } else if (currentAction === 'upload') {
           window.location.href = '/upload?pass=' + encodeURIComponent(passInput.value);
         }
@@ -1346,6 +1367,16 @@ app.get('/', (req,res)=>{
     statsBtn.addEventListener('mouseleave', () => {
       statsBtn.style.boxShadow = 'none';
       statsBtn.style.transform = 'scale(1)';
+    });
+    
+    syncKoboBtn.addEventListener('mouseenter', () => {
+      syncKoboBtn.style.boxShadow = '0 0 15px rgba(25,230,214,0.5)';
+      syncKoboBtn.style.transform = 'scale(1.1)';
+    });
+    
+    syncKoboBtn.addEventListener('mouseleave', () => {
+      syncKoboBtn.style.boxShadow = 'none';
+      syncKoboBtn.style.transform = 'scale(1)';
     });
     
     uploadBtn.addEventListener('mouseenter', () => {
@@ -2899,6 +2930,590 @@ app.get('/upload', (req, res) => {
   res.send(html);
 });
 
+// Ruta: Sync Kobo - Sincronizar libros desde Kobo a Drive
+app.get('/sync-kobo', (req, res) => {
+  const pass = req.query.pass || '';
+  if (pass !== '252914') {
+    return res.status(403).redirect('/');
+  }
+
+  const html = `<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Sync Kobo - Azkaban Reads</title>
+  <link rel="preload" as="image" href="/cover/secuendarias/portada11.jpg">
+  <style>${css}</style>
+  <style>
+    .sync-container { max-width: 1200px; margin: 40px auto; padding: 40px; }
+    .instruction-box { background: rgba(25,230,214,0.1); border: 2px solid #19E6D6; border-radius: 12px; padding: 25px; margin-bottom: 30px; }
+    .instruction-box h3 { color: #19E6D6; margin: 0 0 15px 0; font-family: 'MedievalSharp', cursive; font-size: 20px; }
+    .instruction-box p { color: #ccc; line-height: 1.8; margin: 10px 0; font-size: 16px; }
+    .instruction-box code { background: rgba(0,0,0,0.5); padding: 3px 8px; border-radius: 4px; color: #19E6D6; font-family: monospace; }
+    .action-buttons { display: flex; gap: 15px; margin-bottom: 30px; flex-wrap: wrap; }
+    .btn { padding: 15px 30px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; font-family: 'MedievalSharp', cursive; transition: all 0.3s; display: flex; align-items: center; gap: 10px; }
+    .btn-primary { background: #19E6D6; color: #000; }
+    .btn-primary:hover:not(:disabled) { transform: scale(1.05); box-shadow: 0 0 20px rgba(25,230,214,0.5); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-secondary { background: rgba(255,255,255,0.1); color: #fff; border: 2px solid #19E6D6; }
+    .btn-secondary:hover { background: rgba(255,255,255,0.2); }
+    .status-box { padding: 20px; border-radius: 8px; margin-bottom: 20px; display: none; }
+    .status-box.info { background: rgba(25,230,214,0.1); border: 2px solid #19E6D6; color: #19E6D6; }
+    .status-box.success { background: rgba(76,175,80,0.2); border: 2px solid #4CAF50; color: #4CAF50; }
+    .status-box.error { background: rgba(255,107,107,0.2); border: 2px solid #ff6b6b; color: #ff6b6b; }
+    .status-box.warning { background: rgba(255,193,7,0.2); border: 2px solid #FFC107; color: #FFC107; }
+    .book-list { margin-top: 30px; }
+    .book-item { background: linear-gradient(135deg, rgba(25,25,25,0.95), rgba(18,18,18,0.9)); border: 1px solid rgba(25,230,214,0.2); border-radius: 10px; padding: 20px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; transition: all 0.3s; }
+    .book-item:hover { border-color: rgba(25,230,214,0.5); box-shadow: 0 4px 15px rgba(25,230,214,0.2); }
+    .book-info { flex: 1; }
+    .book-info h4 { color: #19E6D6; margin: 0 0 8px 0; font-family: 'MedievalSharp', cursive; font-size: 18px; }
+    .book-info p { color: #999; margin: 5px 0; font-size: 14px; }
+    .book-info .meta { display: flex; gap: 20px; margin-top: 8px; }
+    .book-info .meta span { color: #666; font-size: 13px; }
+    .upload-btn-small { padding: 10px 20px; background: #19E6D6; color: #000; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-family: 'MedievalSharp', cursive; transition: all 0.3s; }
+    .upload-btn-small:hover:not(:disabled) { transform: scale(1.05); box-shadow: 0 0 15px rgba(25,230,214,0.4); }
+    .upload-btn-small:disabled { opacity: 0.5; cursor: not-allowed; }
+    .upload-btn-small.uploading { background: #999; }
+    .upload-btn-small.uploaded { background: #4CAF50; }
+    .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top: 2px solid #fff; border-radius: 50%; animation: spin 0.8s linear infinite; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    .empty-state { text-align: center; padding: 60px 20px; color: #666; }
+    .empty-state h3 { color: #19E6D6; font-family: 'MedievalSharp', cursive; font-size: 22px; margin-bottom: 15px; }
+    .compatibility-warning { background: rgba(255,193,7,0.1); border: 2px solid #FFC107; border-radius: 8px; padding: 20px; margin-bottom: 20px; }
+    .compatibility-warning h4 { color: #FFC107; margin: 0 0 10px 0; font-family: 'MedievalSharp', cursive; }
+    .compatibility-warning ul { margin: 10px 0; padding-left: 25px; color: #ccc; line-height: 1.8; }
+    
+    /* Modal de confirmación estilo login */
+    .confirm-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 10000; justify-content: center; align-items: center; }
+    .confirm-modal.active { display: flex; }
+    .confirm-modal-content { background: linear-gradient(135deg, rgba(18,18,18,0.95), rgba(12,12,12,0.9)); border: 2px solid rgba(25,230,214,0.5); border-radius: 12px; padding: 40px; text-align: center; max-width: 450px; box-shadow: 0 8px 32px rgba(0,0,0,0.8); }
+    .confirm-modal-content h3 { font-family: 'MedievalSharp', cursive; color: #19E6D6; font-size: 24px; margin: 0 0 20px 0; }
+    .confirm-modal-content p { color: #fff; font-size: 17px; line-height: 1.6; margin: 15px 0; }
+    .confirm-modal-content .book-name { color: #19E6D6; font-weight: bold; font-family: 'MedievalSharp', cursive; margin: 10px 0; }
+    .confirm-modal-content button { padding: 14px 32px; margin-top: 25px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; background: #19E6D6; color: #000; font-size: 17px; font-family: 'MedievalSharp', cursive; transition: 0.2s; }
+    .confirm-modal-content button:hover { background: #1dd4c8; transform: scale(1.05); }
+  </style>
+</head>
+<body>
+  <div class="header-banner top" style="background-image:url('/cover/secuendarias/portada11.jpg');"></div>
+  <div class="overlay top">
+    <div class="top-buttons secondary"><a href="/">Inicio</a></div>
+    <h1 style="display:flex;align-items:center;gap:12px;">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:#19E6D6;">
+        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+        <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+        <line x1="12" y1="22.08" x2="12" y2="12"></line>
+      </svg>
+      Sync Kobo
+    </h1>
+    <div class="top-buttons">
+      <a href="/libros">Libros</a>
+      <a href="/autores">Autores</a>
+      <a href="/sagas">Sagas</a>
+    </div>
+  </div>
+
+  <div class="sync-container">
+    <div class="instruction-box">
+      <h3>📱 Cómo usar Sync Kobo</h3>
+      <p><strong>1. Conecta tu Kobo</strong>: Conecta tu dispositivo Kobo al ordenador mediante USB</p>
+      <p><strong>2. Detecta el dispositivo</strong>: Haz clic en "Detectar Kobo" y selecciona la carpeta del Kobo cuando el navegador lo solicite</p>
+      <p><strong>3. Sube libros</strong>: Los libros que estén en tu Kobo pero no en Drive aparecerán en la lista. Haz clic en "Subir" para cada uno</p>
+      <p style="margin-top: 15px; color: #999; font-size: 14px;">
+        <strong>Nota:</strong> Los libros suelen estar en la carpeta raíz del Kobo o en una subcarpeta. 
+        El sistema comparará automáticamente con tu biblioteca en Drive.
+      </p>
+    </div>
+
+    <div class="compatibility-warning">
+      <h4>⚠️ Compatibilidad de Navegadores</h4>
+      <ul>
+        <li><strong>✅ Compatible:</strong> Google Chrome, Microsoft Edge, Opera (versiones recientes)</li>
+        <li><strong>❌ No compatible:</strong> Firefox, Safari, navegadores móviles (iOS/Android)</li>
+        <li><strong>Dispositivos:</strong> Solo Kobo y lectores e-readers USB. iPad/iPhone/Android no son compatibles desde el navegador web.</li>
+      </ul>
+      <p style="margin: 10px 0 0 0; color: #ccc; font-size: 14px;">
+        Esta funcionalidad usa File System Access API que solo está disponible en navegadores basados en Chromium.
+      </p>
+    </div>
+
+    <div id="statusBox" class="status-box"></div>
+
+    <div class="action-buttons">
+      <button id="detectBtn" class="btn btn-primary">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+        </svg>
+        Detectar Kobo
+      </button>
+      <button id="refreshBtn" class="btn btn-secondary" style="display: none;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="23 4 23 10 17 10"></polyline>
+          <polyline points="1 20 1 14 7 14"></polyline>
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+        </svg>
+        Refrescar
+      </button>
+    </div>
+
+    <div id="bookList" class="book-list"></div>
+  </div>
+
+  <!-- Modal de confirmación -->
+  <div id="confirmModal" class="confirm-modal">
+    <div class="confirm-modal-content">
+      <h3>✅ Libro Subido Exitosamente</h3>
+      <p>El siguiente libro ha sido agregado a tu biblioteca de Drive:</p>
+      <div class="book-name" id="confirmBookName"></div>
+      <button id="confirmOkBtn">Entendido</button>
+    </div>
+  </div>
+
+  <script>
+    // Detectar si está en un iframe
+    const isInIframe = window.self !== window.top;
+    
+    const passParam = new URLSearchParams(window.location.search).get('pass') || '';
+    const statusBox = document.getElementById('statusBox');
+    const detectBtn = document.getElementById('detectBtn');
+    const refreshBtn = document.getElementById('refreshBtn');
+    const bookList = document.getElementById('bookList');
+    const confirmModal = document.getElementById('confirmModal');
+    const confirmBookName = document.getElementById('confirmBookName');
+    const confirmOkBtn = document.getElementById('confirmOkBtn');
+    
+    let koboHandle = null;
+    let driveBooks = [];
+    let koboBooks = [];
+
+    // ============ FUNCIONES AUXILIARES ============
+    function showStatus(type, message) {
+      statusBox.className = 'status-box ' + type;
+      statusBox.innerHTML = message;
+      statusBox.style.display = 'block';
+      if (type === 'success' || type === 'error') {
+        setTimeout(() => {
+          statusBox.style.display = 'none';
+        }, 8000);
+      }
+    }
+    
+    function showConfirmModal(bookName) {
+      confirmBookName.textContent = bookName;
+      confirmModal.classList.add('active');
+    }
+
+    async function loadDriveBooks() {
+      try {
+        const response = await fetch('/api/books');
+        const data = await response.json();
+        driveBooks = data || [];
+        return driveBooks;
+      } catch (err) {
+        console.error('Error loading Drive books:', err);
+        return [];
+      }
+    }
+
+    async function scanKoboDirectory(dirHandle) {
+      const books = [];
+      try {
+        for await (const entry of dirHandle.values()) {
+          if (entry.kind === 'file' && entry.name.toLowerCase().endsWith('.epub')) {
+            const file = await entry.getFile();
+            books.push({
+              name: entry.name,
+              size: file.size,
+              file: file,
+              handle: entry
+            });
+          } else if (entry.kind === 'directory') {
+            // Buscar recursivamente en subcarpetas
+            const subBooks = await scanKoboDirectory(entry);
+            books.push(...subBooks);
+          }
+        }
+      } catch (err) {
+        console.error('Error scanning directory:', err);
+      }
+      return books;
+    }
+
+    function normalizeTitle(title) {
+      return title.toLowerCase()
+        .replace(/\\.epub$/i, '')
+        .replace(/[^a-z0-9áéíóúñü]/gi, '') // Mantener caracteres especiales españoles
+        .trim();
+    }
+
+    function findNewBooks() {
+      console.log('=== COMPARACIÓN KOBO vs DRIVE ===');
+      console.log('Libros en Drive:', driveBooks.length);
+      console.log('Libros en Kobo:', koboBooks.length);
+      
+      const driveNormalized = driveBooks.map(b => {
+        const title = b.title || b.id || '';
+        const normalized = normalizeTitle(title);
+        return {
+          normalized,
+          original: title
+        };
+      });
+
+      console.log('Títulos normalizados en Drive:', driveNormalized.map(d => d.normalized));
+
+      const newBooks = koboBooks.filter(kb => {
+        const kbNormalized = normalizeTitle(kb.name);
+        console.log('Comparando Kobo:', kb.name, '→', kbNormalized);
+        
+        const exists = driveNormalized.some(db => {
+          const match = db.normalized === kbNormalized;
+          if (match) {
+            console.log('  ✓ Match encontrado con:', db.original);
+          }
+          return match;
+        });
+        
+        if (!exists) {
+          console.log('  ✗ NO encontrado en Drive');
+        }
+        
+        return !exists;
+      });
+
+      console.log('Libros nuevos encontrados:', newBooks.length);
+      console.log('=================================');
+      
+      return newBooks;
+    }
+
+    function formatFileSize(bytes) {
+      if (bytes < 1024) return bytes + ' B';
+      if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+      return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    }
+
+    function renderBookList(books) {
+      if (books.length === 0) {
+        bookList.innerHTML = '<div class="empty-state">' +
+          '<h3>✅ Todos tus libros están sincronizados</h3>' +
+          '<p>No hay libros nuevos en el Kobo que no estén en Drive</p>' +
+          '<p style="margin-top: 15px; color: #666; font-size: 14px;">' +
+          'Total en Kobo: ' + koboBooks.length + ' | Total en Drive: ' + driveBooks.length +
+          '</p></div>';
+        return;
+      }
+
+      const headerHtml = '<div style="background: rgba(25,230,214,0.1); padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid rgba(25,230,214,0.3);">' +
+        '<h3 style="color: #19E6D6; margin: 0 0 10px 0; font-family: MedievalSharp, cursive; font-size: 18px;">' +
+        '📊 Resumen de Sincronización' +
+        '</h3>' +
+        '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; font-size: 14px;">' +
+        '<div>' +
+        '<strong style="color: #19E6D6;">En Kobo:</strong>' +
+        '<span style="color: #ccc;"> ' + koboBooks.length + ' libros</span>' +
+        '</div>' +
+        '<div>' +
+        '<strong style="color: #19E6D6;">En Drive:</strong>' +
+        '<span style="color: #ccc;"> ' + driveBooks.length + ' libros</span>' +
+        '</div>' +
+        '<div>' +
+        '<strong style="color: #ff6b6b;">Nuevos (no en Drive):</strong>' +
+        '<span style="color: #ff6b6b;"> ' + books.length + ' libros</span>' +
+        '</div>' +
+        '</div>' +
+        '</div>';
+
+      const booksHtml = books.map((book, index) => {
+        const fileName = book.name.replace('.epub', '');
+        return '<div class="book-item" id="book-' + index + '">' +
+          '<div class="book-info">' +
+          '<h4>📖 ' + fileName + '</h4>' +
+          '<div class="meta">' +
+          '<span>📦 Tamaño: ' + formatFileSize(book.size) + '</span>' +
+          '<span>📄 Archivo: ' + book.name + '</span>' +
+          '</div>' +
+          '</div>' +
+          '<button class="upload-btn-small" onclick="uploadBook(' + index + ')">' +
+          'Subir a Drive' +
+          '</button>' +
+          '</div>';
+      }).join('');
+
+      bookList.innerHTML = headerHtml + booksHtml;
+    }
+
+    window.uploadBook = async function(index) {
+      const book = findNewBooks()[index];
+      if (!book) return;
+
+      const bookElement = document.getElementById('book-' + index);
+      const uploadBtn = bookElement.querySelector('.upload-btn-small');
+      
+      try {
+        uploadBtn.disabled = true;
+        uploadBtn.className = 'upload-btn-small uploading';
+        uploadBtn.innerHTML = '<span class="spinner"></span> Subiendo...';
+
+        const fileName = book.name.replace('.epub', '');
+        
+        // Crear FormData
+        const formData = new FormData();
+        formData.append('file', book.file);
+        formData.append('title', fileName);
+        formData.append('author', 'Desconocido');
+        formData.append('saga', 'Sin saga');
+        formData.append('sagaNumber', '0');
+        formData.append('description', '');
+
+        const uploadUrl = '/api/upload-to-drive' + (passParam ? ('?pass=' + encodeURIComponent(passParam)) : '');
+        const response = await fetch(uploadUrl, {
+          method: 'POST',
+          headers: passParam ? { 'x-api-key': passParam } : {},
+          body: formData
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({ error: 'Error desconocido' }));
+          throw new Error(errorData.error || 'Error al subir');
+        }
+
+        uploadBtn.className = 'upload-btn-small uploaded';
+        uploadBtn.innerHTML = '✅ Subido';
+        
+        // Mostrar modal de confirmación
+        showConfirmModal(fileName);
+        
+        // Actualizar lista después de que se cierre el modal
+        setTimeout(async () => {
+          await loadDriveBooks();
+          const newBooks = findNewBooks();
+          renderBookList(newBooks);
+        }, 2000);
+
+      } catch (err) {
+        uploadBtn.disabled = false;
+        uploadBtn.className = 'upload-btn-small';
+        uploadBtn.innerHTML = 'Subir a Drive';
+        showStatus('error', '❌ Error subiendo "' + book.name + '": ' + err.message);
+      }
+    };
+
+    // INICIALIZAR EVENT LISTENERS DESPUÉS DE DEFINIR FUNCIONES
+    
+    // Cerrar modal de confirmación
+    confirmOkBtn.addEventListener('click', () => {
+      confirmModal.classList.remove('active');
+    });
+
+    // Verificar si File System Access API está disponible
+    if (!('showDirectoryPicker' in window)) {
+      showStatus('error', '❌ Tu navegador no soporta esta funcionalidad. Por favor usa Google Chrome o Microsoft Edge.');
+      detectBtn.disabled = true;
+    } else if (isInIframe) {
+      showStatus('error', '⚠️ Esta funcionalidad no funciona dentro de VS Code. <br><br><strong>Abre esta URL en Chrome o Edge:</strong><br><code>http://localhost:3000/sync-kobo?pass=252914</code>');
+      detectBtn.disabled = true;
+      detectBtn.innerHTML = '❌ No disponible en iframe';
+    }
+
+    detectBtn.addEventListener('click', async () => {
+      if (isInIframe) {
+        showStatus('error', '⚠️ No puedes usar esta funcionalidad desde VS Code Simple Browser.<br><br><strong>Abre en tu navegador:</strong><br><code>http://localhost:3000/sync-kobo?pass=252914</code>');
+        return;
+      }
+      
+      try {
+        showStatus('info', '📱 Selecciona la carpeta de tu Kobo en el diálogo que aparecerá...');
+        detectBtn.disabled = true;
+        detectBtn.innerHTML = '<span class="spinner"></span> Detectando...';
+
+        // Solicitar acceso a directorio
+        koboHandle = await window.showDirectoryPicker({
+          mode: 'read'
+        });
+
+        showStatus('info', '🔍 Escaneando dispositivo y cargando biblioteca de Drive...');
+
+        // Cargar libros de Drive y escanear Kobo en paralelo
+        const [drive, kobo] = await Promise.all([
+          loadDriveBooks(),
+          scanKoboDirectory(koboHandle)
+        ]);
+
+        koboBooks = kobo;
+        
+        if (koboBooks.length === 0) {
+          showStatus('warning', 'El Kobo ha decidido no mostrarse. Tal vez el cable esté roto… o tal vez simplemente se deleita en tu espera.');
+          detectBtn.disabled = false;
+          detectBtn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">' +
+            '<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>' +
+            '</svg> Detectar Kobo';
+          return;
+        }
+
+        const newBooks = findNewBooks();
+        
+        showStatus('success', '✅ Dispositivo detectado! Encontrados ' + koboBooks.length + ' libros en Kobo, ' + newBooks.length + ' son nuevos');
+        renderBookList(newBooks);
+        
+        detectBtn.style.display = 'none';
+        refreshBtn.style.display = 'flex';
+
+      } catch (err) {
+        if (err.name === 'AbortError') {
+          showStatus('warning', '❌ Operación cancelada por el usuario');
+        } else {
+          showStatus('error', '❌ Error: ' + err.message);
+        }
+        detectBtn.disabled = false;
+        detectBtn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">' +
+          '<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>' +
+          '</svg> Detectar Kobo';
+      }
+    });
+
+    refreshBtn.addEventListener('click', async () => {
+      if (!koboHandle) return;
+      
+      try {
+        showStatus('info', '🔄 Actualizando lista...');
+        refreshBtn.disabled = true;
+        
+        const [drive, kobo] = await Promise.all([
+          loadDriveBooks(),
+          scanKoboDirectory(koboHandle)
+        ]);
+        
+        koboBooks = kobo;
+        const newBooks = findNewBooks();
+        
+        showStatus('success', '✅ Lista actualizada! ' + newBooks.length + ' libros nuevos encontrados');
+        renderBookList(newBooks);
+        
+        refreshBtn.disabled = false;
+      } catch (err) {
+        showStatus('error', '❌ Error actualizando: ' + err.message);
+        refreshBtn.disabled = false;
+      }
+    });
+
+    window.uploadBook = async function(index) {
+      const book = findNewBooks()[index];
+      if (!book) return;
+
+      const bookElement = document.getElementById('book-' + index);
+      const uploadBtn = bookElement.querySelector('.upload-btn-small');
+      
+      try {
+        uploadBtn.disabled = true;
+        uploadBtn.className = 'upload-btn-small uploading';
+        uploadBtn.innerHTML = '<span class="spinner"></span> Buscando metadata...';
+
+        const fileName = book.name.replace('.epub', '');
+        
+        // Intentar parsear título y autor del nombre del archivo
+        let title = fileName;
+        let author = 'Desconocido';
+        let saga = 'Sin saga';
+        let sagaNumber = 0;
+        
+        // Parsear formato: "Número - Título - Autor" o "Título - Autor"
+        const parts = fileName.split(' - ');
+        if (parts.length >= 2) {
+          // Si empieza con número, extraerlo
+          const firstPart = parts[0].trim();
+          if (/^\d+$/.test(firstPart)) {
+            sagaNumber = parseInt(firstPart);
+            title = parts[1]?.trim() || fileName;
+            author = parts[2]?.trim() || 'Desconocido';
+          } else {
+            title = parts[0]?.trim() || fileName;
+            author = parts[1]?.trim() || 'Desconocido';
+          }
+        }
+        
+        // Buscar en Google Books API para obtener metadata
+        let description = '';
+        try {
+          const searchQuery = encodeURIComponent(\`\${title} \${author}\`);
+          const googleBooksUrl = \`https://www.googleapis.com/books/v1/volumes?q=\${searchQuery}&langRestrict=es&maxResults=1\`;
+          const gbResponse = await fetch(googleBooksUrl);
+          
+          if (gbResponse.ok) {
+            const gbData = await gbResponse.json();
+            if (gbData.items && gbData.items.length > 0) {
+              const bookInfo = gbData.items[0].volumeInfo;
+              
+              // Usar datos de Google Books si están disponibles
+              if (bookInfo.title) title = bookInfo.title;
+              if (bookInfo.authors && bookInfo.authors[0]) author = bookInfo.authors[0];
+              if (bookInfo.description) description = bookInfo.description;
+              
+              // Intentar detectar saga del título o categorías
+              if (bookInfo.title && /libro\s*\d+|volumen\s*\d+|#\d+/i.test(bookInfo.title)) {
+                const match = bookInfo.title.match(/(\d+)/);
+                if (match) sagaNumber = parseInt(match[1]);
+              }
+              
+              // Usar categorías como saga si no hay saga definida
+              if (saga === 'Sin saga' && bookInfo.categories && bookInfo.categories[0]) {
+                saga = bookInfo.categories[0];
+              }
+            }
+          }
+        } catch (err) {
+          console.warn('No se pudo obtener metadata de Google Books:', err);
+        }
+        
+        uploadBtn.innerHTML = '<span class="spinner"></span> Subiendo...';
+        
+        // Crear FormData con los datos obtenidos
+        const formData = new FormData();
+        formData.append('file', book.file);
+        formData.append('title', title);
+        formData.append('author', author);
+        formData.append('saga', saga);
+        formData.append('sagaNumber', sagaNumber.toString());
+        formData.append('description', description);
+
+        const uploadUrl = '/api/upload-to-drive' + (passParam ? ('?pass=' + encodeURIComponent(passParam)) : '');
+        const response = await fetch(uploadUrl, {
+          method: 'POST',
+          headers: passParam ? { 'x-api-key': passParam } : {},
+          body: formData
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({ error: 'Error desconocido' }));
+          throw new Error(errorData.error || 'Error al subir');
+        }
+
+        uploadBtn.className = 'upload-btn-small uploaded';
+        uploadBtn.innerHTML = '✅ Subido';
+        
+        // Mostrar modal de confirmación
+        showConfirmModal(fileName);
+        
+        // Actualizar lista después de que se cierre el modal
+        setTimeout(async () => {
+          await loadDriveBooks();
+          const newBooks = findNewBooks();
+          renderBookList(newBooks);
+        }, 2000);
+
+      } catch (err) {
+        uploadBtn.disabled = false;
+        uploadBtn.className = 'upload-btn-small';
+        uploadBtn.innerHTML = 'Subir a Drive';
+        showStatus('error', '❌ Error subiendo "' + book.name + '": ' + err.message);
+      }
+    };
+  </script>
+</body>
+</html>`;
+  res.send(html);
+});
+
 // API: Sincronizar datos de Google Books para libros sin portada/descripción
 app.get('/api/sync-google-books', async (req, res) => {
   try {
@@ -3002,7 +3617,17 @@ app.post('/api/upload-to-drive', upload.single('file'), async (req, res) => {
 
     // Evitar intentos con Service Account (sin cuota de subida)
     if (!hasOAuth) {
-      return res.status(503).json({ error: 'Subidas deshabilitadas: falta OAuth configurado en el servidor (no se puede usar Service Account para subir)' });
+      console.error('[UPLOAD] ❌ OAuth no disponible. Archivos faltantes:', {
+        'oauth-credentials.json': fs.existsSync(OAUTH_CREDENTIALS),
+        'oauth-token.json': fs.existsSync(OAUTH_TOKEN)
+      });
+      return res.status(503).json({ 
+        error: 'Para subir archivos necesitas configurar OAuth2. Ejecuta: node generate-oauth-token.js',
+        details: {
+          hasCredentials: fs.existsSync(OAUTH_CREDENTIALS),
+          hasToken: fs.existsSync(OAUTH_TOKEN)
+        }
+      });
     }
 
     if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
@@ -3236,14 +3861,45 @@ app.delete('/api/books/:id', async (req, res) => {
   
   const deletedBook = bookMetadata[bookIndex];
   
+  // Eliminar del Drive si es posible (requiere OAuth o Service Account con permisos)
+  let driveDeleted = false;
+  if (deletedBook.driveFileId || deletedBook.id) {
+    const fileId = deletedBook.driveFileId || deletedBook.id;
+    
+    try {
+      // Intentar con OAuth primero (puede eliminar archivos propios)
+      if (driveUpload && hasOAuth) {
+        await driveUpload.files.delete({ fileId });
+        console.log(`[DELETE] ☁️ Archivo eliminado de Drive: ${deletedBook.title} (ID: ${fileId})`);
+        driveDeleted = true;
+      } 
+      // Fallback a Service Account (solo si tiene permisos sobre el archivo)
+      else if (drive) {
+        await drive.files.delete({ fileId });
+        console.log(`[DELETE] ☁️ Archivo eliminado de Drive con Service Account: ${deletedBook.title} (ID: ${fileId})`);
+        driveDeleted = true;
+      }
+    } catch (driveErr) {
+      console.error(`[DELETE] ⚠️ No se pudo eliminar de Drive (${fileId}):`, driveErr.message);
+      // Continuar con la eliminación del JSON aunque falle el Drive
+    }
+  }
+  
   // Eliminar del array
   bookMetadata.splice(bookIndex, 1);
   
   // Guardar a disco
   try {
     await fs.promises.writeFile(BOOKS_FILE, JSON.stringify(bookMetadata, null, 2));
-    console.log(`[API /books/:id DELETE] ✅ Libro eliminado: ${deletedBook.title} (ID: ${id})`);
-    res.json({ success: true, message: 'Libro eliminado correctamente' });
+    console.log(`[API /books/:id DELETE] ✅ Libro eliminado del JSON: ${deletedBook.title} (ID: ${id})`);
+    
+    res.json({ 
+      success: true, 
+      message: driveDeleted 
+        ? 'Libro eliminado de Drive y catálogo' 
+        : 'Libro eliminado del catálogo (archivo en Drive no eliminado)',
+      driveDeleted
+    });
   } catch (err) {
     console.error('[API /books/:id DELETE] Error:', err.message);
     res.status(500).json({ error: err.message });
