@@ -3867,20 +3867,21 @@ app.delete('/api/books/:id', async (req, res) => {
     const fileId = deletedBook.driveFileId || deletedBook.id;
     
     try {
-      // Intentar con OAuth primero (puede eliminar archivos propios)
-      if (driveUpload && hasOAuth) {
-        await driveUpload.files.delete({ fileId });
-        console.log(`[DELETE] ☁️ Archivo eliminado de Drive: ${deletedBook.title} (ID: ${fileId})`);
-        driveDeleted = true;
-      } 
-      // Fallback a Service Account (solo si tiene permisos sobre el archivo)
-      else if (drive) {
+      // Intentar primero con Service Account (tiene acceso compartido a toda la carpeta)
+      if (drive) {
         await drive.files.delete({ fileId });
         console.log(`[DELETE] ☁️ Archivo eliminado de Drive con Service Account: ${deletedBook.title} (ID: ${fileId})`);
+        driveDeleted = true;
+      } 
+      // Fallback a OAuth (solo puede eliminar archivos propios)
+      else if (driveUpload && hasOAuth) {
+        await driveUpload.files.delete({ fileId });
+        console.log(`[DELETE] ☁️ Archivo eliminado de Drive con OAuth: ${deletedBook.title} (ID: ${fileId})`);
         driveDeleted = true;
       }
     } catch (driveErr) {
       console.error(`[DELETE] ⚠️ No se pudo eliminar de Drive (${fileId}):`, driveErr.message);
+      console.error(`[DELETE] ⚠️ Detalles del error:`, driveErr.response?.data || driveErr);
       // Continuar con la eliminación del JSON aunque falle el Drive
     }
   }
