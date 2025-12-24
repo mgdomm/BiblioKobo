@@ -39,63 +39,69 @@ class EmailService {
               box-sizing: border-box;
             }
             body {
-              font-family: 'MedievalSharp', cursive;
-              background: #111;
+              font-family: 'MedievalSharp', Georgia, serif !important;
+              background: #111 !important;
               margin: 0;
               padding: 20px;
             }
             .container {
               max-width: 600px;
               margin: 0 auto;
-              background: #222;
+              background: #222 !important;
               border-radius: 10px;
               border: 2px solid #19E6D6;
               box-shadow: 0 0 30px rgba(25, 230, 214, 0.3);
               overflow: hidden;
             }
             .header {
-              background: linear-gradient(135deg, #19E6D6 0%, #0fb3a3 100%);
-              color: #111;
+              background: linear-gradient(135deg, #19E6D6 0%, #0fb3a3 100%) !important;
+              color: #111 !important;
               padding: 30px;
               text-align: center;
             }
             .header h1 {
-              font-family: 'MedievalSharp', cursive;
+              font-family: 'MedievalSharp', Georgia, serif !important;
               font-size: 28px;
               margin-bottom: 10px;
               font-weight: bold;
+              color: #111 !important;
             }
             .header p {
               font-size: 14px;
               opacity: 0.8;
+              color: #111 !important;
             }
             .content {
               padding: 30px;
-              color: #fff;
+              color: #fff !important;
+              background: #222 !important;
             }
             p {
               line-height: 1.8;
               margin-bottom: 15px;
-              color: #ddd;
+              color: #ddd !important;
               font-size: 15px;
+              font-family: 'MedievalSharp', Georgia, serif !important;
             }
             .book-info {
-              background: #333;
+              background: #333 !important;
               padding: 25px;
               border-radius: 8px;
               border-left: 4px solid #19E6D6;
               margin: 25px 0;
             }
             .book-title {
-              color: #19E6D6;
+              color: #19E6D6 !important;
               font-size: 22px;
               font-weight: bold;
               margin-bottom: 8px;
+              font-family: 'MedievalSharp', Georgia, serif !important;
             }
             .book-author {
-              color: #aaa;
+              color: #aaa !important;
               font-style: italic;
               font-size: 16px;
+              font-family: 'MedievalSharp', Georgia, serif !important;
             }
             .btn-container {
               text-align: center;
@@ -104,8 +110,8 @@ class EmailService {
             .btn {
               display: inline-block;
               padding: 14px 30px;
-              background: #19E6D6;
-              color: #111;
+              background: #19E6D6 !important;
+              color: #111 !important;
               text-decoration: none;
               border-radius: 6px;
               font-weight: bold;
@@ -114,35 +120,35 @@ class EmailService {
               box-shadow: 0 4px 15px rgba(25, 230, 214, 0.4);
             }
             .btn:hover {
-              background: #0fb3a3;
+              background: #0fb3a3 !important;
               transform: translateY(-2px);
               box-shadow: 0 6px 20px rgba(25, 230, 214, 0.6);
             }
             .note {
-              background: rgba(25, 230, 214, 0.1);
+              background: rgba(25, 230, 214, 0.1) !important;
               border-left: 4px solid #19E6D6;
               padding: 15px;
               margin: 20px 0;
               border-radius: 4px;
             }
             .note p {
-              color: #19E6D6;
+              color: #19E6D6 !important;
               margin: 0;
               font-size: 14px;
             }
             .footer {
-              background: #1a1a1a;
+              background: #1a1a1a !important;
               padding: 20px 30px;
               text-align: center;
               border-top: 2px solid #19E6D6;
             }
             .footer p {
               font-size: 12px;
-              color: #888;
+              color: #888 !important;
               margin: 5px 0;
             }
             .footer .brand {
-              color: #19E6D6;
+              color: #19E6D6 !important;
               font-weight: bold;
               font-size: 14px;
             }
@@ -219,28 +225,28 @@ class EmailService {
               box-sizing: border-box;
             }
             body {
-              font-family: 'MedievalSharp', cursive;
-              background: #111;
+              font-family: 'MedievalSharp', Georgia, serif;
+              background: #111 !important;
               margin: 0;
               padding: 20px;
             }
             .container {
               max-width: 600px;
               margin: 0 auto;
-              background: #222;
+              background: #222 !important;
               border-radius: 10px;
               border: 2px solid #19E6D6;
               box-shadow: 0 0 30px rgba(25, 230, 214, 0.3);
               overflow: hidden;
             }
             .header {
-              background: linear-gradient(135deg, #19E6D6 0%, #0fb3a3 100%);
-              color: #111;
+              background: linear-gradient(135deg, #19E6D6 0%, #0fb3a3 100%) !important;
+              color: #111 !important;
               padding: 30px;
               text-align: center;
             }
             .header h1 {
-              font-family: 'MedievalSharp', cursive;
+              font-family: 'MedievalSharp', Georgia, serif;
               font-size: 28px;
               margin-bottom: 10px;
               font-weight: bold;
@@ -251,39 +257,39 @@ class EmailService {
             }
             .content {
               padding: 30px;
-              color: #fff;
+              color: #fff !important;
             }
             p {
               line-height: 1.8;
               margin-bottom: 15px;
-              color: #ddd;
+              color: #ddd !important;
               font-size: 15px;
             }
             .success-box {
-              background: rgba(25, 230, 214, 0.15);
+              background: rgba(25, 230, 214, 0.15) !important;
               border-left: 4px solid #19E6D6;
               padding: 20px;
               margin: 20px 0;
               border-radius: 4px;
             }
             .success-box p {
-              color: #19E6D6;
+              color: #19E6D6 !important;
               margin: 0;
               font-weight: bold;
             }
             .footer {
-              background: #1a1a1a;
+              background: #1a1a1a !important;
               padding: 20px 30px;
               text-align: center;
               border-top: 2px solid #19E6D6;
             }
             .footer p {
               font-size: 12px;
-              color: #888;
+              color: #888 !important;
               margin: 5px 0;
             }
             .footer .brand {
-              color: #19E6D6;
+              color: #19E6D6 !important;
               font-weight: bold;
               font-size: 14px;
             }
@@ -305,7 +311,7 @@ class EmailService {
               
               <p>Desde ahora, estaré atento a cada libro que sea capturado y encerrado en <strong>Azkaban Reads</strong>. Cuando algo de tu interés atraviese estos muros, serás el primero en saberlo.</p>
               
-              <p style="margin-top: 25px; font-style: italic; color: #aaa;">
+              <p style="margin-top: 25px; font-style: italic; color: #aaa !important;">
                 Incluso desde los muros donde los libros permanecen capturados, nada escapa a mi vigilancia.
               </p>
             </div>
@@ -354,28 +360,28 @@ class EmailService {
               box-sizing: border-box;
             }
             body {
-              font-family: 'MedievalSharp', cursive;
-              background: #111;
+              font-family: 'MedievalSharp', Georgia, serif;
+              background: #111 !important;
               margin: 0;
               padding: 20px;
             }
             .container {
               max-width: 600px;
               margin: 0 auto;
-              background: #222;
+              background: #222 !important;
               border-radius: 10px;
               border: 2px solid #19E6D6;
               box-shadow: 0 0 30px rgba(25, 230, 214, 0.3);
               overflow: hidden;
             }
             .header {
-              background: linear-gradient(135deg, #19E6D6 0%, #0fb3a3 100%);
-              color: #111;
+              background: linear-gradient(135deg, #19E6D6 0%, #0fb3a3 100%) !important;
+              color: #111 !important;
               padding: 30px;
               text-align: center;
             }
             .header h1 {
-              font-family: 'MedievalSharp', cursive;
+              font-family: 'MedievalSharp', Georgia, serif;
               font-size: 28px;
               margin-bottom: 10px;
               font-weight: bold;
@@ -386,67 +392,67 @@ class EmailService {
             }
             .content {
               padding: 30px;
-              color: #fff;
+              color: #fff !important;
             }
             p {
               line-height: 1.8;
               margin-bottom: 15px;
-              color: #ddd;
+              color: #ddd !important;
               font-size: 15px;
             }
             .request-info {
-              background: #333;
+              background: #333 !important;
               padding: 25px;
               border-radius: 8px;
               border-left: 4px solid #19E6D6;
               margin: 25px 0;
             }
             .book-title {
-              color: #19E6D6;
+              color: #19E6D6 !important;
               font-size: 22px;
               font-weight: bold;
               margin-bottom: 8px;
             }
             .book-author {
-              color: #aaa;
+              color: #aaa !important;
               font-style: italic;
               font-size: 16px;
               margin-bottom: 12px;
             }
             .requester-email {
-              color: #19E6D6;
+              color: #19E6D6 !important;
               font-size: 14px;
-              background: rgba(25, 230, 214, 0.1);
+              background: rgba(25, 230, 214, 0.1) !important;
               padding: 8px 12px;
               border-radius: 4px;
               display: inline-block;
               margin-top: 10px;
             }
             .note {
-              background: rgba(25, 230, 214, 0.1);
+              background: rgba(25, 230, 214, 0.1) !important;
               border-left: 4px solid #19E6D6;
               padding: 15px;
               margin: 20px 0;
               border-radius: 4px;
             }
             .note p {
-              color: #19E6D6;
+              color: #19E6D6 !important;
               margin: 0;
               font-size: 14px;
             }
             .footer {
-              background: #1a1a1a;
+              background: #1a1a1a !important;
               padding: 20px 30px;
               text-align: center;
               border-top: 2px solid #19E6D6;
             }
             .footer p {
               font-size: 12px;
-              color: #888;
+              color: #888 !important;
               margin: 5px 0;
             }
             .footer .brand {
-              color: #19E6D6;
+              color: #19E6D6 !important;
               font-weight: bold;
               font-size: 14px;
             }
@@ -476,7 +482,7 @@ class EmailService {
                 <p><strong>⚡ Acción requerida:</strong> Captura este libro y libera al prisionero de su espera.</p>
               </div>
               
-              <p style="margin-top: 25px; font-style: italic; color: #aaa;">
+              <p style="margin-top: 25px; font-style: italic; color: #aaa !important;">
                 "Las voces de los que esperan... nunca dejan de resonar en estos muros."
               </p>
             </div>

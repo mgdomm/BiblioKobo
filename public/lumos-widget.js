@@ -53,7 +53,7 @@
       right: 50px;
       background: transparent;
       color: #19E6D6;
-      font-family: 'MedievalSharp', cursive;
+      font-family: 'MedievalSharp', serif;
       font-size: 24px;
       font-weight: bold;
       letter-spacing: 2px;
