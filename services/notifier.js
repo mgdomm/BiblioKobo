@@ -18,10 +18,15 @@ class NotificationService {
    */
   async checkPendingRequests(book) {
     try {
+      console.log('🔍 Verificando solicitudes pendientes para:', book.title, 'por', book.author);
       const requests = await FileHandler.readJSON(this.requestsPath);
       const pendingRequests = requests.filter(req => req.status === 'pending');
+      
+      console.log(`📋 Total de solicitudes pendientes: ${pendingRequests.length}`);
 
       for (const request of pendingRequests) {
+        console.log(`Comparando con solicitud: "${request.title}" por "${request.author}"`);
+        
         // Buscar coincidencias por título (case-insensitive)
         const titleMatch = book.title.toLowerCase().includes(request.title.toLowerCase()) ||
                           request.title.toLowerCase().includes(book.title.toLowerCase());
@@ -29,15 +34,25 @@ class NotificationService {
         const authorMatch = book.author.toLowerCase().includes(request.author.toLowerCase()) ||
                            request.author.toLowerCase().includes(book.author.toLowerCase());
 
+        console.log(`  - Título coincide: ${titleMatch}, Autor coincide: ${authorMatch}`);
+
         if (titleMatch && authorMatch) {
+          console.log(`✅ COINCIDENCIA encontrada! Enviando email a ${request.email}`);
+          
           // Enviar email
           const bookUrl = `${process.env.SITE_URL || 'http://localhost:3000'}/libros#${book.id}`;
-          await emailService.sendBookCapturedEmail(
+          const emailSent = await emailService.sendBookCapturedEmail(
             request.email,
             book.title,
             book.author,
             bookUrl
           );
+
+          if (emailSent) {
+            console.log(`📧 Email enviado exitosamente a ${request.email}`);
+          } else {
+            console.log(`⚠️ No se pudo enviar el email a ${request.email}`);
+          }
 
           // Actualizar estado de la solicitud
           await FileHandler.updateInJSON(
@@ -100,19 +115,23 @@ class NotificationService {
    */
   async notifySubscribers(book) {
     try {
+      console.log('📢 Verificando suscriptores de novedades para:', book.title);
       const notifications = await FileHandler.readJSON(this.notificationsPath);
+      console.log(`📋 Total de suscripciones activas: ${notifications.length}`);
 
       for (const notification of notifications) {
         let shouldNotify = false;
 
         switch (notification.type) {
           case 'all':
+            console.log(`  - Suscriptor "todos los libros": ${notification.email}`);
             shouldNotify = true;
             break;
           
           case 'author':
             if (notification.filters.author && 
                 book.author.toLowerCase().includes(notification.filters.author.toLowerCase())) {
+              console.log(`  - Coincidencia por autor "${notification.filters.author}": ${notification.email}`);
               shouldNotify = true;
             }
             break;
@@ -120,19 +139,27 @@ class NotificationService {
           case 'saga':
             if (notification.filters.saga && book.saga && 
                 book.saga.name.toLowerCase().includes(notification.filters.saga.toLowerCase())) {
+              console.log(`  - Coincidencia por saga "${notification.filters.saga}": ${notification.email}`);
               shouldNotify = true;
             }
             break;
         }
 
         if (shouldNotify) {
+          console.log(`✅ Enviando notificación de novedad a ${notification.email}`);
           const bookUrl = `${process.env.SITE_URL || 'http://localhost:3000'}/libros#${book.id}`;
-          await emailService.sendBookCapturedEmail(
+          const emailSent = await emailService.sendBookCapturedEmail(
             notification.email,
             book.title,
             book.author,
             bookUrl
           );
+          
+          if (emailSent) {
+            console.log(`📧 Email de novedad enviado a ${notification.email}`);
+          } else {
+            console.log(`⚠️ No se pudo enviar email a ${notification.email}`);
+          }
         }
       }
     } catch (error) {

@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const express = require('express');
 const { google } = require('googleapis');
 const path = require('path');
@@ -14,6 +16,7 @@ const { Readable } = require('stream');
 const booksRouter = require('./routes/books');
 const requestsRouter = require('./routes/requests');
 const adminRouter = require('./routes/admin');
+const notifier = require('./services/notifier');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -3732,6 +3735,12 @@ app.post('/api/upload-to-drive', upload.single('file'), async (req, res) => {
     uploadCount++;
     console.log(`[UPLOAD] ✅ Libro registrado: ${fileName} (ID: ${driveFileId})`);
     console.log(`[UPLOAD] 📚 Libro agregado con portada: ${book.coverUrl ? '✅ Encontrada' : '❌ Fallback'}`);
+    
+    // Verificar solicitudes pendientes y notificar
+    await notifier.checkPendingRequests(book);
+    
+    // Notificar a suscriptores de novedades
+    await notifier.notifySubscribers(book);
     
     res.json({ 
       success: true, 

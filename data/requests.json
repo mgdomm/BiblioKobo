@@ -6,5 +6,39 @@
     "email": "mgdomm@icloud.com",
     "status": "pending",
     "createdAt": "2025-12-24T16:40:03.882Z"
+  },
+  {
+    "id": "req_1766597495989_6nyxufrto",
+    "title": "alas de sangre",
+    "author": "rebecca",
+    "email": "mgdomm@icloud.com",
+    "status": "notified",
+    "createdAt": "2025-12-24T17:31:35.989Z",
+    "notifiedAt": "2025-12-24T18:02:55.437Z"
+  },
+  {
+    "id": "req_1766597830050_milmpog3m",
+    "title": "imperio en ruinas",
+    "author": "azkabanreads@gmail.com",
+    "email": "azkabanreads@gmail.com",
+    "status": "pending",
+    "createdAt": "2025-12-24T17:37:10.050Z"
+  },
+  {
+    "id": "req_1766598233548_59ao2rwh1",
+    "title": "color",
+    "author": "aaaa",
+    "email": "aa@ss.com",
+    "status": "pending",
+    "createdAt": "2025-12-24T17:43:53.548Z"
+  },
+  {
+    "id": "req_1766598620318_0i4cgbk8g",
+    "title": "alas de sangre",
+    "author": "rebecca",
+    "email": "azkabanreads@gmail.com",
+    "status": "notified",
+    "createdAt": "2025-12-24T17:50:20.318Z",
+    "notifiedAt": "2025-12-24T18:02:56.949Z"
   }
 ]

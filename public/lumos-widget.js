@@ -37,8 +37,34 @@
       transform: scale(1.1);
     }
 
+    #lumos-trigger:hover #lumos-label {
+      opacity: 1;
+      width: auto;
+      max-width: 200px;
+      padding: 0 15px;
+    }
+
     #lumos-trigger.hidden {
       display: none;
+    }
+
+    #lumos-label {
+      position: absolute;
+      right: 50px;
+      background: transparent;
+      color: #19E6D6;
+      font-family: 'MedievalSharp', cursive;
+      font-size: 24px;
+      font-weight: bold;
+      letter-spacing: 2px;
+      white-space: nowrap;
+      opacity: 0;
+      width: 0;
+      max-width: 0;
+      padding: 0;
+      overflow: hidden;
+      transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+      filter: drop-shadow(0 0 10px rgba(25, 230, 214, 0.8));
     }
 
     #lumos-iframe-container {
@@ -115,6 +141,7 @@
   const trigger = document.createElement('div');
   trigger.id = 'lumos-trigger';
   trigger.innerHTML = `
+    <span id="lumos-label">LUMOS</span>
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <path d="M15 4V2"></path>
       <path d="M15 16v-2"></path>

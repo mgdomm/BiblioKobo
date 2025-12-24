@@ -4098,7 +4098,7 @@
     "language": null,
     "isbn": null,
     "categories": null,
-    "coverUrl": null,
+    "coverUrl": "/cover/100.png",
     "averageRating": null
   },
   {
@@ -4193,5 +4193,151 @@
     "title": "Volviendo a Empezar",
     "author": "Liz Tomforde",
     "saga": null
+  },
+  {
+    "id": "1OibR5TkWUHw80Bfq61K-Dk6buGCmt4zz",
+    "title": "color",
+    "author": "aaaa (  #1)",
+    "saga": null
+  },
+  {
+    "id": "1Tj9ak3YXSRYQWShzu6XZ02DvTevUwoYf",
+    "driveFileId": "1Tj9ak3YXSRYQWShzu6XZ02DvTevUwoYf",
+    "title": "alas de sangre",
+    "author": "rebecca",
+    "saga": {
+      "name": " ",
+      "number": 1
+    },
+    "description": "Vuela... o muere. El nuevo fenómeno de fantasía juvenil del que todo el mundo habla. «¡La novela de fantasía más brutalmente adictiva que he leído en una década!» Tracy Wolff, autora de la Serie Crave Violet Sorrengail creía que se uniría al Cuadrante de los Escribas para vivir una vida tranquila, sin embargo, por órdenes de su madre, debe unirse a los miles de candidatos que, en el Colegio de Guerra de Basgiath, luchan por formar parte de la élite de Navarre: el Cuadrante de los Jinetes de dragón. Cuando eres más pequeña y frágil que los demás tu vida corre peligro, porque los dragones no se vinculan con humanos débiles. Además, con más jinetes que dragones disponibles, muchos la matarían con tal de mejorar sus probabilidades de éxito; y hay otros, como el despiadado Xaden Riorson, el líder de ala más poderoso del Cuadrante de Jinetes, que la asesinarían simplemente por ser la hija de la comandante general. Para sobrevivir, necesitará aprovechar al máximo todo su ingenio. Mientras la guerra se torna más letal Violet sospecha que los líderes de Navarre esconden un terrible secreto...",
+    "publisher": "Editorial Planeta",
+    "publishedDate": "2025-12-24",
+    "pageCount": 655,
+    "categories": [
+      "Fiction"
+    ],
+    "language": "es",
+    "averageRating": null,
+    "ratingsCount": null,
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=qr3NEAAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=qr3NEAAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+    },
+    "previewLink": "http://books.google.co.uk/books?id=qr3NEAAAQBAJ&printsec=frontcover&dq=intitle:%22alas+de+sangre%22+inauthor:%22rebecca%22&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "coverUrl": "http://books.google.com/books/content?id=qr3NEAAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
+    "uploadDate": "2025-12-24T17:51:25.282Z",
+    "createdTime": "2025-12-24T17:51:24.146Z"
+  },
+  {
+    "id": "1twTJL7DAavc3nVgfIkMnuLlVHjzMQXZv",
+    "driveFileId": "1twTJL7DAavc3nVgfIkMnuLlVHjzMQXZv",
+    "title": "alas de sangre",
+    "author": "rebecca",
+    "saga": {
+      "name": " ",
+      "number": 1
+    },
+    "description": "Vuela... o muere. El nuevo fenómeno de fantasía juvenil del que todo el mundo habla. «¡La novela de fantasía más brutalmente adictiva que he leído en una década!» Tracy Wolff, autora de la Serie Crave Violet Sorrengail creía que se uniría al Cuadrante de los Escribas para vivir una vida tranquila, sin embargo, por órdenes de su madre, debe unirse a los miles de candidatos que, en el Colegio de Guerra de Basgiath, luchan por formar parte de la élite de Navarre: el Cuadrante de los Jinetes de dragón. Cuando eres más pequeña y frágil que los demás tu vida corre peligro, porque los dragones no se vinculan con humanos débiles. Además, con más jinetes que dragones disponibles, muchos la matarían con tal de mejorar sus probabilidades de éxito; y hay otros, como el despiadado Xaden Riorson, el líder de ala más poderoso del Cuadrante de Jinetes, que la asesinarían simplemente por ser la hija de la comandante general. Para sobrevivir, necesitará aprovechar al máximo todo su ingenio. Mientras la guerra se torna más letal Violet sospecha que los líderes de Navarre esconden un terrible secreto...",
+    "publisher": "Editorial Planeta",
+    "publishedDate": "2025-12-24",
+    "pageCount": 655,
+    "categories": [
+      "Fiction"
+    ],
+    "language": "es",
+    "averageRating": null,
+    "ratingsCount": null,
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=qr3NEAAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=qr3NEAAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+    },
+    "previewLink": "http://books.google.co.uk/books?id=qr3NEAAAQBAJ&printsec=frontcover&dq=intitle:%22alas+de+sangre%22+inauthor:%22rebecca%22&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "coverUrl": "http://books.google.com/books/content?id=qr3NEAAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
+    "uploadDate": "2025-12-24T17:57:04.896Z",
+    "createdTime": "2025-12-24T17:57:03.171Z"
+  },
+  {
+    "id": "1ks2-ucqzeR_Zxz3x7B9ZomjrKvs6TMuS",
+    "driveFileId": "1ks2-ucqzeR_Zxz3x7B9ZomjrKvs6TMuS",
+    "title": "alas de sangre",
+    "author": "rebecca",
+    "saga": {
+      "name": " ",
+      "number": 1
+    },
+    "description": "Vuela... o muere. El nuevo fenómeno de fantasía juvenil del que todo el mundo habla. «¡La novela de fantasía más brutalmente adictiva que he leído en una década!» Tracy Wolff, autora de la Serie Crave Violet Sorrengail creía que se uniría al Cuadrante de los Escribas para vivir una vida tranquila, sin embargo, por órdenes de su madre, debe unirse a los miles de candidatos que, en el Colegio de Guerra de Basgiath, luchan por formar parte de la élite de Navarre: el Cuadrante de los Jinetes de dragón. Cuando eres más pequeña y frágil que los demás tu vida corre peligro, porque los dragones no se vinculan con humanos débiles. Además, con más jinetes que dragones disponibles, muchos la matarían con tal de mejorar sus probabilidades de éxito; y hay otros, como el despiadado Xaden Riorson, el líder de ala más poderoso del Cuadrante de Jinetes, que la asesinarían simplemente por ser la hija de la comandante general. Para sobrevivir, necesitará aprovechar al máximo todo su ingenio. Mientras la guerra se torna más letal Violet sospecha que los líderes de Navarre esconden un terrible secreto...",
+    "publisher": "Editorial Planeta",
+    "publishedDate": "2025-12-24",
+    "pageCount": 655,
+    "categories": [
+      "Fiction"
+    ],
+    "language": "es",
+    "averageRating": null,
+    "ratingsCount": null,
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=qr3NEAAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=qr3NEAAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+    },
+    "previewLink": "http://books.google.co.uk/books?id=qr3NEAAAQBAJ&printsec=frontcover&dq=intitle:%22alas+de+sangre%22+inauthor:%22rebecca%22&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "coverUrl": "http://books.google.com/books/content?id=qr3NEAAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
+    "uploadDate": "2025-12-24T18:02:53.796Z",
+    "createdTime": "2025-12-24T18:02:52.519Z"
+  },
+  {
+    "id": "1S4J9aofKFXcv8QZT7Rppelldnjs0ejnM",
+    "driveFileId": "1S4J9aofKFXcv8QZT7Rppelldnjs0ejnM",
+    "title": "alas de sangre",
+    "author": "rebecca",
+    "saga": {
+      "name": " ",
+      "number": 1
+    },
+    "description": "Vuela... o muere. El nuevo fenómeno de fantasía juvenil del que todo el mundo habla. «¡La novela de fantasía más brutalmente adictiva que he leído en una década!» Tracy Wolff, autora de la Serie Crave Violet Sorrengail creía que se uniría al Cuadrante de los Escribas para vivir una vida tranquila, sin embargo, por órdenes de su madre, debe unirse a los miles de candidatos que, en el Colegio de Guerra de Basgiath, luchan por formar parte de la élite de Navarre: el Cuadrante de los Jinetes de dragón. Cuando eres más pequeña y frágil que los demás tu vida corre peligro, porque los dragones no se vinculan con humanos débiles. Además, con más jinetes que dragones disponibles, muchos la matarían con tal de mejorar sus probabilidades de éxito; y hay otros, como el despiadado Xaden Riorson, el líder de ala más poderoso del Cuadrante de Jinetes, que la asesinarían simplemente por ser la hija de la comandante general. Para sobrevivir, necesitará aprovechar al máximo todo su ingenio. Mientras la guerra se torna más letal Violet sospecha que los líderes de Navarre esconden un terrible secreto...",
+    "publisher": "Editorial Planeta",
+    "publishedDate": "2025-12-24",
+    "pageCount": 655,
+    "categories": [
+      "Fiction"
+    ],
+    "language": "es",
+    "averageRating": null,
+    "ratingsCount": null,
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=qr3NEAAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=qr3NEAAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+    },
+    "previewLink": "http://books.google.co.uk/books?id=qr3NEAAAQBAJ&printsec=frontcover&dq=intitle:%22alas+de+sangre%22+inauthor:%22rebecca%22&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "coverUrl": "http://books.google.com/books/content?id=qr3NEAAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
+    "uploadDate": "2025-12-24T18:05:03.559Z",
+    "createdTime": "2025-12-24T18:05:02.351Z"
+  },
+  {
+    "id": "1dhTj07anE0CqmauPwQgkMrO5ytDWoOIi",
+    "driveFileId": "1dhTj07anE0CqmauPwQgkMrO5ytDWoOIi",
+    "title": "alas de sangre",
+    "author": "rebecca",
+    "saga": {
+      "name": " ",
+      "number": 1
+    },
+    "description": "Vuela... o muere. El nuevo fenómeno de fantasía juvenil del que todo el mundo habla. «¡La novela de fantasía más brutalmente adictiva que he leído en una década!» Tracy Wolff, autora de la Serie Crave Violet Sorrengail creía que se uniría al Cuadrante de los Escribas para vivir una vida tranquila, sin embargo, por órdenes de su madre, debe unirse a los miles de candidatos que, en el Colegio de Guerra de Basgiath, luchan por formar parte de la élite de Navarre: el Cuadrante de los Jinetes de dragón. Cuando eres más pequeña y frágil que los demás tu vida corre peligro, porque los dragones no se vinculan con humanos débiles. Además, con más jinetes que dragones disponibles, muchos la matarían con tal de mejorar sus probabilidades de éxito; y hay otros, como el despiadado Xaden Riorson, el líder de ala más poderoso del Cuadrante de Jinetes, que la asesinarían simplemente por ser la hija de la comandante general. Para sobrevivir, necesitará aprovechar al máximo todo su ingenio. Mientras la guerra se torna más letal Violet sospecha que los líderes de Navarre esconden un terrible secreto...",
+    "publisher": "Editorial Planeta",
+    "publishedDate": "2025-12-24",
+    "pageCount": 655,
+    "categories": [
+      "Fiction"
+    ],
+    "language": "es",
+    "averageRating": null,
+    "ratingsCount": null,
+    "imageLinks": {
+      "smallThumbnail": "http://books.google.com/books/content?id=qr3NEAAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
+      "thumbnail": "http://books.google.com/books/content?id=qr3NEAAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+    },
+    "previewLink": "http://books.google.co.uk/books?id=qr3NEAAAQBAJ&printsec=frontcover&dq=intitle:%22alas+de+sangre%22+inauthor:%22rebecca%22&hl=&as_pt=BOOKS&cd=1&source=gbs_api",
+    "coverUrl": "http://books.google.com/books/content?id=qr3NEAAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
+    "uploadDate": "2025-12-24T18:12:37.799Z",
+    "createdTime": "2025-12-24T18:12:36.626Z"
   }
 ]

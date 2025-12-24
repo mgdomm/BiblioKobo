@@ -63,11 +63,21 @@ router.post('/book', async (req, res) => {
     await FileHandler.addToJSON(requestsPath, newRequest);
 
     // Enviar notificación al admin
-    await emailService.sendBookRequestNotificationToAdmin(
-      newRequest.email,
-      newRequest.title,
-      newRequest.author
-    );
+    try {
+      console.log('Intentando enviar notificación al admin...');
+      const emailSent = await emailService.sendBookRequestNotificationToAdmin(
+        newRequest.email,
+        newRequest.title,
+        newRequest.author
+      );
+      if (emailSent) {
+        console.log('✅ Email de solicitud enviado exitosamente al admin');
+      } else {
+        console.log('⚠️ No se pudo enviar el email al admin');
+      }
+    } catch (emailError) {
+      console.error('❌ Error al enviar email al admin:', emailError);
+    }
 
     res.json({
       success: true,
