@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const FileHandler = require('../utils/fileHandler');
 const notifier = require('../services/notifier');
+const emailService = require('../services/emailService');
 const path = require('path');
 
 const requestsPath = path.join(__dirname, '../data/requests.json');
@@ -60,6 +61,13 @@ router.post('/book', async (req, res) => {
     };
 
     await FileHandler.addToJSON(requestsPath, newRequest);
+
+    // Enviar notificación al admin
+    await emailService.sendBookRequestNotificationToAdmin(
+      newRequest.email,
+      newRequest.title,
+      newRequest.author
+    );
 
     res.json({
       success: true,
