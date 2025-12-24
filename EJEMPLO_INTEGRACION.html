@@ -1,0 +1,49 @@
+<!-- 
+  EJEMPLO: Cómo integrar LUMOS en dashboard.html
+  
+  Simplemente añade esta línea ANTES de cerrar </body>:
+-->
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Editor de Libros con LUMOS</title>
+    
+    <!-- Tu código CSS existente -->
+    <style>
+        /* ... tu CSS existente ... */
+    </style>
+</head>
+<body>
+
+    <!-- Todo tu contenido existente del dashboard -->
+    <div class="container">
+        <h1>Dashboard de Azkaban Reads</h1>
+        <!-- ... resto del contenido ... -->
+    </div>
+
+    <!-- ========================================= -->
+    <!-- INTEGRACIÓN DE LUMOS: Solo añade esto 👇 -->
+    <!-- ========================================= -->
+    <script src="/lumos-widget.js"></script>
+    
+    <!-- 
+      ¡Eso es todo! El botón flotante 🪄 aparecerá automáticamente 
+      en la esquina inferior derecha.
+      
+      Opcional: Puedes controlar LUMOS con JavaScript:
+    -->
+    <script>
+        // Ejemplo: Abrir LUMOS automáticamente después de 3 segundos
+        // setTimeout(() => LumosWidget.open(), 3000);
+        
+        // Ejemplo: Abrir LUMOS con un botón personalizado
+        // document.getElementById('mi-boton').addEventListener('click', () => {
+        //     LumosWidget.open();
+        // });
+    </script>
+
+</body>
+</html>

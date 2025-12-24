@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test LUMOS Buttons</title>
+</head>
+<body>
+  <h1>Test LUMOS Widget</h1>
+  <p>Haz clic en el botón de la varita para abrir LUMOS</p>
+  
+  <script src="/lumos-widget.js"></script>
+  
+  <script>
+    // Log para debugging
+    console.log('Página de test cargada');
+    
+    // Escuchar eventos de carga del iframe
+    window.addEventListener('message', function(event) {
+      console.log('Mensaje recibido del iframe:', event.data);
+    });
+    
+    // Verificar cada 2 segundos si LUMOS está cargado
+    setInterval(() => {
+      const iframe = document.getElementById('lumos-iframe');
+      if (iframe) {
+        console.log('Iframe encontrado, intentando acceder a su contenido...');
+        try {
+          if (iframe.contentWindow) {
+            console.log('contentWindow accesible');
+          }
+        } catch (e) {
+          console.error('Error accediendo al iframe:', e);
+        }
+      }
+    }, 2000);
+  </script>
+</body>
+</html>

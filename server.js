@@ -10,6 +10,11 @@ const multer = require('multer');
 const FormData = require('form-data');
 const { Readable } = require('stream');
 
+// LUMOS imports
+const booksRouter = require('./routes/books');
+const requestsRouter = require('./routes/requests');
+const adminRouter = require('./routes/admin');
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 const GOOGLE_BOOKS_API_KEY = process.env.GOOGLE_BOOKS_API_KEY || 'AIzaSyA4Rm0J2mdQuCK7MChxJP-SnMrV9HVrnGo';
@@ -18,6 +23,11 @@ const GOOGLE_BOOKS_API_KEY = process.env.GOOGLE_BOOKS_API_KEY || 'AIzaSyA4Rm0J2m
 app.use(compression());
 
 app.use(express.json());
+
+// LUMOS API Routes
+app.use('/api/books', booksRouter);
+app.use('/api/requests', requestsRouter);
+app.use('/api/admin', adminRouter);
 
 // Middleware para archivos multipart
 const upload = multer({
@@ -39,6 +49,9 @@ app.use('/cover', express.static(path.join(__dirname, 'cover'), {
   lastModified: true,
   immutable: true
 }));
+
+// Servir carpeta public para LUMOS y otros archivos estáticos
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Ruta para test de botones
 app.get('/test-buttons', (req, res) => {
@@ -1043,6 +1056,7 @@ function renderBookPage({ libros, titlePage, tipo, nombre, req, noResultsHtml })
   
   <p><a href="/${tipo==='autor'?'autores':'sagas'}" class="button">← Volver</a></p>
 
+  <script src="/lumos-widget.js"></script>
   <script>
     // Multi-download button appears when more than one checkbox is selected
     const checkboxes = document.querySelectorAll('.book-checkbox');
@@ -1504,6 +1518,7 @@ app.get('/autores', (req,res)=>{
     window.addEventListener('resize', applyRowFade);
     document.addEventListener('DOMContentLoaded', applyRowFade);
   </script>
+  <script src="/lumos-widget.js"></script>
 </body>
 </html>`);
 });
@@ -1588,6 +1603,7 @@ app.get('/sagas', (req,res)=>{
     window.addEventListener('resize', applyRowFade);
     document.addEventListener('DOMContentLoaded', applyRowFade);
   </script>
+  <script src="/lumos-widget.js"></script>
 </body>
 </html>`);
 });
@@ -1687,6 +1703,7 @@ app.get('/recomendados', async (req,res)=>{
     <div id="grid">${cards}</div>
     <p><a href="/" class="button">← Volver</a></p>
   </div>
+  <script src="/lumos-widget.js"></script>
 </body>
 </html>`);
   } catch (err) {
@@ -1762,6 +1779,7 @@ app.get('/libro', async (req, res) => {
     </div>
     ${synopsisHtml}
   </div>
+  <script src="/lumos-widget.js"></script>
 </body>
 </html>`);
 });

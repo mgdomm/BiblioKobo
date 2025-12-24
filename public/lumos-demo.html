@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Demo - LUMOS Integración</title>
+  <style>
+    body {
+      font-family: 'Georgia', serif;
+      background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+      color: #d4d4d4;
+      margin: 0;
+      padding: 40px;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: #1a1a1a;
+      padding: 40px;
+      border-radius: 15px;
+      border: 2px solid #333;
+    }
+
+    h1 {
+      color: #c9a961;
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #888;
+      font-style: italic;
+      margin-bottom: 40px;
+    }
+
+    .section {
+      margin-bottom: 30px;
+      padding: 20px;
+      background: #0f0f0f;
+      border-left: 3px solid #c9a961;
+      border-radius: 8px;
+    }
+
+    h2 {
+      color: #c9a961;
+      font-size: 20px;
+      margin-bottom: 15px;
+    }
+
+    p {
+      line-height: 1.8;
+      color: #b8b8b8;
+      margin-bottom: 15px;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 12px 24px;
+      background: linear-gradient(135deg, #c9a961 0%, #8b7355 100%);
+      color: #1a1a1a;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: bold;
+      margin: 5px;
+      cursor: pointer;
+      border: none;
+      transition: all 0.3s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(201, 169, 97, 0.4);
+    }
+
+    code {
+      background: #2a2a2a;
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: #c9a961;
+      font-family: 'Courier New', monospace;
+    }
+
+    .code-block {
+      background: #0a0a0a;
+      padding: 15px;
+      border-radius: 8px;
+      overflow-x: auto;
+      margin: 15px 0;
+    }
+
+    .code-block code {
+      background: none;
+      padding: 0;
+      display: block;
+      white-space: pre;
+      color: #d4d4d4;
+    }
+
+    .highlight {
+      color: #19E6D6;
+    }
+
+    .buttons-demo {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>🪄 LUMOS</h1>
+    <p class="subtitle">Asistente de Azkaban Reads</p>
+
+    <div class="section">
+      <h2>📌 ¿Qué es LUMOS?</h2>
+      <p>
+        LUMOS es tu asistente virtual en Azkaban Reads. Con una narrativa oscura y adulta, 
+        LUMOS te ayuda a descubrir libros capturados, recibir recomendaciones personalizadas 
+        y solicitar títulos que aún no están disponibles.
+      </p>
+      <p>
+        <strong>Nota:</strong> El bot flotante 🪄 aparece en la esquina inferior derecha de esta página. 
+        Haz clic para iniciar una conversación.
+      </p>
+    </div>
+
+    <div class="section">
+      <h2>🎯 Funcionalidades</h2>
+      <ul style="line-height: 2;">
+        <li>🔍 <strong>Búsqueda inteligente</strong> por título, autor o saga</li>
+        <li>❤️ <strong>Recomendaciones</strong> personalizadas según tus gustos</li>
+        <li>🧪 <strong>Test lector</strong> basado en tus 3 libros favoritos</li>
+        <li>📩 <strong>Solicitud de libros</strong> no disponibles</li>
+        <li>🔔 <strong>Notificaciones automáticas</strong> por correo electrónico</li>
+      </ul>
+    </div>
+
+    <div class="section">
+      <h2>🔌 Integración en tu sitio</h2>
+      <p>Para añadir LUMOS a cualquier página, solo añade este script:</p>
+      
+      <div class="code-block">
+        <code>&lt;script src="/lumos-widget.js"&gt;&lt;/script&gt;</code>
+      </div>
+
+      <p>O usa la API JavaScript para controlar LUMOS programáticamente:</p>
+      
+      <div class="code-block">
+        <code>// Abrir LUMOS
+LumosWidget.open();
+
+// Cerrar LUMOS
+LumosWidget.close();
+
+// Toggle (abrir/cerrar)
+LumosWidget.toggle();</code>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>🧪 Prueba la API</h2>
+      <p>Usa estos botones para probar las funciones de LUMOS programáticamente:</p>
+      
+      <div class="buttons-demo">
+        <button class="btn" onclick="LumosWidget.open()">Abrir LUMOS</button>
+        <button class="btn" onclick="LumosWidget.close()">Cerrar LUMOS</button>
+        <button class="btn" onclick="LumosWidget.toggle()">Toggle LUMOS</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>📡 Endpoints de la API</h2>
+      <p>LUMOS expone los siguientes endpoints REST:</p>
+      
+      <p><code>GET /api/books/search?query=titulo</code> - Buscar libros</p>
+      <p><code>GET /api/books/recommend?type=saga</code> - Obtener recomendación</p>
+      <p><code>POST /api/books/test</code> - Test lector con 3 libros favoritos</p>
+      <p><code>POST /api/requests/book</code> - Solicitar un libro</p>
+      <p><code>POST /api/requests/notify</code> - Suscribirse a notificaciones</p>
+      <p><code>POST /api/admin/add-book</code> - Añadir libro (admin)</p>
+    </div>
+
+    <div class="section">
+      <h2>⚙️ Configuración</h2>
+      <p>Para que LUMOS funcione correctamente, configura las siguientes variables de entorno:</p>
+      
+      <div class="code-block">
+        <code>EMAIL_USER=tu_correo@gmail.com
+EMAIL_PASS=contraseña_de_aplicacion
+SITE_URL=http://localhost:3000
+PORT=3000</code>
+      </div>
+      
+      <p>
+        <strong>Importante:</strong> Para enviar correos con Gmail, necesitas generar una 
+        <span class="highlight">"Contraseña de aplicación"</span> desde la configuración de 
+        seguridad de tu cuenta de Google.
+      </p>
+    </div>
+
+    <div class="section">
+      <h2>🎨 Narrativa</h2>
+      <p>
+        LUMOS mantiene una <strong>narrativa oscura y adulta</strong> coherente:
+      </p>
+      <ul style="line-height: 2;">
+        <li>Los libros están <em>"capturados"</em> y <em>"encerrados"</em></li>
+        <li>El usuario es un <em>"elegido"</em> que puede <em>"liberar"</em> los libros</li>
+        <li>Tono serio, misterioso y sofisticado</li>
+        <li>Mensajes como: <em>"Los libros permanecen capturados entre estos muros…"</em></li>
+      </ul>
+    </div>
+
+    <div class="section">
+      <h2>📚 Documentación completa</h2>
+      <p>
+        Para más detalles sobre la implementación, arquitectura y uso avanzado, 
+        consulta el archivo <code>LUMOS_README.md</code> en el proyecto.
+      </p>
+    </div>
+
+  </div>
+
+  <!-- Integración de LUMOS -->
+  <script src="/lumos-widget.js"></script>
+
+</body>
+</html>

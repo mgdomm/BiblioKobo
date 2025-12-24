@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LUMOS – Asistente de Azkaban Reads</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'MedievalSharp', cursive;
+      background: #111;
+      color: #d4d4d4;
+      overflow-x: hidden;
+    }
+
+    /* Botón flotante para abrir LUMOS */
+    #lumos-trigger {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: transparent;
+      border: 2px solid #19E6D6;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: 0.25s;
+      z-index: 9999;
+      color: #19E6D6;
+    }
+
+    #lumos-trigger:hover {
+      box-shadow: 0 0 15px rgba(25, 230, 214, 0.5);
+      transform: scale(1.1);
+    }
+
+    #lumos-trigger.active {
+      transform: scale(0);
+    }
+
+    /* Contenedor del chat */
+    #lumos-container {
+      position: fixed;
+      bottom: 120px;
+      right: 30px;
+      width: 420px;
+      height: 600px;
+      background: #222;
+      border: 2px solid #19E6D6;
+      border-radius: 15px;
+      box-shadow: 0 10px 50px rgba(25, 230, 214, 0.3);
+      display: none;
+      flex-direction: column;
+      z-index: 10000;
+      overflow: hidden;
+      animation: slideIn 0.3s ease;
+    }
+
+    #lumos-container.active {
+      display: flex;
+    }
+
+    /* Cuando está en iframe, ocupar todo el espacio */
+    @media (min-width: 1px) {
+      body.in-iframe #lumos-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: 100%;
+        height: 100%;
+        border-radius: 0;
+        border: none;
+        background: #111;
+      }
+      body.in-iframe {
+        background: #111;
+        overflow: hidden;
+      }
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Header */
+    #lumos-header {
+      background: linear-gradient(135deg, #19E6D6 0%, #0fb3a3 100%);
+      padding: 20px;
+      border-bottom: 2px solid #19E6D6;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    #lumos-header h2 {
+      color: #111;
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    #lumos-header p {
+      color: rgba(0, 0, 0, 0.7);
+      font-size: 12px;
+      font-style: italic;
+      margin-top: 5px;
+    }
+
+    #lumos-close {
+      background: none;
+      border: none;
+      color: #111;
+      font-size: 24px;
+      cursor: pointer;
+      transition: color 0.2s;
+      opacity: 0.7;
+    }
+
+    #lumos-close:hover {
+      opacity: 1;
+    }
+
+    /* Chat messages */
+    #lumos-messages {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    #lumos-messages::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    #lumos-messages::-webkit-scrollbar-track {
+      background: #0f0f0f;
+    }
+
+    #lumos-messages::-webkit-scrollbar-thumb {
+      background: #333;
+      border-radius: 4px;
+    }
+
+    .message {
+      padding: 12px 16px;
+      border-radius: 10px;
+      max-width: 85%;
+      line-height: 1.6;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .message.lumos {
+      background: #111;
+      border-left: 3px solid #19E6D6;
+      align-self: flex-start;
+      color: #ddd;
+    }
+
+    .message.user {
+      background: #333;
+      align-self: flex-end;
+      color: #fff;
+    }
+
+    /* Botones de opciones */
+    .options-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .option-btn {
+      padding: 10px 16px;
+      background: #222;
+      color: #19E6D6;
+      border: 1px solid #19E6D6;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.3s ease;
+      font-family: 'MedievalSharp', cursive;
+    }
+
+    .option-btn:hover {
+      background: #333;
+      box-shadow: 0 0 15px rgba(25, 230, 214, 0.4);
+      transform: translateY(-2px);
+    }
+
+    /* Input container */
+    #lumos-input-container {
+      padding: 15px;
+      background: #0f0f0f;
+      border-top: 1px solid #333;
+      display: flex;
+      gap: 10px;
+    }
+
+    #lumos-input {
+      flex: 1;
+      padding: 12px;
+      background: #111;
+      border: 1px solid #19E6D6;
+      border-radius: 8px;
+      color: #fff;
+      font-family: 'MedievalSharp', cursive;
+      font-size: 14px;
+    }
+
+    #lumos-input:focus {
+      outline: none;
+      border-color: #19E6D6;
+      box-shadow: 0 0 8px rgba(25, 230, 214, 0.3);
+    }
+
+    #lumos-send {
+      padding: 12px 20px;
+      background: #19E6D6;
+      border: none;
+      border-radius: 8px;
+      color: #111;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    #lumos-send:hover {
+      background: #0fb3a3;
+      transform: scale(1.05);
+    }
+
+    /* Book card */
+    .book-card {
+      background: #111;
+      padding: 15px;
+      border-radius: 8px;
+      border-left: 3px solid #19E6D6;
+      margin-top: 10px;
+    }
+
+    .book-card h4 {
+      color: #19E6D6;
+      margin-bottom: 5px;
+      font-size: 16px;
+    }
+
+    .book-card p {
+      color: #aaa;
+      font-size: 13px;
+      margin-bottom: 10px;
+    }
+
+    .book-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .book-btn {
+      padding: 8px 14px;
+      font-size: 12px;
+      background: #222;
+      color: #19E6D6;
+      border: 1px solid #19E6D6;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .book-btn:hover {
+      background: #333;
+    }
+
+    /* Loading animation */
+    .loading {
+      display: flex;
+      gap: 5px;
+      padding: 10px;
+    }
+
+    .loading span {
+      width: 8px;
+      height: 8px;
+      background: #19E6D6;
+      border-radius: 50%;
+      animation: bounce 1.4s infinite ease-in-out both;
+    }
+
+    .loading span:nth-child(1) {
+      animation-delay: -0.32s;
+    }
+
+    .loading span:nth-child(2) {
+      animation-delay: -0.16s;
+    }
+
+    @keyframes bounce {
+      0%, 80%, 100% {
+        transform: scale(0);
+      }
+      40% {
+        transform: scale(1);
+      }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      #lumos-container {
+        width: 100%;
+        height: 100%;
+        bottom: 0;
+        right: 0;
+        border-radius: 0;
+      }
+
+      #lumos-trigger {
+        bottom: 20px;
+        right: 20px;
+        width: 60px;
+        height: 60px;
+        font-size: 28px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Botón flotante para abrir LUMOS -->
+  <div id="lumos-trigger" onclick="toggleLumos()">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M15 4V2"></path>
+      <path d="M15 16v-2"></path>
+      <path d="M8 9h2"></path>
+      <path d="M20 9h2"></path>
+      <path d="M17.8 11.8 19 13"></path>
+      <path d="M15 9h0"></path>
+      <path d="M17.8 6.2 19 5"></path>
+      <path d="m3 21 9-9"></path>
+      <path d="M12.2 6.2 11 5"></path>
+    </svg>
+  </div>
+
+  <!-- Contenedor del chat -->
+  <div id="lumos-container">
+    <div id="lumos-header">
+      <div>
+        <h2>🪄 LUMOS</h2>
+        <p>Asistente de Azkaban Reads</p>
+      </div>
+      <button id="lumos-close" onclick="toggleLumos()">×</button>
+    </div>
+
+    <div id="lumos-messages">
+      <!-- Los mensajes se añadirán aquí dinámicamente -->
+    </div>
+
+    <div id="lumos-input-container">
+      <input 
+        type="text" 
+        id="lumos-input" 
+        placeholder="Escribe tu mensaje..." 
+        onkeypress="handleKeyPress(event)"
+      />
+      <button id="lumos-send" onclick="sendMessage()">Enviar</button>
+    </div>
+  </div>
+
+  <script>
+    // Estado del chat
+    const state = {
+      currentFlow: 'welcome',
+      waitingFor: null,
+      requestData: {},
+      favoriteBooks: [],
+      searchQuery: '',
+      notificationData: {}
+    };
+    console.log('DEBUG: Estado inicializado', state);
+
+    // Toggle LUMOS visibility
+    function toggleLumos() {
+      const container = document.getElementById('lumos-container');
+      const trigger = document.getElementById('lumos-trigger');
+      
+      container.classList.toggle('active');
+      trigger.classList.toggle('active');
+
+      // Mostrar mensaje de bienvenida al abrir por primera vez
+      if (container.classList.contains('active') && 
+          document.getElementById('lumos-messages').children.length === 0) {
+        showWelcomeMessage();
+      }
+    }
+
+    // Mensaje de bienvenida
+    function showWelcomeMessage() {
+      addLumosMessage(
+        'Los libros permanecen capturados entre estos muros… y solo los elegidos pueden acceder a ellos.',
+        true
+      );
+
+      setTimeout(() => {
+        addLumosMessage(
+          'Soy LUMOS, guardián de Azkaban Reads. ¿Qué buscas entre las sombras?'
+        );
+        showMainOptions();
+      }, 1000);
+    }
+
+    // Mostrar opciones principales
+    function showMainOptions() {
+      const options = [
+        { text: '🔍 Buscar libro', action: 'search' },
+        { text: '❤️ Recomiéndame algo', action: 'recommend' },
+        { text: '🧪 Test lector', action: 'test' },
+        { text: '🔔 Avisarme de novedades', action: 'notify' },
+        { text: '📩 Solicitar un libro', action: 'request' },
+        { text: '❓ Ayuda', action: 'help' }
+      ];
+
+      addOptionsToChat(options);
+    }
+
+    // Añadir mensaje de LUMOS
+    function addLumosMessage(text, isFirst = false) {
+        console.log('DEBUG: addLumosMessage llamada con', text);
+      const messagesContainer = document.getElementById('lumos-messages');
+      const messageDiv = document.createElement('div');
+      messageDiv.className = 'message lumos';
+      messageDiv.innerHTML = text;
+      messagesContainer.appendChild(messageDiv);
+      scrollToBottom();
+    }
+
+    // Añadir mensaje del usuario
+    function addUserMessage(text) {
+        console.log('DEBUG: addUserMessage llamada con', text);
+      const messagesContainer = document.getElementById('lumos-messages');
+      const messageDiv = document.createElement('div');
+      messageDiv.className = 'message user';
+      messageDiv.textContent = text;
+      messagesContainer.appendChild(messageDiv);
+      scrollToBottom();
+    }
+
+    // Añadir opciones como botones
+    function addOptionsToChat(options) {
+      const messagesContainer = document.getElementById('lumos-messages');
+      const optionsContainer = document.createElement('div');
+      optionsContainer.className = 'options-container';
+
+      options.forEach(option => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.textContent = option.text;
+        btn.addEventListener('click', function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          console.log('Botón clickeado:', option.action, option.data);
+          addLumosMessage('DEBUG: Botón ' + option.text + ' clickeado');
+          if (window.handleOptionClick) {
+            window.handleOptionClick(option.action, option.data);
+          } else {
+            console.error('handleOptionClick no está definida');
+            addLumosMessage('ERROR: handleOptionClick no está definida');
+          }
+        });
+        optionsContainer.appendChild(btn);
+      });
+
+      messagesContainer.appendChild(optionsContainer);
+      scrollToBottom();
+    }
+
+    // Manejar clic en opciones
+    window.handleOptionClick = async function(action, data) {
+      console.log('DEBUG: handleOptionClick llamada con:', action, data);
+      addLumosMessage('DEBUG: handleOptionClick llamada con acción: <b>' + String(action) + '</b> y data: ' + JSON.stringify(data));
+
+      switch (action) {
+        case 'search':
+          addUserMessage('🔍 Buscar libro');
+          addLumosMessage('Dime el título, autor o saga que buscas entre los muros...');
+          state.currentFlow = 'search';
+          state.waitingFor = 'search_query';
+          break;
+
+        case 'recommend':
+          addUserMessage('❤️ Recomiéndame algo');
+          showRecommendOptions();
+          break;
+
+        case 'test':
+          addUserMessage('🧪 Test lector');
+          startReaderTest();
+          break;
+
+        case 'notify':
+          addUserMessage('🔔 Avisarme de novedades');
+          showNotifyOptions();
+          break;
+
+        case 'request':
+          addUserMessage('📩 Solicitar un libro');
+          startBookRequest();
+          break;
+
+        case 'help':
+          addUserMessage('❓ Ayuda');
+          showHelp();
+          break;
+
+        case 'search_execute':
+          await executeSearch(state.searchQuery);
+          break;
+
+        case 'recommend_execute':
+          await executeRecommendation(data);
+          break;
+
+        case 'download_book':
+          window.open(`/descargar/${data.id}`, '_blank');
+          addLumosMessage('El libro ha sido liberado... temporalmente.');
+          showContinueOptions();
+          break;
+
+        case 'view_similar':
+          await showSimilarBooks(data.id);
+          break;
+
+        case 'request_book':
+          addLumosMessage('Registraré tu solicitud. Dime el título del libro que buscas.');
+          state.currentFlow = 'request';
+          state.waitingFor = 'request_title';
+          break;
+
+        case 'recommend_similar':
+          addLumosMessage('Buscando entre las sombras...');
+          showRecommendOptions();
+          break;
+
+        case 'back':
+          addUserMessage('Volver al inicio');
+          addLumosMessage('¿Qué más necesitas de mí?');
+          showMainOptions();
+          break;
+
+        case 'close':
+          addUserMessage('Cerrar');
+          addLumosMessage('Estaré aquí... en la oscuridad, cuando me necesites.');
+          setTimeout(toggleLumos, 1500);
+          break;
+
+        default:
+          console.log('Acción no manejada:', action);
+      }
+    };
+
+    // Ejecutar búsqueda
+    async function executeSearch(query) {
+      showLoading();
+      
+      try {
+        const response = await fetch(`/api/books/search?query=${encodeURIComponent(query)}`);
+        const data = await response.json();
+
+        removeLoading();
+
+        if (data.found && data.books.length > 0) {
+          addLumosMessage(data.message);
+          data.books.forEach(book => addBookCard(book));
+        } else {
+          addLumosMessage(data.message);
+          const options = [
+            { text: '📩 Solicitar este libro', action: 'request_book' },
+            { text: '❤️ Ver recomendaciones', action: 'recommend_similar' },
+            { text: '↩️ Volver', action: 'back' }
+          ];
+          addOptionsToChat(options);
+        }
+      } catch (error) {
+        removeLoading();
+        addLumosMessage('Algo se mueve en las sombras... error al buscar.');
+      }
+    }
+
+    // Mostrar opciones de recomendación
+    function showRecommendOptions() {
+        console.log('DEBUG: showRecommendOptions llamada');
+      addLumosMessage('¿Qué tipo de lectura buscas?');
+      
+      const options = [
+        { text: '📚 Saga', action: 'recommend_execute', data: { type: 'saga' } },
+        { text: '📖 Autoconclusivo', action: 'recommend_execute', data: { type: 'standalone' } },
+        { text: '🎲 Sorpréndeme', action: 'recommend_execute', data: { type: 'all' } },
+        { text: '↩️ Volver', action: 'back' }
+      ];
+      
+      addOptionsToChat(options);
+    }
+
+    // Ejecutar recomendación
+    async function executeRecommendation(filters) {
+      showLoading();
+      
+      try {
+        const params = new URLSearchParams(filters);
+        const response = await fetch(`/api/books/recommend?${params}`);
+        const data = await response.json();
+
+        removeLoading();
+
+        if (data.found && data.book) {
+          addLumosMessage(data.message);
+          addBookCard(data.book);
+          
+          const options = [
+            { text: '🔄 Otra recomendación', action: 'recommend_execute', data: filters },
+            { text: '↩️ Volver', action: 'back' }
+          ];
+          addOptionsToChat(options);
+        } else {
+          addLumosMessage(data.message);
+          showMainOptions();
+        }
+      } catch (error) {
+        removeLoading();
+        addLumosMessage('Las sombras interfieren... error al recomendar.');
+      }
+    }
+
+    // Iniciar test lector
+    function startReaderTest() {
+        console.log('DEBUG: startReaderTest llamada');
+      addLumosMessage('Necesito conocer tus 3 libros favoritos para analizar tus preferencias.');
+      addLumosMessage('Escribe el título de tu primer libro favorito:');
+      state.currentFlow = 'test';
+      state.waitingFor = 'test_book_1';
+      state.favoriteBooks = [];
+    }
+
+    // Mostrar opciones de notificación
+    function showNotifyOptions() {
+        console.log('DEBUG: showNotifyOptions llamada');
+      addLumosMessage('¿De qué quieres ser notificado?');
+      
+      const options = [
+        { text: '📚 Todos los libros nuevos', action: 'notify_subscribe', data: { type: 'all' } },
+        { text: '👤 Libros de un autor específico', action: 'notify_author' },
+        { text: '📖 Libros de una saga específica', action: 'notify_saga' },
+        { text: '↩️ Volver', action: 'back' }
+      ];
+      
+      addOptionsToChat(options);
+    }
+
+    // Iniciar solicitud de libro
+    function startBookRequest() {
+        console.log('DEBUG: startBookRequest llamada');
+      addLumosMessage('¿Qué libro buscas entre las sombras? Dime su título:');
+      state.currentFlow = 'request';
+      state.waitingFor = 'request_title';
+      state.requestData = {};
+    }
+
+    // Mostrar ayuda
+    function showHelp() {
+        console.log('DEBUG: showHelp llamada');
+      addLumosMessage(
+        `<strong>¿Cómo funciona Azkaban Reads?</strong><br><br>
+        🔍 <strong>Búsqueda:</strong> Encuentra libros por título, autor o saga.<br>
+        📥 <strong>Descargas:</strong> Los archivos están en formato EPUB, compatibles con la mayoría de lectores.<br>
+        🔔 <strong>Notificaciones:</strong> Recibe avisos cuando se agreguen libros de tu interés.<br>
+        📩 <strong>Solicitudes:</strong> Si un libro no está disponible, puedes solicitarlo.<br><br>
+        Los libros permanecen capturados... hasta que tú los liberes.`
+      );
+      showContinueOptions();
+    }
+
+    // Mostrar tarjeta de libro
+    function addBookCard(book) {
+      const messagesContainer = document.getElementById('lumos-messages');
+      const card = document.createElement('div');
+      card.className = 'book-card';
+      
+      const sagaInfo = book.saga && book.saga.name 
+        ? `<p>${book.saga.name} #${book.saga.number}</p>` 
+        : '';
+      
+      card.innerHTML = `
+        <h4>${book.title}</h4>
+        <p><em>${book.author}</em></p>
+        ${sagaInfo}
+        <div class="book-actions">
+          <button class="book-btn" data-action="download_book" data-book-id="${book.id}">
+            📥 Descargar
+          </button>
+          <button class="book-btn" data-action="view_similar" data-book-id="${book.id}">
+            🔍 Ver similares
+          </button>
+        </div>
+      `;
+      
+      // Agregar event listeners a los botones
+      messagesContainer.appendChild(card);
+      
+      const buttons = card.querySelectorAll('.book-btn');
+      buttons.forEach(btn => {
+        btn.addEventListener('click', function() {
+          const action = this.getAttribute('data-action');
+          const bookId = this.getAttribute('data-book-id');
+          window.handleOptionClick(action, {id: bookId});
+        });
+      });
+      
+      scrollToBottom();
+    }
+
+    // Mostrar libros similares
+    async function showSimilarBooks(bookId) {
+      showLoading();
+      
+      try {
+        const response = await fetch(`/api/books/similar/${bookId}`);
+        const data = await response.json();
+
+        removeLoading();
+
+        if (data.found && data.books.length > 0) {
+          addLumosMessage(data.message);
+          data.books.forEach(book => addBookCard(book));
+        } else {
+          addLumosMessage(data.message);
+        }
+        
+        showContinueOptions();
+      } catch (error) {
+        removeLoading();
+        addLumosMessage('Error en la búsqueda de similares.');
+      }
+    }
+
+    // Mostrar opciones de continuar
+    function showContinueOptions() {
+      const options = [
+        { text: '↩️ Volver al inicio', action: 'back' },
+        { text: '❌ Cerrar', action: 'close' }
+      ];
+      addOptionsToChat(options);
+    }
+
+    // Enviar mensaje del usuario
+    async function sendMessage() {
+      const input = document.getElementById('lumos-input');
+      const message = input.value.trim();
+      
+      if (!message) return;
+      
+      addUserMessage(message);
+      input.value = '';
+
+      await processUserMessage(message);
+    }
+
+    // Procesar mensaje del usuario según el flujo actual
+    async function processUserMessage(message) {
+      switch (state.waitingFor) {
+        case 'search_query':
+          state.searchQuery = message;
+          await executeSearch(message);
+          state.waitingFor = null;
+          break;
+
+        case 'request_title':
+          state.requestData.title = message;
+          addLumosMessage('¿Quién es el autor?');
+          state.waitingFor = 'request_author';
+          break;
+
+        case 'request_author':
+          state.requestData.author = message;
+          addLumosMessage('¿Cuál es tu correo electrónico para notificarte?');
+          state.waitingFor = 'request_email';
+          break;
+
+        case 'request_email':
+          state.requestData.email = message;
+          await submitBookRequest();
+          state.waitingFor = null;
+          break;
+
+        case 'test_book_1':
+        case 'test_book_2':
+        case 'test_book_3':
+          await handleTestBookInput(message);
+          break;
+
+        case 'notify_author_name':
+          await subscribeToNotifications('author', { author: message });
+          state.waitingFor = null;
+          break;
+
+        case 'notify_saga_name':
+          await subscribeToNotifications('saga', { saga: message });
+          state.waitingFor = null;
+          break;
+
+        case 'notify_email':
+          await finalizeNotificationSubscription(message);
+          state.waitingFor = null;
+          break;
+
+        default:
+          // Si no está en un flujo específico, intenta buscar
+          state.searchQuery = message;
+          await executeSearch(message);
+      }
+    }
+
+    // Manejar entrada de libros para el test
+    async function handleTestBookInput(bookTitle) {
+      showLoading();
+      
+      try {
+        // Buscar el libro
+        const response = await fetch(`/api/books/search?query=${encodeURIComponent(bookTitle)}`);
+        const data = await response.json();
+
+        removeLoading();
+
+        if (data.found && data.books.length > 0) {
+          const book = data.books[0]; // Tomar el primer resultado
+          state.favoriteBooks.push(book);
+          
+          if (state.favoriteBooks.length < 3) {
+            const nextNumber = state.favoriteBooks.length + 1;
+            addLumosMessage(`Libro ${state.favoriteBooks.length} registrado: <strong>${book.title}</strong>`);
+            addLumosMessage(`Ahora, el título de tu libro favorito número ${nextNumber}:`);
+            state.waitingFor = `test_book_${nextNumber}`;
+          } else {
+            addLumosMessage('Procesando tus gustos...');
+            await executeReaderTest();
+          }
+        } else {
+          addLumosMessage(`No encuentro "${bookTitle}" entre los libros capturados. Intenta con otro título.`);
+        }
+      } catch (error) {
+        removeLoading();
+        addLumosMessage('Error al buscar el libro.');
+      }
+    }
+
+    // Ejecutar test lector
+    async function executeReaderTest() {
+      showLoading();
+      
+      try {
+        const response = await fetch('/api/books/test', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ favoriteBooks: state.favoriteBooks })
+        });
+        const data = await response.json();
+
+        removeLoading();
+
+        if (data.found && data.recommendations.length > 0) {
+          addLumosMessage(data.message);
+          data.recommendations.forEach((book, index) => {
+            addLumosMessage(`<strong>${index + 1}.</strong> ${book.title} — ${book.author}`);
+            addBookCard(book);
+          });
+        } else {
+          addLumosMessage(data.message);
+        }
+
+        state.favoriteBooks = [];
+        showContinueOptions();
+      } catch (error) {
+        removeLoading();
+        addLumosMessage('Algo perturbó el análisis... inténtalo de nuevo.');
+      }
+    }
+
+    // Enviar solicitud de libro
+    async function submitBookRequest() {
+      showLoading();
+      
+      try {
+        const response = await fetch('/api/requests/book', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(state.requestData)
+        });
+        const data = await response.json();
+
+        removeLoading();
+        addLumosMessage(data.message);
+        state.requestData = {};
+        showContinueOptions();
+      } catch (error) {
+        removeLoading();
+        addLumosMessage('Error al procesar la solicitud. Las sombras interfieren...');
+      }
+    }
+
+    // Suscribirse a notificaciones
+    async function subscribeToNotifications(type, filters = {}) {
+      if (type === 'all') {
+        addLumosMessage('¿Cuál es tu correo electrónico?');
+        state.notificationData = { type, filters };
+        state.waitingFor = 'notify_email';
+      } else {
+        showLoading();
+        
+        try {
+          const response = await fetch('/api/requests/notify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+              email: state.notificationData.email, 
+              type, 
+              filters 
+            })
+          });
+          const data = await response.json();
+
+          removeLoading();
+          addLumosMessage(data.message);
+          state.notificationData = {};
+          showContinueOptions();
+        } catch (error) {
+          removeLoading();
+          addLumosMessage('Error al procesar la suscripción.');
+        }
+      }
+    }
+
+    // Finalizar suscripción de notificaciones
+    async function finalizeNotificationSubscription(email) {
+      state.notificationData.email = email;
+      await subscribeToNotifications(
+        state.notificationData.type, 
+        state.notificationData.filters
+      );
+    }
+
+    // Manejar eventos de notificación sin sobrescribir recursivamente
+    const baseHandleOptionClick = window.handleOptionClick;
+    window.handleOptionClick = async function(action, data) {
+      if (action === 'notify_subscribe') {
+        await subscribeToNotifications(data.type);
+      } else if (action === 'notify_author') {
+        addUserMessage('👤 Notificarme de un autor');
+        addLumosMessage('¿De qué autor quieres recibir notificaciones?');
+        state.waitingFor = 'notify_author_name';
+      } else if (action === 'notify_saga') {
+        addUserMessage('📖 Notificarme de una saga');
+        addLumosMessage('¿De qué saga quieres recibir notificaciones?');
+        state.waitingFor = 'notify_saga_name';
+      } else if (typeof baseHandleOptionClick === 'function') {
+        await baseHandleOptionClick(action, data);
+      } else {
+        console.error('ERROR: baseHandleOptionClick no está definida');
+        addLumosMessage('ERROR: Acción no manejada: ' + String(action));
+      }
+    };
+
+    // Mostrar loading
+    function showLoading() {
+      const messagesContainer = document.getElementById('lumos-messages');
+      const loading = document.createElement('div');
+      loading.className = 'loading';
+      loading.id = 'loading-indicator';
+      loading.innerHTML = '<span></span><span></span><span></span>';
+      messagesContainer.appendChild(loading);
+      scrollToBottom();
+    }
+
+    // Remover loading
+    function removeLoading() {
+      const loading = document.getElementById('loading-indicator');
+      if (loading) loading.remove();
+    }
+
+    // Scroll automático al final
+    function scrollToBottom() {
+      const messagesContainer = document.getElementById('lumos-messages');
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    // Manejar Enter en el input
+    function handleKeyPress(event) {
+      if (event.key === 'Enter') {
+        sendMessage();
+      }
+    }
+
+    // Auto-iniciar cuando se carga en iframe
+    if (window.self !== window.top) {
+      // Está en iframe
+      document.addEventListener('DOMContentLoaded', function() {
+        console.log('LUMOS: Cargado en iframe, iniciando...');
+        // Agregar clase al body
+        document.body.classList.add('in-iframe');
+        // Ocultar el botón trigger
+        const trigger = document.getElementById('lumos-trigger');
+        if (trigger) {
+          trigger.style.display = 'none';
+          console.log('LUMOS: Trigger ocultado');
+        }
+        // Mostrar el contenedor del chat
+        const container = document.getElementById('lumos-container');
+        if (container) {
+          container.classList.add('active');
+          console.log('LUMOS: Container activado');
+        }
+        // Esperar un momento para que el DOM esté completamente listo
+        setTimeout(function() {
+          console.log('LUMOS: Ejecutando showWelcomeMessage()');
+          showWelcomeMessage();
+        }, 100);
+      });
+    }
+
+    // Enviar mensaje al padre para cerrar
+    function closeLumos() {
+      window.parent.postMessage('lumos-close', '*');
+    }
+
+    // Actualizar el botón de cerrar para funcionar en iframe
+    document.getElementById('lumos-close').onclick = function() {
+      if (window.self !== window.top) {
+        closeLumos();
+      } else {
+        toggleLumos();
+      }
+    };
+  </script>
+
+</body>
+</html>
