@@ -1880,6 +1880,18 @@ app.get('/stats', async (req, res) => {
 </html>`);
   }
   
+  // Leer solicitudes de libros
+  let requests = [];
+  try {
+    const requestsData = await fs.promises.readFile(path.join(__dirname, 'data', 'requests.json'), 'utf8');
+    requests = JSON.parse(requestsData);
+  } catch (error) {
+    console.error('Error leyendo requests.json:', error);
+  }
+  
+  const pendingRequests = requests.filter(r => r.status === 'pending');
+  const completedRequests = requests.filter(r => r.status === 'notified');
+  
   // Calcular estadísticas generales
   const totalLibros = bookMetadata.length;
   const totalAutores = [...new Set(bookMetadata.map(b => b.author))].length;
@@ -2078,6 +2090,79 @@ app.get('/stats', async (req, res) => {
           <div class="stat-label">Uploads</div>
         </div>
       </div>
+    </div>
+    
+    <!-- Solicitudes de Libros -->
+    <div class="section">
+      <h2>📨 Solicitudes de Libros</h2>
+      
+      <h3 style="color: #19E6D6; font-family: 'MedievalSharp', cursive; font-size: 18px; margin: 20px 0 10px 0;">⏳ Pendientes (${pendingRequests.length})</h3>
+      ${pendingRequests.length === 0 ? 
+        '<p style="color: #999; text-align: center; padding: 20px;">No hay solicitudes pendientes</p>' :
+        `<table>
+          <thead>
+            <tr>
+              <th>Título</th>
+              <th>Autor</th>
+              <th>Email</th>
+              <th>Fecha</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${pendingRequests.map(req => `
+              <tr>
+                <td style="font-weight: bold;">${req.title}</td>
+                <td>${req.author}</td>
+                <td>${req.email}</td>
+                <td>${new Date(req.createdAt).toLocaleDateString('es-ES', {
+                  day: '2-digit',
+                  month: '2-digit',
+                  year: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                })}</td>
+                <td><span style="background: #fff3cd; color: #856404; padding: 4px 12px; border-radius: 12px; font-size: 11px; font-weight: 600;">Pendiente</span></td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>`
+      }
+      
+      <h3 style="color: #19E6D6; font-family: 'MedievalSharp', cursive; font-size: 18px; margin: 30px 0 10px 0;">✅ Completadas (${completedRequests.length})</h3>
+      ${completedRequests.length === 0 ?
+        '<p style="color: #999; text-align: center; padding: 20px;">No hay solicitudes completadas</p>' :
+        `<table>
+          <thead>
+            <tr>
+              <th>Título</th>
+              <th>Autor</th>
+              <th>Email</th>
+              <th>Solicitado</th>
+              <th>Notificado</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${completedRequests.map(req => `
+              <tr>
+                <td style="font-weight: bold;">${req.title}</td>
+                <td>${req.author}</td>
+                <td>${req.email}</td>
+                <td>${new Date(req.createdAt).toLocaleDateString('es-ES', {
+                  day: '2-digit',
+                  month: '2-digit',
+                  year: 'numeric'
+                })}</td>
+                <td>${req.notifiedAt ? new Date(req.notifiedAt).toLocaleDateString('es-ES', {
+                  day: '2-digit',
+                  month: '2-digit',
+                  year: 'numeric'
+                }) : '-'}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>`
+      }
     </div>
     
     <!-- Top Rankings -->
