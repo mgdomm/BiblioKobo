@@ -438,15 +438,135 @@ body { padding-top:220px; }
   .header-banner.top { height:230px; }
   .overlay.top { height:230px; }
   body { padding-top:230px; }
+  #grid { grid-template-columns: repeat(auto-fit, minmax(160px, 160px)); gap: 25px; padding: 25px 15px; }
+  .book { width: 160px; padding: 10px; }
+  .book img { width: 110px; height: 170px; }
+  .title { font-size: 17px; }
+  .author-span, .number-span { font-size: 15px; }
+  h1 { font-size: 48px; }
+  .top-buttons a { font-size: 26px; padding: 10px 18px; }
 }
 
-/* Mobile: 20px más que antes (200 + 20 = 220px) */
+/* Mobile: ajustes para mejor visualización */
 @media (max-width: 767px) {
   .header-banner.top { height:220px; }
   .overlay.top { height:220px; }
   body { padding-top:220px; }
-  h1 { font-size:38px; }
+  h1 { font-size:44px; }
   .header-banner.home { background-size:80%; background-repeat:no-repeat; }
+  
+  /* Grid más grande para móvil */
+  #grid { 
+    grid-template-columns: repeat(auto-fit, minmax(150px, 150px)); 
+    gap: 20px; 
+    padding: 20px 10px; 
+  }
+  
+  /* Cards de libros más grandes */
+  .book { 
+    width: 150px; 
+    padding: 10px; 
+    min-height: auto;
+  }
+  
+  .book img { 
+    width: 105px; 
+    height: 165px; 
+  }
+  
+  /* Texto más legible */
+  .title { 
+    font-size: 16px; 
+    padding: 8px 4px; 
+  }
+  
+  .author-span, .number-span { 
+    font-size: 14px; 
+  }
+  
+  /* Botones más grandes */
+  .top-buttons a { 
+    font-size: 22px; 
+    padding: 10px 18px; 
+    margin: 4px; 
+  }
+  
+  /* Formularios más accesibles */
+  input[type="search"], select, button[type="submit"] { 
+    font-size: 18px; 
+    padding: 12px 16px; 
+    margin: 5px; 
+  }
+  
+  /* Avatares y emblemas más grandes */
+  .avatar-rect, .emblem-rect { 
+    width: 105px; 
+    height: 140px; 
+  }
+  
+  .avatar-rect { 
+    font-size: 36px; 
+  }
+  
+  .emblem-rect svg { 
+    width: 54px; 
+    height: 54px; 
+  }
+  
+  .count-badge { 
+    font-size: 14px; 
+    padding: 5px 12px; 
+  }
+  
+  /* Botones flotantes más grandes en móvil */
+  .hidden-stats-btn,
+  #stats-btn,
+  #sync-kobo-btn,
+  #upload-btn {
+    width: 56px !important;
+    height: 56px !important;
+    bottom: 15px !important;
+  }
+  
+  #stats-btn {
+    right: 155px !important;
+  }
+  
+  #sync-kobo-btn {
+    right: 90px !important;
+  }
+  
+  #upload-btn {
+    right: 25px !important;
+  }
+  
+  .hidden-stats-btn svg,
+  #stats-btn svg,
+  #sync-kobo-btn svg,
+  #upload-btn svg {
+    width: 28px !important;
+    height: 28px !important;
+  }
+  
+  /* Modal más accesible en móvil */
+  #login-modal > div {
+    max-width: 90% !important;
+    padding: 30px 20px !important;
+  }
+  
+  #login-modal h2 {
+    font-size: 22px !important;
+  }
+  
+  #login-modal input {
+    font-size: 16px !important;
+    padding: 14px !important;
+  }
+  
+  #login-modal button {
+    font-size: 16px !important;
+    padding: 14px 20px !important;
+  }
 }
 `;
 

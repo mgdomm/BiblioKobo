@@ -115,19 +115,30 @@
 
     @media (max-width: 768px) {
       #lumos-iframe-container {
-        width: 100%;
-        height: 100%;
-        bottom: 0;
-        right: 0;
-        border-radius: 0;
+        width: calc(100% - 20px);
+        height: calc(100vh - 120px);
+        bottom: 10px;
+        right: 10px;
+        left: 10px;
+        border-radius: 12px;
+        max-width: none;
       }
 
       #lumos-trigger {
-        bottom: 20px;
-        right: 20px;
-        width: 60px;
-        height: 60px;
-        font-size: 28px;
+        bottom: 15px;
+        right: 25px;
+        width: 56px;
+        height: 56px;
+      }
+      
+      #lumos-trigger svg {
+        width: 28px !important;
+        height: 28px !important;
+      }
+      
+      #lumos-label {
+        font-size: 20px;
+        right: 60px;
       }
     }
   `;
