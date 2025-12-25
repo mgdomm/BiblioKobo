@@ -7,34 +7,35 @@ class EmailService {
   constructor() {
     // Validar que las credenciales estén configuradas
     console.log('🔧 Inicializando EmailService...');
-    console.log('   EMAIL_USER:', process.env.EMAIL_USER ? '✅ Configurado: ' + process.env.EMAIL_USER : '❌ NO configurado');
-    console.log('   EMAIL_PASS:', process.env.EMAIL_PASS ? '✅ Configurado (oculto)' : '❌ NO configurado');
+    console.log('   SENDGRID_API_KEY:', process.env.SENDGRID_API_KEY ? '✅ Configurado' : '❌ NO configurado');
+    console.log('   EMAIL_FROM:', process.env.EMAIL_FROM ? '✅ Configurado: ' + process.env.EMAIL_FROM : '❌ NO configurado');
     
-    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-      console.error('❌ ERROR CRÍTICO: Credenciales de email no configuradas');
-      console.error('   Verifica que EMAIL_USER y EMAIL_PASS estén en Render Environment Variables');
+    if (!process.env.SENDGRID_API_KEY || !process.env.EMAIL_FROM) {
+      console.error('❌ ERROR CRÍTICO: SendGrid no configurado');
+      console.error('   Verifica que SENDGRID_API_KEY y EMAIL_FROM estén en Render Environment Variables');
       process.exit(1);
     }
     
+    // Usar SendGrid para enviar emails (gratuito hasta 100/día)
     this.transporter = nodemailer.createTransport({
-      host: 'smtp.gmail.com',
-      port: 465,  // Puerto seguro SSL
-      secure: true,  // Usar SSL desde el inicio
+      host: 'smtp.sendgrid.net',
+      port: 587,
+      secure: false,
       auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
+        user: 'apikey',
+        pass: process.env.SENDGRID_API_KEY
       },
       tls: {
-        rejectUnauthorized: false  // Permitir certificados auto-firmados (importante en Render)
+        rejectUnauthorized: false
       },
       connectionTimeout: 10000,
       greetingTimeout: 10000,
       socketTimeout: 10000,
-      logger: true,  // Habilitar logs de nodemailer
-      debug: true    // Debug mode para ver detalles de conexión
+      logger: true,
+      debug: true
     });
 
-    console.log('✅ EmailService inicializado correctamente (Puerto 465 SSL)');
+    console.log('✅ EmailService inicializado con SendGrid (SMTP)');
   }
 
   /**
@@ -47,7 +48,7 @@ class EmailService {
     console.log(`📧 [CONFIRMATION] Enviando confirmación a ${email} para "${bookTitle}" de ${author}`);
     
     const mailOptions = {
-      from: process.env.EMAIL_USER,
+      from: process.env.EMAIL_FROM,
       to: email,
       subject: '📜 Tu solicitud ha sido registrada en Azkaban Reads',
       html: `
@@ -94,7 +95,7 @@ class EmailService {
     };
 
     try {
-      console.log(`   Enviando desde: ${process.env.EMAIL_USER}`);
+      console.log(`   Enviando desde: ${process.env.EMAIL_FROM}`);
       console.log(`   Enviando a: ${email}`);
       const info = await this.transporter.sendMail(mailOptions);
       console.log(`✅ [CONFIRMATION] Email enviado exitosamente. ID: ${info.messageId}`);
@@ -116,7 +117,7 @@ class EmailService {
    */
   async sendBookCapturedEmail(email, bookTitle, author, bookUrl) {
     const mailOptions = {
-      from: process.env.EMAIL_USER,
+      from: process.env.EMAIL_FROM,
       to: email,
       subject: '📜 Un libro ha sido capturado en Azkaban Reads',
       html: `
@@ -304,7 +305,7 @@ class EmailService {
    */
   async sendSubscriptionConfirmation(email, notificationType) {
     const mailOptions = {
-      from: process.env.EMAIL_USER,
+      from: process.env.EMAIL_FROM,
       to: email,
       subject: 'Vigilancia activada en Azkaban Reads',
       html: `
@@ -439,7 +440,7 @@ class EmailService {
    */
   async sendBookRequestNotificationToAdmin(userEmail, bookTitle, author) {
     const mailOptions = {
-      from: process.env.EMAIL_USER,
+      from: process.env.EMAIL_FROM,
       to: 'azkabanreads@gmail.com',
       subject: '🔗 Nueva solicitud de un prisionero - Azkaban Reads',
       html: `
