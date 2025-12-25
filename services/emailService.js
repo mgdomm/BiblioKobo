@@ -249,141 +249,19 @@ class EmailService {
         <head>
           <meta charset="utf-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <style>
-            * {
-              margin: 0;
-              padding: 0;
-              box-sizing: border-box;
-            }
-            body {
-              font-family: 'MedievalSharp', Georgia, serif !important;
-              background: #111 !important;
-              margin: 0;
-              padding: 20px;
-            }
-            .container {
-              max-width: 600px;
-              margin: 0 auto;
-              background: #222 !important;
-              border-radius: 10px;
-              border: 2px solid #19E6D6;
-              box-shadow: 0 0 30px rgba(25, 230, 214, 0.3);
-              overflow: hidden;
-            }
-            .header {
-              background: linear-gradient(135deg, #19E6D6 0%, #0fb3a3 100%) !important;
-              color: #111 !important;
-              padding: 30px;
-              text-align: center;
-            }
-            .header h1 {
-              font-family: 'MedievalSharp', Georgia, serif !important;
-              font-size: 28px;
-              margin-bottom: 10px;
-              font-weight: bold;
-              color: #111 !important;
-            }
-            .header p {
-              font-size: 14px;
-              opacity: 0.8;
-              color: #111 !important;
-            }
-            .content {
-              padding: 30px;
-              color: #fff !important;
-              background: #222 !important;
-            }
-            p {
-              line-height: 1.8;
-              margin-bottom: 15px;
-              color: #ddd !important;
-              font-size: 15px;
-              font-family: 'MedievalSharp', Georgia, serif !important;
-            }
-            .book-info {
-              background: #333 !important;
-              padding: 25px;
-              border-radius: 8px;
-              border-left: 4px solid #19E6D6;
-              margin: 25px 0;
-            }
-            .book-title {
-              color: #19E6D6 !important;
-              font-size: 22px;
-              font-weight: bold;
-              margin-bottom: 8px;
-              font-family: 'MedievalSharp', Georgia, serif !important;
-            }
-            .book-author {
-              color: #aaa !important;
-              font-style: italic;
-              font-size: 16px;
-              font-family: 'MedievalSharp', Georgia, serif !important;
-            }
-            .btn-container {
-              text-align: center;
-              margin: 30px 0;
-            }
-            .btn {
-              display: inline-block;
-              padding: 14px 30px;
-              background: #19E6D6 !important;
-              color: #111 !important;
-              text-decoration: none;
-              border-radius: 6px;
-              font-weight: bold;
-              font-size: 16px;
-              transition: all 0.3s ease;
-              box-shadow: 0 4px 15px rgba(25, 230, 214, 0.4);
-            }
-            .btn:hover {
-              background: #0fb3a3 !important;
-              transform: translateY(-2px);
-              box-shadow: 0 6px 20px rgba(25, 230, 214, 0.6);
-            }
-            .note {
-              background: rgba(25, 230, 214, 0.1) !important;
-              border-left: 4px solid #19E6D6;
-              padding: 15px;
-              margin: 20px 0;
-              border-radius: 4px;
-            }
-            .note p {
-              color: #19E6D6 !important;
-              margin: 0;
-              font-size: 14px;
-            }
-            .footer {
-              background: #1a1a1a !important;
-              padding: 20px 30px;
-              text-align: center;
-              border-top: 2px solid #19E6D6;
-            }
-            .footer p {
-              font-size: 12px;
-              color: #888 !important;
-              margin: 5px 0;
-            }
-            .footer .brand {
-              color: #19E6D6 !important;
-              font-weight: bold;
-              font-size: 14px;
-            }
-          </style>
+          ${LUMOS_EMAIL_STYLE}
         </head>
         <body>
           <div class="container">
             <div class="header">
               <h1>🔮 LIBRO CAPTURADO</h1>
-              <p>Mensaje del Guardián</p>
+              <p>Azkaban Reads – Guardián LUMOS</p>
             </div>
             
             <div class="content">
-              <p><strong>Desde las sombras de Azkaban...</strong></p>
-              
               <p>Este libro ha sido capturado y encerrado entre estas páginas oscuras. Permanecía oculto, pero ahora ha sido traído a la luz para ti.</p>
               
-              <p>LUMOS, el guardián de estas obras prohibidas, te notifica que <strong>"${bookTitle}"</strong> de <strong>${author}</strong> está ahora disponible para su liberación.</p>
+              <p>LUMOS te notifica que <strong>${bookTitle}</strong> de <strong>${author}</strong> está ahora disponible para su liberación.</p>
               
               <div class="book-info">
                 <div class="book-title">${bookTitle}</div>
@@ -392,18 +270,16 @@ class EmailService {
               
               <p>Los muros de Azkaban Reads protegen este conocimiento. Solo los elegidos pueden acceder a él.</p>
               
-              <div class="btn-container">
-                <a href="${bookUrl}" class="btn">🔓 LIBERAR EL LIBRO</a>
-              </div>
+              <a href="${bookUrl}" class="button">🔓 LIBERAR EL LIBRO</a>
               
-              <div class="note">
-                <p><strong>⚠️ Advertencia:</strong> Lo que está capturado no permanece disponible eternamente. Accede pronto antes de que las sombras lo reclamen de nuevo.</p>
+              <div class="alert-box">
+                <p>⚠️ Lo que está capturado no permanece disponible eternamente. Accede pronto antes de que las sombras lo reclamen de nuevo.</p>
               </div>
             </div>
             
             <div class="footer">
-              <p class="brand">🪄 LUMOS – Asistente de Azkaban Reads</p>
-              <p>"Los libros permanecen capturados entre estos muros… y solo los elegidos pueden acceder a ellos."</p>
+              <p>🪄 LUMOS – Asistente de Azkaban Reads</p>
+              <p>"Los libros permanecen capturados entre estos muros... y solo los elegidos pueden acceder a ellos."</p>
             </div>
           </div>
         </body>
@@ -565,150 +441,40 @@ class EmailService {
     const mailContent = {
       from: this.fromEmail,
       to: 'azkabanreads@gmail.com',
-      subject: '🔗 Nueva solicitud de un prisionero - Azkaban Reads',
+      subject: '🔗 Nueva solicitud - Azkaban Reads',
       html: `
         <!DOCTYPE html>
         <html>
         <head>
           <meta charset="utf-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <style>
-            * {
-              margin: 0;
-              padding: 0;
-              box-sizing: border-box;
-            }
-            body {
-              font-family: 'MedievalSharp', Georgia, serif;
-              background: #111 !important;
-              margin: 0;
-              padding: 20px;
-            }
-            .container {
-              max-width: 600px;
-              margin: 0 auto;
-              background: #222 !important;
-              border-radius: 10px;
-              border: 2px solid #19E6D6;
-              box-shadow: 0 0 30px rgba(25, 230, 214, 0.3);
-              overflow: hidden;
-            }
-            .header {
-              background: linear-gradient(135deg, #19E6D6 0%, #0fb3a3 100%) !important;
-              color: #111 !important;
-              padding: 30px;
-              text-align: center;
-            }
-            .header h1 {
-              font-family: 'MedievalSharp', Georgia, serif;
-              font-size: 28px;
-              margin-bottom: 10px;
-              font-weight: bold;
-            }
-            .header p {
-              font-size: 14px;
-              opacity: 0.8;
-            }
-            .content {
-              padding: 30px;
-              color: #fff !important;
-            }
-            p {
-              line-height: 1.8;
-              margin-bottom: 15px;
-              color: #ddd !important;
-              font-size: 15px;
-            }
-            .request-info {
-              background: #333 !important;
-              padding: 25px;
-              border-radius: 8px;
-              border-left: 4px solid #19E6D6;
-              margin: 25px 0;
-            }
-            .book-title {
-              color: #19E6D6 !important;
-              font-size: 22px;
-              font-weight: bold;
-              margin-bottom: 8px;
-            }
-            .book-author {
-              color: #aaa !important;
-              font-style: italic;
-              font-size: 16px;
-              margin-bottom: 12px;
-            }
-            .requester-email {
-              color: #19E6D6 !important;
-              font-size: 14px;
-              background: rgba(25, 230, 214, 0.1) !important;
-              padding: 8px 12px;
-              border-radius: 4px;
-              display: inline-block;
-              margin-top: 10px;
-            }
-            .note {
-              background: rgba(25, 230, 214, 0.1) !important;
-              border-left: 4px solid #19E6D6;
-              padding: 15px;
-              margin: 20px 0;
-              border-radius: 4px;
-            }
-            .note p {
-              color: #19E6D6 !important;
-              margin: 0;
-              font-size: 14px;
-            }
-            .footer {
-              background: #1a1a1a !important;
-              padding: 20px 30px;
-              text-align: center;
-              border-top: 2px solid #19E6D6;
-            }
-            .footer p {
-              font-size: 12px;
-              color: #888 !important;
-              margin: 5px 0;
-            }
-            .footer .brand {
-              color: #19E6D6 !important;
-              font-weight: bold;
-              font-size: 14px;
-            }
-          </style>
+          ${LUMOS_EMAIL_STYLE}
         </head>
         <body>
           <div class="container">
             <div class="header">
-              <h1>🔗 SOLICITUD DESDE AZKABAN</h1>
-              <p>Notificación del Sistema</p>
+              <h1>🔗 SOLICITUD RECIBIDA</h1>
+              <p>Azkaban Reads – Sistema de Notificaciones</p>
             </div>
             
             <div class="content">
-              <p><strong>Desde las celdas donde los lectores aguardan...</strong></p>
-              
               <p>Un prisionero ha clamado entre los muros. Su voz resuena en la oscuridad, pidiendo un libro que aún no ha sido capturado.</p>
               
-              <p>La desesperación por leer es palpable. Las cadenas de la espera pesan sobre él, y solo tú puedes liberarlo trayendo este libro a Azkaban Reads.</p>
-              
-              <div class="request-info">
+              <div class="book-info">
                 <div class="book-title">${bookTitle}</div>
                 <div class="book-author">${author}</div>
-                <div class="requester-email">📧 ${userEmail}</div>
               </div>
               
-              <div class="note">
-                <p><strong>⚡ Acción requerida:</strong> Captura este libro y libera al prisionero de su espera.</p>
-              </div>
+              <p><strong>Solicitante:</strong> ${userEmail}</p>
               
-              <p style="margin-top: 25px; font-style: italic; color: #aaa !important;">
-                "Las voces de los que esperan... nunca dejan de resonar en estos muros."
-              </p>
+              <div class="alert-box">
+                <p>⚡ Acción: Captura este libro y libera al prisionero de su espera.</p>
+              </div>
             </div>
             
             <div class="footer">
-              <p class="brand">🪄 Sistema de Notificaciones - Azkaban Reads</p>
-              <p>"Los libros permanecen capturados entre estos muros… y solo los elegidos pueden acceder a ellos."</p>
+              <p>🪄 LUMOS – Sistema de Azkaban Reads</p>
+              <p>"Las voces de los que esperan... nunca dejan de resonar en estos muros."</p>
             </div>
           </div>
         </body>
