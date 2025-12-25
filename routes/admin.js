@@ -149,6 +149,32 @@ router.get('/stats', async (req, res) => {
 });
 
 /**
+ * GET /api/admin/requests
+ * Obtiene todas las solicitudes con detalles
+ */
+router.get('/requests', async (req, res) => {
+  try {
+    const requestsPath = path.join(__dirname, '../data/requests.json');
+    const requests = await FileHandler.readJSON(requestsPath);
+    
+    // Ordenar por fecha, más reciente primero
+    requests.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    
+    res.json({
+      success: true,
+      requests
+    });
+
+  } catch (error) {
+    console.error('Error obteniendo solicitudes:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al obtener solicitudes.'
+    });
+  }
+});
+
+/**
  * Función auxiliar para obtener libros más solicitados
  */
 function getMostRequested(requests) {
