@@ -2094,23 +2094,26 @@ app.get('/stats', async (req, res) => {
     
     <!-- Solicitudes de Libros -->
     <div class="section">
-      <h2>📨 Solicitudes de Libros</h2>
+      <h2>📨 Solicitudes de Libros (${requests.length})</h2>
+      <p style="color: #999; margin-bottom: 15px; font-size: 14px;">
+        ⏳ Pendientes: ${pendingRequests.length} | ✅ Resueltas: ${completedRequests.length}
+      </p>
       
-      <h3 style="color: #19E6D6; font-family: 'MedievalSharp', cursive; font-size: 18px; margin: 20px 0 10px 0;">⏳ Pendientes (${pendingRequests.length})</h3>
-      ${pendingRequests.length === 0 ? 
-        '<p style="color: #999; text-align: center; padding: 20px;">No hay solicitudes pendientes</p>' :
+      ${requests.length === 0 ? 
+        '<p style="color: #999; text-align: center; padding: 20px;">No hay solicitudes registradas</p>' :
         `<table>
           <thead>
             <tr>
               <th>Título</th>
               <th>Autor</th>
               <th>Email</th>
-              <th>Fecha</th>
+              <th>Fecha Solicitud</th>
               <th>Estado</th>
+              <th>Fecha Resuelto</th>
             </tr>
           </thead>
           <tbody>
-            ${pendingRequests.map(req => `
+            ${requests.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).map(req => `
               <tr>
                 <td style="font-weight: bold;">${req.title}</td>
                 <td>${req.author}</td>
@@ -2122,41 +2125,16 @@ app.get('/stats', async (req, res) => {
                   hour: '2-digit',
                   minute: '2-digit'
                 })}</td>
-                <td><span style="background: #fff3cd; color: #856404; padding: 4px 12px; border-radius: 12px; font-size: 11px; font-weight: 600;">Pendiente</span></td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>`
-      }
-      
-      <h3 style="color: #19E6D6; font-family: 'MedievalSharp', cursive; font-size: 18px; margin: 30px 0 10px 0;">✅ Completadas (${completedRequests.length})</h3>
-      ${completedRequests.length === 0 ?
-        '<p style="color: #999; text-align: center; padding: 20px;">No hay solicitudes completadas</p>' :
-        `<table>
-          <thead>
-            <tr>
-              <th>Título</th>
-              <th>Autor</th>
-              <th>Email</th>
-              <th>Solicitado</th>
-              <th>Notificado</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${completedRequests.map(req => `
-              <tr>
-                <td style="font-weight: bold;">${req.title}</td>
-                <td>${req.author}</td>
-                <td>${req.email}</td>
-                <td>${new Date(req.createdAt).toLocaleDateString('es-ES', {
-                  day: '2-digit',
-                  month: '2-digit',
-                  year: 'numeric'
-                })}</td>
+                <td>${req.status === 'notified' 
+                  ? '<span style="background: #d4edda; color: #155724; padding: 4px 12px; border-radius: 12px; font-size: 11px; font-weight: 600;">✅ Resuelto</span>'
+                  : '<span style="background: #fff3cd; color: #856404; padding: 4px 12px; border-radius: 12px; font-size: 11px; font-weight: 600;">⏳ Pendiente</span>'
+                }</td>
                 <td>${req.notifiedAt ? new Date(req.notifiedAt).toLocaleDateString('es-ES', {
                   day: '2-digit',
                   month: '2-digit',
-                  year: 'numeric'
+                  year: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit'
                 }) : '-'}</td>
               </tr>
             `).join('')}
