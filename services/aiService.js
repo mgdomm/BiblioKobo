@@ -295,8 +295,88 @@ async function generateSpoiler(bookTitle) {
 }
 
 /**
+ * Extrae un spoiler corto de un texto largo
+ * Busca frases que contengan acciones o revelaciones importantes
+ */
+function extractSpoilerFromText(text, bookTitle) {
+  if (!text) return null;
+  
+  // Palabras clave de spoilers
+  const spoilerKeywords = [
+    'muere', 'muerte', 'asesinado', 'asesinada', 'traidor', 'traición',
+    'el verdadero', 'resulta ser', 'era', 'secreto', 'revela', 'descubre',
+    'viaja', 'viaja a', 'es', 'es realmente', 'termina en', 'final',
+    'se convierte', 'regresa', 'vuelve', 'cobra venganza', 'se venga',
+    'expone', 'expone que', 'gira', 'giro argumental', 'twist'
+  ];
+  
+  // Dividir en oraciones
+  const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
+  
+  // Buscar frases con palabras clave de spoilers
+  for (const sentence of sentences) {
+    const lowerSentence = sentence.toLowerCase();
+    for (const keyword of spoilerKeywords) {
+      if (lowerSentence.includes(keyword)) {
+        let spoiler = sentence.trim();
+        // Limitar a 150 caracteres
+        if (spoiler.length > 150) {
+          spoiler = spoiler.substring(0, 150) + '...';
+        }
+        return spoiler;
+      }
+    }
+  }
+  
+  // Si no hay palabras clave, tomar la primera oración que suene importante
+  for (const sentence of sentences) {
+    if (sentence.trim().length > 20 && sentence.trim().length < 150) {
+      // Evitar frases muy genéricas
+      if (!/^(este|this|la historia|the book|el libro)/i.test(sentence.trim())) {
+        return sentence.trim();
+      }
+    }
+  }
+  
+  return null;
+}
+
+/**
+ * Genera un spoiler sintético realista basado en el título y contexto
+ */
+async function generateRealisticSpoiler(bookTitle, context = '') {
+  const spoilerPatterns = [
+    `${bookTitle}: el giro final revela que`,
+    `En ${bookTitle}, descubrimos que`,
+    `La verdad sobre ${bookTitle} es que`,
+    `El secreto de ${bookTitle}:`,
+    `Inesperadamente, en ${bookTitle}`,
+    `El clímax de ${bookTitle} sucede cuando`,
+    `Lo que no esperabas en ${bookTitle}:`,
+  ];
+  
+  const outcomes = [
+    'el protagonista era el verdadero villano todo el tiempo',
+    'la muerte que viste era falsa',
+    'había un gemelo secreto',
+    'nada de lo que viste era real',
+    'el final ocurre en una línea temporal alternativa',
+    'el amor no era recíproco',
+    'la batalla final fue una trampa',
+    'alguien regresa del pasado',
+    'la verdadera identidad es revelada',
+    'hay una segunda parte sorprendente'
+  ];
+  
+  const pattern = spoilerPatterns[Math.floor(Math.random() * spoilerPatterns.length)];
+  const outcome = outcomes[Math.floor(Math.random() * outcomes.length)];
+  
+  return `${pattern} ${outcome}.`;
+}
+
+/**
  * Busca el spoiler verdadero desde fuentes externas
- * Prioridad: SpoilThePlot > Wikipedia/Wikia > Goodreads
+ * Prioridad: SpoilThePlot > Wikipedia/Wikia > Goodreads > OpenLibrary
  */
 async function fetchTrueSpoiler(bookTitle) {
   try {
@@ -435,10 +515,21 @@ async function searchOpenLibrary(bookTitle) {
 
       for (const candidate of candidates) {
         const text = String(candidate).trim();
-        if (text.length < 120) continue;
-        if (!isRelevantSpoilerText(text, bookTitle) && !isTitleClose(doc.title, bookTitle)) continue;
-        console.log('[OpenLibrary] Hit');
-        return text;
+        
+        // Extraer un spoiler corto (máximo 150 caracteres)
+        const shortSpoiler = extractSpoilerFromText(text, bookTitle);
+        if (shortSpoiler && shortSpoiler.length > 30) {
+          console.log('[OpenLibrary] Hit - Extracted short spoiler');
+          return shortSpoiler;
+        }
+        
+        // Si no hay spoiler específico pero el texto es relevante
+        if (text.length >= 30 && text.length <= 150) {
+          if (isRelevantSpoilerText(text, bookTitle) || isTitleClose(doc.title, bookTitle)) {
+            console.log('[OpenLibrary] Hit - Using short text');
+            return text;
+          }
+        }
       }
     }
 
@@ -477,11 +568,20 @@ async function searchGoogleBooks(bookTitle) {
       if (typeof desc !== 'string') continue;
 
       const cleaned = desc.replace(/\s+/g, ' ').trim();
-      if (cleaned.length < 160) continue;
-      if (!isRelevantSpoilerText(cleaned, bookTitle) && !isTitleClose(volumeTitle, bookTitle)) continue;
-
-      console.log('[GoogleBooks] Hit');
-      return cleaned;
+      
+      // Extraer un spoiler corto de la descripción (máximo 150 caracteres)
+      const shortSpoiler = extractSpoilerFromText(cleaned, bookTitle);
+      if (shortSpoiler && shortSpoiler.length > 30) {
+        console.log('[GoogleBooks] Hit - Extracted short spoiler');
+        return shortSpoiler;
+      }
+      
+      // Si no hay spoiler específico, tomar la primera oración
+      const firstSentence = cleaned.split(/[.!?]+/)[0];
+      if (firstSentence && firstSentence.length > 30 && firstSentence.length < 150) {
+        console.log('[GoogleBooks] Hit - Using first sentence');
+        return firstSentence.trim();
+      }
     }
 
     console.log('[GoogleBooks] No description');
@@ -493,29 +593,44 @@ async function searchGoogleBooks(bookTitle) {
 }
 
 /**
- * Genera un spoiler falso plausible usando IA
+ * Genera spoilers falsos plausibles pero creativos
  */
 async function generateFakeSpoiler(trueSpoiler, bookTitle) {
-  // Generar variaciones plausibles del spoiler real
-  // Usar técnicas de modificación de texto para crear alternativas convincentes
-  
-  const templates = [
-    `El protagonista finalmente descubre que todo fue una ilusión, y la verdad se revela en el último capítulo de forma inesperada.`,
-    `Contra todo pronóstico, el antagonista logra su objetivo, dejando un final agridulce que redefine toda la historia.`,
-    `Los personajes principales se sacrifican para salvar a otros, en un giro que nadie esperaba pero que da sentido a todo.`,
-    `La profecía se cumple, pero no de la manera esperada: el verdadero héroe era quien menos lo parecía.`,
-    `Todo el conflicto resulta ser parte de un plan maestro más grande, orquestado desde el principio por un personaje secundario.`,
-    `El final revela que los acontecimientos ocurrieron en un orden diferente al narrado, cambiando la percepción de toda la trama.`
+  const fakeSpoilers = [
+    // Giros clásicos
+    `${bookTitle} termina con el descubrimiento de que el personaje principal llevaba una doble vida.`,
+    `En el desenlace, el mentor resulta ser el verdadero antagonista de la historia.`,
+    `El final revela que hubo un gemelo secreto todo el tiempo.`,
+    `La verdadera naturaleza del poder del protagonista se revela en el último capítulo.`,
+    
+    // Muertes y sacrificios inesperados
+    `Uno de los personajes principales muere justo cuando estaba por ser rescatado.`,
+    `La muerte que presenciaste al inicio resulta ser completamente diferente a lo que imaginabas.`,
+    `El héroe se sacrifica pero su legado continúa de una forma inesperada.`,
+    
+    // Tramas ocultas
+    `Descubrimos que el romance fue una manipulación de principio a fin.`,
+    `La organización secreta que buscaban era gobernada por alguien muy cercano.`,
+    `El objeto que perseguían todo el libro era una falsificación.`,
+    
+    // Realidades alternativas
+    `Todo ocurrió en una línea temporal alternativa que afecta el presente.`,
+    `El final es completamente diferente según qué camino eligió el protagonista.`,
+    `Nada de lo que viste fue real: era un entrenamiento desde el inicio.`,
+    
+    // Revelaciones sorprendentes
+    `Los enemigos eran necesarios para proteger un secreto aún más oscuro.`,
+    `La verdadera batalla ocurre después del "final" que todos veían llegar.`,
+    `El antagonista tenía razón todo el tiempo sobre la verdadera amenaza.`,
   ];
   
-  // Seleccionar un template aleatorio
-  const randomIndex = Math.floor(Math.random() * templates.length);
-  return templates[randomIndex];
+  const randomFake = fakeSpoilers[Math.floor(Math.random() * fakeSpoilers.length)];
+  return randomFake;
 }
 
 // Fallback para entorno sin fuentes externas
 function generateFallbackTrueSpoiler(bookTitle) {
-  return `En el clímax de "${bookTitle}", el guardián revela la verdad oculta y una elección final decide el destino de todos.`;
+  return `En ${bookTitle}, el guardián revela la verdad oculta que cambia todo lo que creíamos saber.`;
 }
 
 function normalizeTokens(text) {
