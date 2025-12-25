@@ -40,5 +40,21 @@
     "status": "notified",
     "createdAt": "2025-12-24T17:50:20.318Z",
     "notifiedAt": "2025-12-24T18:02:56.949Z"
+  },
+  {
+    "id": "req_1766692337603_fs8q7dgaa",
+    "title": "la iliada",
+    "author": "homero",
+    "email": "mgdomm@icloud.com",
+    "status": "pending",
+    "createdAt": "2025-12-25T19:52:17.603Z"
+  },
+  {
+    "id": "req_1766692789363_0bnjndv0d",
+    "title": "la odisea",
+    "author": "homero",
+    "email": "mgdomm@icloud.com",
+    "status": "pending",
+    "createdAt": "2025-12-25T19:59:49.363Z"
   }
 ]

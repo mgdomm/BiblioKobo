@@ -18,8 +18,8 @@
       background: #000;
       color: #00FFFF;
       overflow-x: hidden;
-      font-size: 17px;
-      line-height: 1.6;
+      font-size: 18.5px;
+      line-height: 1.65;
     }
 
     /* Botón flotante para abrir LUMOS */
@@ -224,6 +224,52 @@
       margin-bottom: 8px;
       color: #00FFFF;
       text-shadow: 0 0 2px rgba(0,255,255,0.3);
+    }
+
+    /* Móvil ≤ 767px - Aumentar tamaño +50% */
+    @media (max-width: 767px) {
+      .message, #lumos-input {
+        font-size: 1.65rem;
+      }
+      
+      .lumos-chip {
+        font-size: 1.4rem;
+      }
+      
+      .option-btn, .book-btn {
+        font-size: 1.5rem;
+      }
+      
+      .book-card h4 {
+        font-size: 1.6rem;
+      }
+      
+      .book-card p {
+        font-size: 1.45rem;
+      }
+    }
+
+    /* Tablet 768px – 1023px - Aumentar tamaño +50% */
+    @media (min-width: 768px) and (max-width: 1023px) {
+      .message, #lumos-input {
+        font-size: 1.725rem;
+      }
+      
+      .lumos-chip {
+        font-size: 1.45rem;
+      }
+      
+      .option-btn, .book-btn {
+        font-size: 1.55rem;
+      }
+      
+      .book-card h4 {
+        font-size: 1.65rem;
+      }
+      
+      .book-card p {
+        font-size: 1.5rem;
+      }
     }
 
     .message.lumos {
@@ -618,9 +664,149 @@
         transition: none !important;
       }
     }
+
+    /* SVG Icons - Reemplazo de emojis en color cyan */
+    .svg-icon {
+      display: inline-block;
+      width: 1em;
+      height: 1em;
+      vertical-align: middle;
+      margin: 0 0.2em;
+      fill: none;
+      stroke: #00FFFF;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .svg-icon.filled {
+      fill: #00FFFF;
+      stroke: none;
+    }
   </style>
 </head>
 <body>
+
+  <!-- Definiciones SVG reutilizables -->
+  <svg style="display:none;">
+    <defs>
+      <!-- Búsqueda / Lupa 🔍 -->
+      <symbol id="icon-search" viewBox="0 0 24 24">
+        <circle cx="11" cy="11" r="8"></circle>
+        <path d="m21 21-4.35-4.35"></path>
+      </symbol>
+      
+      <!-- Corazón ❤️ -->
+      <symbol id="icon-heart" viewBox="0 0 24 24">
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+      </symbol>
+      
+      <!-- Libro 📚 📖 -->
+      <symbol id="icon-book" viewBox="0 0 24 24">
+        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+      </symbol>
+      
+      <!-- Campana 🔔 -->
+      <symbol id="icon-bell" viewBox="0 0 24 24">
+        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+      </symbol>
+      
+      <!-- Email / Mensaje 📩 -->
+      <symbol id="icon-mail" viewBox="0 0 24 24">
+        <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+        <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+      </symbol>
+      
+      <!-- Advertencia ⚠️ -->
+      <symbol id="icon-warning" viewBox="0 0 24 24">
+        <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
+        <line x1="12" y1="9" x2="12" y2="13"></line>
+        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+      </symbol>
+      
+      <!-- Ayuda / Interrogación ❓ -->
+      <symbol id="icon-help" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="10"></circle>
+        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+      </symbol>
+      
+      <!-- Flecha hacia abajo 📥 -->
+      <symbol id="icon-download" viewBox="0 0 24 24">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+        <polyline points="7 10 12 15 17 10"></polyline>
+        <line x1="12" y1="15" x2="12" y2="3"></line>
+      </symbol>
+      
+      <!-- Dado / Sorpresa 🎲 -->
+      <symbol id="icon-dice" viewBox="0 0 24 24">
+        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+        <circle cx="8.5" cy="8.5" r="1.5"></circle>
+        <circle cx="15.5" cy="8.5" r="1.5"></circle>
+        <circle cx="8.5" cy="15.5" r="1.5"></circle>
+        <circle cx="15.5" cy="15.5" r="1.5"></circle>
+        <circle cx="12" cy="12" r="1.5"></circle>
+      </symbol>
+      
+      <!-- Recargar 🔄 -->
+      <symbol id="icon-refresh" viewBox="0 0 24 24">
+        <polyline points="23 4 23 10 17 10"></polyline>
+        <polyline points="1 20 1 14 7 14"></polyline>
+        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+      </symbol>
+      
+      <!-- Volver / Flecha ↩️ -->
+      <symbol id="icon-back" viewBox="0 0 24 24">
+        <polyline points="15 18 9 12 15 6"></polyline>
+      </symbol>
+      
+      <!-- Cerrar ❌ -->
+      <symbol id="icon-close" viewBox="0 0 24 24">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </symbol>
+      
+      <!-- Check / Marca ✓ -->
+      <symbol id="icon-check" viewBox="0 0 24 24">
+        <polyline points="20 6 9 17 4 12"></polyline>
+      </symbol>
+      
+      <!-- Usuario 👤 -->
+      <symbol id="icon-user" viewBox="0 0 24 24">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+        <circle cx="12" cy="7" r="4"></circle>
+      </symbol>
+      
+      <!-- Matraz / Experimento 🧪 -->
+      <symbol id="icon-flask" viewBox="0 0 24 24">
+        <path d="M9 3h6v7.5l4.5 7.5a2 2 0 0 1-1.7 3H6.2a2 2 0 0 1-1.7-3L9 10.5V3z"></path>
+        <line x1="6.5" y1="15" x2="17.5" y2="15"></line>
+      </symbol>
+      
+      <!-- Espirales / Misterio 🌀 -->
+      <symbol id="icon-spiral" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="10"></circle>
+        <path d="M12 16v-4"></path>
+        <path d="M12 8h.01"></path>
+      </symbol>
+      
+      <!-- Cristal / Magia 🔮 -->
+      <symbol id="icon-crystal" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="10"></circle>
+        <circle cx="12" cy="12" r="3"></circle>
+        <line x1="12" y1="2" x2="12" y2="9"></line>
+        <line x1="12" y1="15" x2="12" y2="22"></line>
+        <line x1="4.93" y1="4.93" x2="9.17" y2="9.17"></line>
+        <line x1="14.83" y1="14.83" x2="19.07" y2="19.07"></line>
+        <line x1="2" y1="12" x2="9" y2="12"></line>
+        <line x1="15" y1="12" x2="22" y2="12"></line>
+        <line x1="4.93" y1="19.07" x2="9.17" y2="14.83"></line>
+        <line x1="14.83" y1="9.17" x2="19.07" y2="4.93"></line>
+      </symbol>
+    </defs>
+  </svg>
 
   <!-- Botón flotante para abrir LUMOS -->
   <div id="lumos-trigger" onclick="toggleLumos()">
@@ -671,6 +857,21 @@
   <script src="/services/aiService.js"></script>
 
   <script>
+    // Función auxiliar para generar iconos SVG en lugar de emojis
+    function icon(name, className = 'svg-icon') {
+      return `<svg class="${className}"><use href="#icon-${name}"></use></svg>`;
+    }
+
+    // Escapar HTML para evitar inyecciones en textos dinámicos
+    function escapeHtml(str = '') {
+      return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
     // Estado del chat
     const state = {
       currentFlow: 'welcome',
@@ -755,13 +956,13 @@
     // Mostrar opciones principales
     function showMainOptions() {
       const options = [
-        { text: '🔍 Buscar libro', action: 'search' },
-        { text: '❤️ Recomiéndame algo', action: 'recommend' },
-        { text: '🧪 Test lector', action: 'test' },
-        { text: '🔔 Avisarme de novedades', action: 'notify' },
-        { text: '📩 Solicitar un libro', action: 'request' },
-        { text: '⚠️ Spoilers', action: 'spoiler_prompt' },
-        { text: '❓ Ayuda', action: 'help' }
+          { text: `${icon('search')} Buscar libro`, action: 'search', allowHTML: true },
+          { text: `${icon('heart')} Recomiéndame algo`, action: 'recommend', allowHTML: true },
+          { text: `${icon('flask')} Test lector`, action: 'test', allowHTML: true },
+          { text: `${icon('bell')} Avisarme de novedades`, action: 'notify', allowHTML: true },
+          { text: `${icon('mail')} Solicitar un libro`, action: 'request', allowHTML: true },
+          { text: `${icon('warning')} Spoilers`, action: 'spoiler_prompt', allowHTML: true },
+          { text: `${icon('help')} Ayuda`, action: 'help', allowHTML: true }
       ];
 
       addOptionsToChat(options);
@@ -777,17 +978,24 @@
       scrollToBottom();
     }
 
-    // Añadir mensaje del usuario
-    function addUserMessage(text) {
+    // Añadir mensaje del usuario (permite HTML controlado para iconos)
+    function addUserMessage(text, allowHTML = false) {
       const messagesContainer = document.getElementById('lumos-messages');
       const messageDiv = document.createElement('div');
       messageDiv.className = 'message user';
-      messageDiv.textContent = text;
+
+      const isHtml = allowHTML || /<svg|<strong|<br\/>|<br>/i.test(text);
+      if (isHtml) {
+        messageDiv.innerHTML = text;
+      } else {
+        messageDiv.textContent = text;
+      }
+
       messagesContainer.appendChild(messageDiv);
       scrollToBottom();
     }
 
-    // Añadir opciones como botones
+    // Añadir opciones como botones (soporta HTML seguro para iconos)
     function addOptionsToChat(options) {
       const messagesContainer = document.getElementById('lumos-messages');
       const optionsContainer = document.createElement('div');
@@ -796,7 +1004,15 @@
       options.forEach(option => {
         const btn = document.createElement('button');
         btn.className = 'option-btn';
-        btn.textContent = option.text;
+
+        const text = option.text || '';
+        const isHtml = option.allowHTML || /<svg|<strong|<br\/>|<br>/i.test(text);
+        if (isHtml) {
+          btn.innerHTML = text;
+        } else {
+          btn.textContent = text;
+        }
+
         btn.addEventListener('click', function(e) {
           e.preventDefault();
           e.stopPropagation();
@@ -815,46 +1031,52 @@
     window.handleOptionClick = async function(action, data) {
       switch (action) {
         case 'search':
-          addUserMessage('🔍 Buscar libro');
+          addUserMessage(`${icon('search')} Buscar libro`, true);
           addLumosMessage('Dime el título, autor o saga que buscas entre los muros...');
           state.currentFlow = 'search';
           state.waitingFor = 'search_query';
           break;
 
         case 'recommend':
-          addUserMessage('❤️ Recomiéndame algo');
+          addUserMessage(`${icon('heart')} Recomiéndame algo`, true);
           showRecommendOptions();
           break;
 
         case 'test':
-          addUserMessage('🧪 Test lector');
+          addUserMessage(`${icon('flask')} Test lector`, true);
           startReaderTest();
           break;
 
         case 'notify':
-          addUserMessage('🔔 Avisarme de novedades');
+          addUserMessage(`${icon('bell')} Avisarme de novedades`, true);
           showNotifyOptions();
           break;
 
         case 'request':
-          addUserMessage('📩 Solicitar un libro');
+          addUserMessage(`${icon('mail')} Solicitar un libro`, true);
           startBookRequest();
           break;
 
         case 'spoiler_prompt':
-          addUserMessage('⚠️ Quiero spoilers');
+          addUserMessage(`${icon('warning')} Quiero spoilers`, true);
           addLumosMessage('¿De qué libro deseas que revele los secretos? Escribe el título:');
           state.currentFlow = 'spoiler';
           state.waitingFor = 'spoiler_book';
           break;
 
         case 'spoiler_confirm':
-          addUserMessage('✓ Sí, quiero el spoiler');
+          addUserMessage(`${icon('check')} Sí, quiero el spoiler`, true);
           await revealSpoiler(data.bookTitle);
           break;
 
+        case 'spoiler_selected':
+          addUserMessage('He elegido un final...');
+          addLumosMessage('Interesante elección. Pero recuerda: en Azkaban, la verdad y la mentira danzan juntas en las sombras. Solo el tiempo y la lectura revelarán si has elegido sabiamente.');
+          // No revelar si es verdadero o falso
+          break;
+
         case 'cancel':
-          addUserMessage('✗ Cancelar');
+          addUserMessage(`${icon('close')} Cancelar`, true);
           addLumosMessage('Sabio. Algunos secretos deben preservarse. ¿Qué más deseas?');
           showMainOptions();
           state.waitingFor = null;
@@ -862,7 +1084,7 @@
           break;
 
         case 'help':
-          addUserMessage('❓ Ayuda');
+          addUserMessage(`${icon('help')} Ayuda`, true);
           showHelp();
           break;
 
@@ -934,9 +1156,9 @@
         } else {
           addLumosMessage(data.message);
           const options = [
-            { text: '📩 Solicitar este libro', action: 'request_book' },
-            { text: '❤️ Ver recomendaciones', action: 'recommend_similar' },
-            { text: '↩️ Volver', action: 'back' }
+            { text: `${icon('mail')} Solicitar este libro`, action: 'request_book', allowHTML: true },
+            { text: `${icon('heart')} Ver recomendaciones`, action: 'recommend_similar', allowHTML: true },
+            { text: `${icon('back')} Volver`, action: 'back', allowHTML: true }
           ];
           addOptionsToChat(options);
         }
@@ -951,10 +1173,10 @@
       addLumosMessage('¿Qué tipo de lectura buscas?');
       
       const options = [
-        { text: '📚 Saga', action: 'recommend_execute', data: { type: 'saga' } },
-        { text: '📖 Autoconclusivo', action: 'recommend_execute', data: { type: 'standalone' } },
-        { text: '🎲 Sorpréndeme', action: 'recommend_execute', data: { type: 'all' } },
-        { text: '↩️ Volver', action: 'back' }
+        { text: `${icon('book')} Saga`, action: 'recommend_execute', data: { type: 'saga' } },
+        { text: `${icon('book')} Autoconclusivo`, action: 'recommend_execute', data: { type: 'standalone' } },
+        { text: `${icon('dice')} Sorpréndeme`, action: 'recommend_execute', data: { type: 'all' } },
+        { text: `${icon('back')} Volver`, action: 'back' }
       ];
       
       addOptionsToChat(options);
@@ -976,8 +1198,8 @@
           addBookCard(data.book);
           
           const options = [
-            { text: '🔄 Otra recomendación', action: 'recommend_execute', data: filters },
-            { text: '↩️ Volver', action: 'back' }
+            { text: `${icon('refresh')} Otra recomendación`, action: 'recommend_execute', data: filters, allowHTML: true },
+            { text: `${icon('back')} Volver`, action: 'back', allowHTML: true }
           ];
           addOptionsToChat(options);
         } else {
@@ -1004,10 +1226,10 @@
       addLumosMessage('¿De qué quieres ser notificado?');
       
       const options = [
-        { text: '📚 Todos los libros nuevos', action: 'notify_subscribe', data: { type: 'all' } },
-        { text: '👤 Libros de un autor específico', action: 'notify_author' },
-        { text: '📖 Libros de una saga específica', action: 'notify_saga' },
-        { text: '↩️ Volver', action: 'back' }
+        { text: `${icon('book')} Todos los libros nuevos`, action: 'notify_subscribe', data: { type: 'all' } },
+        { text: `${icon('user')} Libros de un autor específico`, action: 'notify_author' },
+        { text: `${icon('book')} Libros de una saga específica`, action: 'notify_saga' },
+        { text: `${icon('back')} Volver`, action: 'back' }
       ];
       
       addOptionsToChat(options);
@@ -1025,10 +1247,10 @@
     function showHelp() {
       addLumosMessage(
         `<strong>¿Cómo funciona Azkaban Reads?</strong><br><br>
-        🔍 <strong>Búsqueda:</strong> Encuentra libros por título, autor o saga.<br>
-        📥 <strong>Descargas:</strong> Los archivos están en formato EPUB, compatibles con la mayoría de lectores.<br>
-        🔔 <strong>Notificaciones:</strong> Recibe avisos cuando se agreguen libros de tu interés.<br>
-        📩 <strong>Solicitudes:</strong> Si un libro no está disponible, puedes solicitarlo.<br><br>
+        ${icon('search')} <strong>Búsqueda:</strong> Encuentra libros por título, autor o saga.<br>
+        ${icon('download')} <strong>Descargas:</strong> Los archivos están en formato EPUB, compatibles con la mayoría de lectores.<br>
+        ${icon('bell')} <strong>Notificaciones:</strong> Recibe avisos cuando se agreguen libros de tu interés.<br>
+        ${icon('mail')} <strong>Solicitudes:</strong> Si un libro no está disponible, puedes solicitarlo.<br><br>
         Los libros permanecen capturados... hasta que tú los liberes.`
       );
       showContinueOptions();
@@ -1050,10 +1272,10 @@
         ${sagaInfo}
         <div class="book-actions">
           <button class="book-btn" data-action="download_book" data-book-id="${book.id}">
-            📥 Descargar
+            ${icon('download')} Descargar
           </button>
           <button class="book-btn" data-action="view_similar" data-book-id="${book.id}">
-            🔍 Ver similares
+            ${icon('search')} Ver similares
           </button>
         </div>
       `;
@@ -1100,8 +1322,8 @@
     // Mostrar opciones de continuar
     function showContinueOptions() {
       const options = [
-        { text: '↩️ Volver al inicio', action: 'back' },
-        { text: '❌ Cerrar', action: 'close' }
+        { text: `${icon('back')} Volver al inicio`, action: 'back' },
+        { text: `${icon('close')} Cerrar`, action: 'close' }
       ];
       addOptionsToChat(options);
     }
@@ -1111,37 +1333,71 @@
       showLoading();
       
       try {
-        // Timeout de 10 segundos
+        // Timeout de 15 segundos
         const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('timeout')), 10000)
+          setTimeout(() => reject(new Error('timeout')), 15000)
         );
-        
-        // Verificar que AzkabanAI está disponible
-        if (!window.AzkabanAI || typeof window.AzkabanAI.generateSpoiler !== 'function') {
-          throw new Error('AI service not available');
+
+        // Llamar al backend para obtener spoiler real + falsos
+        const apiPromise = fetch('/api/spoilers', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title: bookTitle })
+        }).then(async (resp) => {
+          if (!resp.ok) {
+            throw new Error('api_error');
+          }
+          return resp.json();
+        });
+
+        // Correr con timeout
+        let spoilerData = await Promise.race([apiPromise, timeoutPromise]);
+
+        // Si el backend falla, intentar fallback local si existe
+        if (!spoilerData || spoilerData.success === false) {
+          if (window.AzkabanAI && typeof window.AzkabanAI.generateSpoiler === 'function') {
+            spoilerData = await window.AzkabanAI.generateSpoiler(bookTitle);
+          } else {
+            throw new Error('AI service not available');
+          }
         }
-        
-        const spoilerPromise = window.AzkabanAI.generateSpoiler(bookTitle);
-        const spoilerData = await Promise.race([spoilerPromise, timeoutPromise]);
         
         removeLoading();
-        addLumosMessage(spoilerData.text);
         
-        if (spoilerData.actions) {
-          addOptionsToChat(spoilerData.actions.map(a => ({
-            text: a.label,
-            action: a.type,
-            data: a.payload
-          })));
+        // Si no hay spoilers, mostrar mensaje de error
+        if (!spoilerData.spoilers || spoilerData.spoilers.length === 0) {
+          addLumosMessage(spoilerData.message);
+          showMainOptions();
+          return;
         }
+        
+        // Mostrar el mensaje de Azkaban (negación)
+        addLumosMessage(`${icon('warning')} <strong>ADVERTENCIA: SPOILERS POTENCIALES DE "${escapeHtml(bookTitle)}"</strong>`);
+        addLumosMessage(spoilerData.message);
+        
+        // Mostrar los 3 spoilers como opciones clickeables (HTML seguro)
+        const spoilerOptions = spoilerData.spoilers.map((spoiler, index) => ({
+          text: `<strong>Final ${index + 1}:</strong> ${escapeHtml(spoiler.text)}`,
+          action: 'spoiler_selected',
+          data: { spoilerId: spoiler.id, bookTitle: bookTitle },
+          allowHTML: true
+        }));
+        
+        addOptionsToChat(spoilerOptions);
+        
+        // Agregar opciones de continuar
+        setTimeout(() => {
+          showContinueOptions();
+        }, 500);
+        
       } catch (error) {
         removeLoading();
         console.error('Error al revelar spoiler:', error);
         
         // Mensaje narrativo de error
         const errorMessage = error.message === 'timeout'
-          ? `⚠️ Las sombras no han revelado nada esta vez. La búsqueda de secretos sobre "${bookTitle}" ha tomado demasiado tiempo. Inténtalo de nuevo más tarde o prueba con otro título.`
-          : `🌀 Los muros de Azkaban se interponen... No he podido acceder a los secretos de "${bookTitle}" en este momento. Las sombras guardan sus misterios celosamente.`;
+          ? `${icon('warning')} Las sombras no han revelado nada esta vez. La búsqueda de secretos sobre "${escapeHtml(bookTitle)}" ha tomado demasiado tiempo. Inténtalo de nuevo más tarde o prueba con otro título.`
+          : `${icon('spiral')} Los muros de Azkaban se interponen... No he podido acceder a los secretos de "${escapeHtml(bookTitle)}" en este momento. Las sombras guardan sus misterios celosamente.`;
         
         addLumosMessage(errorMessage);
         showMainOptions();

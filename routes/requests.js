@@ -88,6 +88,24 @@ router.post('/book', async (req, res) => {
       }
     });
 
+    // Enviar confirmación al usuario en segundo plano
+    setImmediate(async () => {
+      try {
+        const userEmailSent = await emailService.sendBookRequestConfirmation(
+          newRequest.email,
+          newRequest.title,
+          newRequest.author
+        );
+        if (userEmailSent) {
+          console.log(`✅ Email de confirmación enviado a ${newRequest.email}`);
+        } else {
+          console.log(`⚠️ No se pudo enviar el email de confirmación a ${newRequest.email}`);
+        }
+      } catch (err) {
+        console.error('❌ Error al enviar email de confirmación al usuario:', err);
+      }
+    });
+
   } catch (error) {
     console.error('Error registrando solicitud:', error);
     res.status(500).json({

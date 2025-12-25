@@ -27,6 +27,70 @@ class EmailService {
   }
 
   /**
+   * Envía confirmación al usuario de que su solicitud fue registrada
+   * @param {string} email - Correo del usuario solicitante
+   * @param {string} bookTitle - Título del libro solicitado
+   * @param {string} author - Autor del libro solicitado
+   */
+  async sendBookRequestConfirmation(email, bookTitle, author) {
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: '📜 Tu solicitud ha sido registrada en Azkaban Reads',
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <style>
+            body { background: #111 !important; color: #eee !important; font-family: 'MedievalSharp', Georgia, serif; padding: 24px; }
+            .card { max-width: 640px; margin: 0 auto; background: #1c1c1c !important; border: 2px solid #19E6D6; border-radius: 10px; box-shadow: 0 0 24px rgba(25,230,214,0.3); overflow: hidden; }
+            .header { background: linear-gradient(135deg, #19E6D6 0%, #0fb3a3 100%) !important; color: #0c0c0c !important; padding: 24px; text-align: center; }
+            .title { font-size: 24px; margin: 0; font-weight: bold; }
+            .subtitle { margin: 6px 0 0; opacity: 0.85; font-size: 14px; }
+            .content { padding: 24px; }
+            p { line-height: 1.7; margin: 0 0 14px; color: #e6e6e6 !important; }
+            .book { background: #252525 !important; border-left: 4px solid #19E6D6; padding: 16px; border-radius: 8px; margin: 18px 0; }
+            .book-title { color: #19E6D6 !important; font-weight: 700; font-size: 18px; }
+            .book-author { color: #b5b5b5 !important; font-style: italic; margin-top: 4px; }
+            .footer { padding: 16px 24px 22px; border-top: 1px solid rgba(25,230,214,0.25); color: #9a9a9a !important; font-size: 12px; text-align: center; background: #141414 !important; }
+          </style>
+        </head>
+        <body>
+          <div class="card">
+            <div class="header">
+              <p class="title">🔗 Solicitud registrada</p>
+              <p class="subtitle">Azkaban Reads – Confirmación</p>
+            </div>
+            <div class="content">
+              <p>Las sombras han tomado nota de tu petición. Tu solicitud ya está en los archivos de Azkaban Reads.</p>
+              <div class="book">
+                <div class="book-title">${bookTitle}</div>
+                <div class="book-author">${author}</div>
+              </div>
+              <p>Cuando el libro sea capturado, enviaré un cuervo digital a esta dirección para avisarte. Si no lo ves, revisa la carpeta de spam.</p>
+            </div>
+            <div class="footer">
+              <p>🪄 LUMOS – Guardián de Azkaban Reads</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `
+    };
+
+    try {
+      await this.transporter.sendMail(mailOptions);
+      console.log(`Correo de confirmación de solicitud enviado a ${email}`);
+      return true;
+    } catch (error) {
+      console.error('Error enviando correo de confirmación de solicitud:', error);
+      return false;
+    }
+  }
+
+  /**
    * Envía un correo cuando un libro solicitado está disponible
    * @param {string} email - Correo del destinatario
    * @param {string} bookTitle - Título del libro

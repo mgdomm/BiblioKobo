@@ -16,6 +16,7 @@ const { Readable } = require('stream');
 const booksRouter = require('./routes/books');
 const requestsRouter = require('./routes/requests');
 const adminRouter = require('./routes/admin');
+const spoilersRouter = require('./routes/spoilers');
 const notifier = require('./services/notifier');
 
 const app = express();
@@ -31,6 +32,7 @@ app.use(express.json());
 app.use('/api/books', booksRouter);
 app.use('/api/requests', requestsRouter);
 app.use('/api/admin', adminRouter);
+app.use('/api/spoilers', spoilersRouter);
 
 // Middleware para archivos multipart
 const upload = multer({
