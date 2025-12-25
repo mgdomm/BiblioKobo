@@ -2187,7 +2187,7 @@ app.get('/stats', async (req, res) => {
 
     <!-- Sección: Libros Incompletos -->
     <div class="section">
-      <h2>📚 Libros Incompletos (${incompleteBooks.length})</h2>
+      <h2><svg viewBox="0 0 24 24" fill="none" stroke="#19E6D6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 28px; height: 28px; vertical-align: middle; margin-right: 8px;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>Libros Incompletos (${incompleteBooks.length})</h2>
       <table>
         <thead>
           <tr>
@@ -2221,7 +2221,7 @@ app.get('/stats', async (req, res) => {
 
     <!-- Sección 2: Buscar y Editar Cualquier Libro -->
     <div class="section">
-      <h2>🔍 Buscar y Editar Cualquier Libro</h2>
+      <h2><svg viewBox="0 0 24 24" fill="none" stroke="#19E6D6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 28px; height: 28px; vertical-align: middle; margin-right: 8px;"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg>Buscar y Editar Cualquier Libro</h2>
       <div style="position: relative;">
         <div class="search-box">
           <input 
