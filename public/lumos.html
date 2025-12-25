@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LUMOS – Asistente de Azkaban Reads</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+    
     * {
       margin: 0;
       padding: 0;
@@ -12,10 +14,12 @@
     }
 
     body {
-      font-family: 'MedievalSharp', serif;
-      background: #111;
-      color: #d4d4d4;
+      font-family: 'VT323', 'Courier New', monospace;
+      background: #000;
+      color: #00FFFF;
       overflow-x: hidden;
+      font-size: 17px;
+      line-height: 1.6;
     }
 
     /* Botón flotante para abrir LUMOS */
@@ -26,37 +30,39 @@
       width: 48px;
       height: 48px;
       border-radius: 50%;
-      background: transparent;
-      border: 2px solid #19E6D6;
+      background: #000;
+      border: 2px solid #00FFFF;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       transition: 0.25s;
       z-index: 9999;
-      color: #19E6D6;
+      color: #00FFFF;
+      box-shadow: 0 0 8px rgba(0,255,255,0.3);
     }
 
     #lumos-trigger:hover {
-      box-shadow: 0 0 15px rgba(25, 230, 214, 0.5);
-      transform: scale(1.1);
+      box-shadow: 0 0 15px rgba(0,255,255,0.6);
+      transform: scale(1.05);
     }
 
     #lumos-trigger.active {
       transform: scale(0);
     }
 
-    /* Contenedor del chat */
+    /* Contenedor del chat - DESKTOP BASE (≥1024px) */
     #lumos-container {
       position: fixed;
-      bottom: 120px;
-      right: 30px;
-      width: 450px;
-      height: 650px;
-      background: #222;
-      border: 2px solid #19E6D6;
-      border-radius: 15px;
-      box-shadow: 0 10px 50px rgba(25, 230, 214, 0.3);
+      bottom: 24px;
+      right: 24px;
+      width: 400px;
+      height: 62vh;
+      max-height: 650px;
+      background: #000;
+      border: 2px solid #00FFFF;
+      border-radius: 16px;
+      box-shadow: 0 0 10px rgba(0,255,255,0.4), 0 10px 30px rgba(0,0,0,0.8);
       display: none;
       flex-direction: column;
       z-index: 10000;
@@ -69,23 +75,23 @@
     }
 
     /* Cuando está en iframe, ocupar todo el espacio */
-    @media (min-width: 1px) {
-      body.in-iframe #lumos-container {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        width: 100%;
-        height: 100%;
-        border-radius: 0;
-        border: none;
-        background: #111;
-      }
-      body.in-iframe {
-        background: #111;
-        overflow: hidden;
-      }
+    body.in-iframe #lumos-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: 0;
+      border: none;
+      background: #000;
+      max-height: none;
+    }
+    
+    body.in-iframe {
+      background: #000;
+      overflow: hidden;
     }
 
     @keyframes slideIn {
@@ -99,223 +105,321 @@
       }
     }
 
-    /* Header */
+    /* Header RETRO con título CRT dominante */
     #lumos-header {
-      background: linear-gradient(135deg, #19E6D6 0%, #0fb3a3 100%);
+      background: #0A0A0A;
       padding: 20px;
-      border-bottom: 2px solid #19E6D6;
+      border-bottom: 2px solid #00FFFF;
       display: flex;
-      justify-content: space-between;
+      flex-direction: column;
       align-items: center;
+      box-shadow: 0 2px 8px rgba(0,255,255,0.15);
+      position: relative;
+    }
+
+    /* TÍTULO ESTILO CRT - MEJORA PRINCIPAL */
+    .lumos-title {
+      font-family: "VT323", monospace;
+      font-size: clamp(3.3rem, 6.6vw, 5.5rem);
+      letter-spacing: 0.18em;
+      color: #00FFFF;
+      text-shadow:
+        0 0 8px rgba(0,255,255,0.9),
+        0 0 16px rgba(0,255,255,0.7),
+        0 0 24px rgba(0,255,255,0.5);
+      text-align: center;
+      line-height: 1.1;
+      animation: flicker 2s infinite alternate;
+      margin-bottom: 10px;
+      font-weight: normal;
+    }
+
+    @keyframes flicker {
+      0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { opacity: 1; }
+      20%, 22%, 24%, 55% { opacity: 0.85; }
     }
 
     #lumos-header h2 {
-      color: #111;
-      font-size: 24px;
-      font-weight: bold;
+      color: #00FFFF;
+      font-size: 17px;
+      font-weight: normal;
+      text-shadow: 0 0 4px rgba(0,255,255,0.5);
+      letter-spacing: 2px;
     }
 
     #lumos-header p {
-      color: rgba(0, 0, 0, 0.7);
+      color: rgba(0,255,255,0.7);
       font-size: 14px;
       font-style: italic;
-      margin-top: 5px;
+      text-shadow: 0 0 3px rgba(0,255,255,0.3);
+      text-align: center;
     }
 
     #lumos-close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
       background: none;
       border: none;
-      color: #111;
-      font-size: 24px;
+      color: #00FFFF;
       cursor: pointer;
-      transition: color 0.2s;
-      opacity: 0.7;
+      transition: all 0.2s;
+      opacity: 0.8;
+      padding: 4px;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: rgba(0,255,255,0.2);
+      pointer-events: auto;
+      -webkit-user-select: none;
+      user-select: none;
     }
 
     #lumos-close:hover {
       opacity: 1;
+      filter: drop-shadow(0 0 8px rgba(0,255,255,0.8));
+    }
+
+    #lumos-close svg {
+      width: 24px;
+      height: 24px;
     }
 
     /* Chat messages */
     #lumos-messages {
       flex: 1;
-      padding: 20px;
+      padding: 18px;
       overflow-y: auto;
       display: flex;
       flex-direction: column;
-      gap: 15px;
+      gap: 12px;
+      background: #000;
     }
 
     #lumos-messages::-webkit-scrollbar {
-      width: 8px;
+      width: 6px;
     }
 
     #lumos-messages::-webkit-scrollbar-track {
-      background: #0f0f0f;
+      background: #0A0A0A;
     }
 
     #lumos-messages::-webkit-scrollbar-thumb {
-      background: #333;
-      border-radius: 4px;
+      background: #00FFFF;
+      border-radius: 3px;
+      box-shadow: 0 0 4px rgba(0,255,255,0.5);
     }
 
+    /* Mensajes - RETRO STYLE */
     .message {
-      padding: 12px 16px;
-      border-radius: 10px;
-      max-width: 85%;
-      line-height: 1.5;
-      animation: fadeIn 0.3s ease;
-      font-size: 14px;
-    }
-
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: translateY(10px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+      padding: 12px 14px;
+      max-width: 90%;
+      line-height: 1.6;
+      border-radius: 8px;
+      font-size: 18px;
+      margin-bottom: 8px;
+      color: #00FFFF;
+      text-shadow: 0 0 2px rgba(0,255,255,0.3);
     }
 
     .message.lumos {
-      background: #111;
-      border-left: 3px solid #19E6D6;
+      background: rgba(0,255,255,0.07);
+      border: 1px solid rgba(0,255,255,0.2);
       align-self: flex-start;
-      color: #ddd;
     }
 
     .message.user {
-      background: #333;
+      background: rgba(0,255,255,0.18);
+      border: 1px solid rgba(0,255,255,0.3);
       align-self: flex-end;
-      color: #fff;
+      text-align: right;
     }
 
-    /* Botones de opciones */
-    .options-container {
+    /* CHIPS / ACCIONES RÁPIDAS */
+    .chips-container {
       display: flex;
       flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+      justify-content: center;
+    }
+
+    .lumos-chip {
+      display: inline-block;
+      background-color: #000;
+      border: 1.5px solid #00FFFF;
+      color: #00FFFF;
+      padding: 8px 14px;
+      cursor: pointer;
+      border-radius: 4px;
+      font-family: "VT323", monospace;
+      font-size: 0.95rem;
+      transition: all 0.2s ease;
+      text-shadow: 0 0 2px rgba(0,255,255,0.3);
+    }
+
+    .lumos-chip:hover {
+      background-color: rgba(0,255,255,0.1);
+      box-shadow: 0 0 8px rgba(0,255,255,0.6);
+      transform: translateY(-1px);
+    }
+
+    /* Opciones/Botones - SVG RETRO */
+    .options-container {
+      display: flex;
+      flex-direction: column;
       gap: 10px;
       margin-top: 10px;
     }
 
     .option-btn {
       padding: 12px 18px;
-      background: #222;
-      color: #19E6D6;
-      border: 1px solid #19E6D6;
-      border-radius: 8px;
+      background: #0A0A0A;
+      color: #00FFFF;
+      border: 2px solid #00FFFF;
+      border-radius: 6px;
       cursor: pointer;
-      font-size: 14px;
-      transition: all 0.3s ease;
-      font-family: 'MedievalSharp', serif;
+      font-size: 16px;
+      transition: all 0.15s ease;
+      font-family: 'VT323', 'Courier New', monospace;
+      text-shadow: 0 0 3px rgba(0,255,255,0.4);
+      text-align: center;
     }
 
     .option-btn:hover {
-      background: #333;
-      box-shadow: 0 0 15px rgba(25, 230, 214, 0.4);
-      transform: translateY(-2px);
+      background: rgba(0,255,255,0.1);
+      box-shadow: 0 0 8px rgba(0,255,255,0.6);
+      transform: translateY(-1px);
     }
 
     /* Input container */
     #lumos-input-container {
-      padding: 15px;
-      background: #0f0f0f;
-      border-top: 1px solid #333;
+      padding: 14px;
+      background: #0A0A0A;
+      border-top: 2px solid #00FFFF;
       display: flex;
       gap: 10px;
     }
 
     #lumos-input {
       flex: 1;
-      padding: 12px;
-      background: #111;
-      border: 1px solid #19E6D6;
-      border-radius: 8px;
-      color: #fff;
-      font-family: 'MedievalSharp', serif;
-      font-size: 14px;
+      padding: 12px 14px;
+      background: #000;
+      border: 2px solid #00FFFF;
+      border-radius: 6px;
+      color: #00FFFF;
+      font-family: 'VT323', 'Courier New', monospace;
+      font-size: 16px;
+      text-shadow: 0 0 2px rgba(0,255,255,0.3);
     }
 
     #lumos-input:focus {
       outline: none;
-      border-color: #19E6D6;
-      box-shadow: 0 0 8px rgba(25, 230, 214, 0.3);
+      border-color: #00FFFF;
+      box-shadow: 0 0 8px rgba(0,255,255,0.4);
+    }
+
+    #lumos-input::placeholder {
+      color: rgba(0,255,255,0.4);
     }
 
     #lumos-send {
-      padding: 12px 22px;
-      background: #19E6D6;
-      border: none;
-      border-radius: 8px;
-      color: #111;
-      font-weight: bold;
+      padding: 12px 18px;
+      background: #0A0A0A;
+      border: 2px solid #00FFFF;
+      border-radius: 6px;
+      color: #00FFFF;
+      font-weight: normal;
       cursor: pointer;
-      transition: all 0.3s ease;
-      font-size: 14px;
+      transition: all 0.15s ease;
+      font-size: 16px;
+      font-family: 'VT323', 'Courier New', monospace;
+      text-shadow: 0 0 3px rgba(0,255,255,0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 52px;
+    }
+
+    #lumos-send svg {
+      width: 20px;
+      height: 20px;
+      stroke: currentColor;
     }
 
     #lumos-send:hover {
-      background: #0fb3a3;
-      transform: scale(1.05);
+      background: rgba(0,255,255,0.1);
+      box-shadow: 0 0 8px rgba(0,255,255,0.6);
     }
 
-    /* Book card */
+    /* Book card - RETRO */
     .book-card {
-      background: #111;
-      padding: 15px;
-      border-radius: 8px;
-      border-left: 3px solid #19E6D6;
+      background: #0A0A0A;
+      padding: 12px;
+      border-radius: 6px;
+      border: 2px solid #00FFFF;
       margin-top: 10px;
+      box-shadow: 0 0 6px rgba(0,255,255,0.2);
     }
 
     .book-card h4 {
-      color: #19E6D6;
-      margin-bottom: 5px;
-      font-size: 16px;
+      color: #00FFFF;
+      margin-bottom: 6px;
+      font-size: 17px;
+      text-shadow: 0 0 3px rgba(0,255,255,0.4);
     }
 
     .book-card p {
-      color: #aaa;
-      font-size: 14px;
-      margin-bottom: 10px;
+      color: rgba(0,255,255,0.8);
+      font-size: 16px;
+      margin-bottom: 8px;
+      line-height: 1.5;
     }
 
     .book-actions {
       display: flex;
       gap: 8px;
       margin-top: 10px;
+      flex-wrap: wrap;
     }
 
     .book-btn {
       padding: 10px 16px;
-      font-size: 14px;
-      background: #222;
-      color: #19E6D6;
-      border: 1px solid #19E6D6;
-      border-radius: 5px;
+      font-size: 16px;
+      background: #0A0A0A;
+      color: #00FFFF;
+      border: 2px solid #00FFFF;
+      border-radius: 4px;
       cursor: pointer;
-      transition: all 0.2s ease;
+      transition: all 0.15s ease;
+      font-family: 'VT323', 'Courier New', monospace;
+      text-shadow: 0 0 2px rgba(0,255,255,0.3);
     }
 
     .book-btn:hover {
-      background: #333;
+      background: rgba(0,255,255,0.1);
+      box-shadow: 0 0 6px rgba(0,255,255,0.6);
     }
 
-    /* Loading animation */
+    /* Loading animation - RETRO */
     .loading {
       display: flex;
-      gap: 5px;
+      gap: 6px;
       padding: 10px;
+      justify-content: center;
     }
 
     .loading span {
-      width: 8px;
-      height: 8px;
-      background: #19E6D6;
+      width: 6px;
+      height: 6px;
+      background: #00FFFF;
       border-radius: 50%;
       animation: bounce 1.4s infinite ease-in-out both;
+      box-shadow: 0 0 4px rgba(0,255,255,0.6);
     }
 
     .loading span:nth-child(1) {
@@ -335,158 +439,183 @@
       }
     }
 
-    /* Responsive */
-    @media (max-width: 768px) {
+    /* ========================================
+       RESPONSIVE - MOBILE FIRST
+       ======================================== */
+    
+    /* MÓVIL (≤767px) - Chat app retro */
+    @media (max-width: 767px) {
       #lumos-container {
         width: 100%;
-        height: 100%;
+        height: 90vh;
         bottom: 0;
         right: 0;
+        left: 0;
+        border-radius: 16px 16px 0 0;
+        border-bottom: none;
+      }
+      
+      body.in-iframe #lumos-container {
         border-radius: 0;
+        height: 100%;
       }
 
       #lumos-trigger {
-        bottom: 15px;
-        right: 25px;
-        width: 91px;
-        height: 91px;
-        background: rgba(0, 0, 0, 0.75);
-        backdrop-filter: blur(4px);
-        -webkit-backdrop-filter: blur(4px);
-      }
-      
-      #lumos-trigger:hover {
-        background: rgba(0, 0, 0, 0.85);
-      }
-
-      body.in-iframe #lumos-container {
-        width: 100%;
-        height: 100%;
-      }
-
-      /* Tamaños de fuente en móvil */
-      body {
-        font-size: 16px;
+        width: 60px;
+        height: 60px;
+        bottom: 16px;
+        right: 16px;
       }
 
       #lumos-header {
-        padding: 20px;
+        padding: 14px 16px;
+      }
+
+      .lumos-title {
+        font-size: clamp(2.2rem, 8.8vw, 3.3rem);
       }
 
       #lumos-header h2 {
-        font-size: 26px;
+        font-size: 16px;
       }
 
       #lumos-header p {
-        font-size: 15px;
+        font-size: 13px;
       }
 
       #lumos-close {
-        font-size: 22px;
+        top: 12px;
+        right: 12px;
+        width: 32px;
+        height: 32px;
+        padding: 6px;
+      }
+
+      #lumos-close svg {
+        width: 20px;
+        height: 20px;
       }
 
       #lumos-messages {
-        padding: 20px;
-        gap: 15px;
+        padding: 14px;
+        gap: 10px;
       }
 
       .message {
-        padding: 16px 18px;
-        font-size: 16px;
-        line-height: 1.5;
+        font-size: 17px;
+        padding: 12px 14px;
+        line-height: 1.6;
+      }
+
+      .lumos-chip {
+        font-size: 0.9rem;
+        padding: 10px 14px;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: rgba(0,255,255,0.2);
       }
 
       .option-btn {
-        padding: 16px 20px;
         font-size: 16px;
-        min-height: 50px;
-        margin: 6px 0;
+        padding: 14px 16px;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: rgba(0,255,255,0.2);
       }
 
       #lumos-input-container {
-        padding: 15px;
+        padding: 12px;
       }
 
       #lumos-input {
-        padding: 14px;
         font-size: 16px;
-        min-height: 50px;
+        padding: 11px 13px;
       }
 
       #lumos-send {
-        padding: 14px 20px;
         font-size: 16px;
-        min-width: 70px;
+        padding: 11px 18px;
       }
 
-      .book-card {
-        padding: 15px;
+      .book-card h4 {
+        font-size: 17px;
+      }
+
+      .book-card p {
+        font-size: 16px;
+      }
+
+      .book-btn {
+        font-size: 15px;
+        padding: 10px 14px;
+      }
+    }
+    
+    /* TABLET (768px - 1023px) - Panel lateral equilibrado */
+    @media (min-width: 768px) and (max-width: 1023px) {
+      #lumos-container {
+        width: 460px;
+        height: 72vh;
+        max-height: 700px;
+        bottom: 20px;
+        right: 20px;
+        border-radius: 18px;
+      }
+
+      #lumos-trigger {
+        width: 54px;
+        height: 54px;
+        bottom: 18px;
+        right: 18px;
+      }
+
+      .lumos-title {
+        font-size: clamp(2.75rem, 5.5vw, 4.4rem);
+      }
+
+      #lumos-header h2 {
+        font-size: 18px;
+      }
+
+      #lumos-header p {
+        font-size: 14px;
+      }
+
+      .message {
+        font-size: 18px;
+        line-height: 1.6;
+      }
+
+      .option-btn {
+        font-size: 16px;
+        padding: 12px 18px;
+      }
+
+      #lumos-input {
+        font-size: 16px;
+        padding: 12px 14px;
+      }
+
+      #lumos-send {
+        font-size: 16px;
       }
 
       .book-card h4 {
         font-size: 18px;
-        margin-bottom: 8px;
       }
 
       .book-card p {
-        font-size: 15px;
-        line-height: 1.4;
-        margin: 5px 0;
+        font-size: 17px;
       }
 
       .book-btn {
-        padding: 12px 16px;
-        font-size: 15px;
-        min-height: 45px;
-        margin: 5px 3px;
+        font-size: 16px;
       }
     }
 
-    /* Tablet: Letra 2x más grande */
-    @media (min-width: 769px) and (max-width: 1024px) {
-      body {
-        font-size: 32px;
-      }
-
-      #lumos-header h2 {
-        font-size: 40px;
-      }
-
-      #lumos-header p {
-        font-size: 24px;
-      }
-
-      .message {
-        padding: 24px 32px;
-        font-size: 28px;
-      }
-
-      .option-btn {
-        padding: 20px 32px;
-        font-size: 28px;
-      }
-
-      #lumos-input {
-        padding: 24px;
-        font-size: 28px;
-      }
-
-      #lumos-send {
-        padding: 24px 40px;
-        font-size: 28px;
-      }
-
-      .book-card h4 {
-        font-size: 32px;
-      }
-
-      .book-card p {
-        font-size: 26px;
-      }
-
-      .book-btn {
-        padding: 16px 28px;
-        font-size: 24px;
+    /* Accesibilidad - Reducir animaciones */
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        animation: none !important;
+        transition: none !important;
       }
     }
   </style>
@@ -511,11 +640,13 @@
   <!-- Contenedor del chat -->
   <div id="lumos-container">
     <div id="lumos-header">
-      <div>
-        <h2>🪄 LUMOS</h2>
-        <p>Asistente de Azkaban Reads</p>
-      </div>
-      <button id="lumos-close" onclick="toggleLumos()">×</button>
+      <button id="lumos-close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 6L6 18M6 6L18 18"/>
+        </svg>
+      </button>
+      <h1 class="lumos-title">LUMOS</h1>
+      <p>Guardián de Azkaban Reads</p>
     </div>
 
     <div id="lumos-messages">
@@ -529,9 +660,15 @@
         placeholder="Escribe tu mensaje..." 
         onkeypress="handleKeyPress(event)"
       />
-      <button id="lumos-send" onclick="sendMessage()">Enviar</button>
+      <button id="lumos-send" onclick="sendMessage()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M22 2L11 13M22 2L15 22L11 13L2 9L22 2Z"/>
+        </svg>
+      </button>
     </div>
   </div>
+
+  <script src="/services/aiService.js"></script>
 
   <script>
     // Estado del chat
@@ -541,7 +678,8 @@
       requestData: {},
       favoriteBooks: [],
       searchQuery: '',
-      notificationData: {}
+      notificationData: {},
+      pendingSpoiler: null
     };
 
     // Toggle LUMOS visibility
@@ -559,19 +697,59 @@
       }
     }
 
-    // Mensaje de bienvenida
+    // Mensaje de bienvenida con mensaje dinámico
     function showWelcomeMessage() {
-      addLumosMessage(
-        'Los libros permanecen capturados entre estos muros… y solo los elegidos pueden acceder a ellos.',
-        true
-      );
+      // Mensajes alternativos si aiService no está cargado
+      const fallbackMessages = [
+        "Los libros permanecen encadenados en estas sombras... ¿Qué buscas, mortal?",
+        "Soy LUMOS, guardián de Azkaban Reads. Las obras prohibidas reposan aquí. ¿Qué deseas?",
+        "Entre estos muros dormitan secretos encuadernados. ¿Qué te trae ante mí?"
+      ];
+      
+      let initialMessage;
+      if (window.AzkabanAI && typeof window.AzkabanAI.getRandomInitialMessage === 'function') {
+        initialMessage = window.AzkabanAI.getRandomInitialMessage();
+      } else {
+        initialMessage = fallbackMessages[Math.floor(Math.random() * fallbackMessages.length)];
+      }
+      
+      addLumosMessage(initialMessage, true);
 
       setTimeout(() => {
-        addLumosMessage(
-          'Soy LUMOS, guardián de Azkaban Reads. ¿Qué buscas entre las sombras?'
-        );
-        showMainOptions();
-      }, 1000);
+        addQuickActionChips();
+      }, 500);
+    }
+
+    // Añadir chips de acciones rápidas
+    function addQuickActionChips() {
+      const messagesContainer = document.getElementById('lumos-messages');
+      const chipsContainer = document.createElement('div');
+      chipsContainer.className = 'chips-container';
+      
+      const chips = [
+        { text: 'Recomiéndame algo', action: 'recommend' },
+        { text: 'Buscar libro', action: 'search' },
+        { text: 'Novedades', action: 'notify' },
+        { text: 'Solicitar libro', action: 'request' },
+        { text: 'Test lector', action: 'test' },
+        { text: 'Spoilers', action: 'spoiler_prompt' }
+      ];
+      
+      chips.forEach(chip => {
+        const chipEl = document.createElement('button');
+        chipEl.className = 'lumos-chip';
+        chipEl.textContent = chip.text;
+        chipEl.onclick = () => handleChipClick(chip.action);
+        chipsContainer.appendChild(chipEl);
+      });
+      
+      messagesContainer.appendChild(chipsContainer);
+      scrollToBottom();
+    }
+
+    // Manejar clic en chips
+    function handleChipClick(action) {
+      handleOptionClick(action);
     }
 
     // Mostrar opciones principales
@@ -582,6 +760,7 @@
         { text: '🧪 Test lector', action: 'test' },
         { text: '🔔 Avisarme de novedades', action: 'notify' },
         { text: '📩 Solicitar un libro', action: 'request' },
+        { text: '⚠️ Spoilers', action: 'spoiler_prompt' },
         { text: '❓ Ayuda', action: 'help' }
       ];
 
@@ -662,6 +841,26 @@
           startBookRequest();
           break;
 
+        case 'spoiler_prompt':
+          addUserMessage('⚠️ Quiero spoilers');
+          addLumosMessage('¿De qué libro deseas que revele los secretos? Escribe el título:');
+          state.currentFlow = 'spoiler';
+          state.waitingFor = 'spoiler_book';
+          break;
+
+        case 'spoiler_confirm':
+          addUserMessage('✓ Sí, quiero el spoiler');
+          await revealSpoiler(data.bookTitle);
+          break;
+
+        case 'cancel':
+          addUserMessage('✗ Cancelar');
+          addLumosMessage('Sabio. Algunos secretos deben preservarse. ¿Qué más deseas?');
+          showMainOptions();
+          state.waitingFor = null;
+          state.pendingSpoiler = null;
+          break;
+
         case 'help':
           addUserMessage('❓ Ayuda');
           showHelp();
@@ -705,7 +904,13 @@
         case 'close':
           addUserMessage('Cerrar');
           addLumosMessage('Estaré aquí... en la oscuridad, cuando me necesites.');
-          setTimeout(toggleLumos, 1500);
+          setTimeout(() => {
+            if (window.self !== window.top) {
+              closeLumos();
+            } else {
+              toggleLumos();
+            }
+          }, 1500);
           break;
 
         default:
@@ -901,6 +1106,50 @@
       addOptionsToChat(options);
     }
 
+    // Revelar spoiler (solo después de confirmación)
+    async function revealSpoiler(bookTitle) {
+      showLoading();
+      
+      try {
+        // Timeout de 10 segundos
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('timeout')), 10000)
+        );
+        
+        // Verificar que AzkabanAI está disponible
+        if (!window.AzkabanAI || typeof window.AzkabanAI.generateSpoiler !== 'function') {
+          throw new Error('AI service not available');
+        }
+        
+        const spoilerPromise = window.AzkabanAI.generateSpoiler(bookTitle);
+        const spoilerData = await Promise.race([spoilerPromise, timeoutPromise]);
+        
+        removeLoading();
+        addLumosMessage(spoilerData.text);
+        
+        if (spoilerData.actions) {
+          addOptionsToChat(spoilerData.actions.map(a => ({
+            text: a.label,
+            action: a.type,
+            data: a.payload
+          })));
+        }
+      } catch (error) {
+        removeLoading();
+        console.error('Error al revelar spoiler:', error);
+        
+        // Mensaje narrativo de error
+        const errorMessage = error.message === 'timeout'
+          ? `⚠️ Las sombras no han revelado nada esta vez. La búsqueda de secretos sobre "${bookTitle}" ha tomado demasiado tiempo. Inténtalo de nuevo más tarde o prueba con otro título.`
+          : `🌀 Los muros de Azkaban se interponen... No he podido acceder a los secretos de "${bookTitle}" en este momento. Las sombras guardan sus misterios celosamente.`;
+        
+        addLumosMessage(errorMessage);
+        showMainOptions();
+      }
+      
+      state.pendingSpoiler = null;
+    }
+
     // Enviar mensaje del usuario
     async function sendMessage() {
       const input = document.getElementById('lumos-input');
@@ -959,6 +1208,17 @@
 
         case 'notify_email':
           await finalizeNotificationSubscription(message);
+          state.waitingFor = null;
+          break;
+
+        case 'spoiler_book':
+          state.pendingSpoiler = message;
+          addLumosMessage(`⚠️ <strong>ADVERTENCIA:</strong> Lo que me pides no tiene marcha atrás. ¿Confirmas que deseas un spoiler de <strong>${message}</strong>? Una vez revelado, el hechizo no puede deshacerse.`);
+          const options = [
+            { text: '✓ Sí, quiero el spoiler', action: 'spoiler_confirm', data: { bookTitle: message } },
+            { text: '✗ No, mejor no', action: 'cancel' }
+          ];
+          addOptionsToChat(options);
           state.waitingFor = null;
           break;
 
@@ -1164,6 +1424,37 @@
         console.log('LUMOS: Cargado en iframe, iniciando...');
         // Agregar clase al body
         document.body.classList.add('in-iframe');
+        
+        // Detectar si es móvil - usar múltiples métodos
+        let isMobile = false;
+        
+        // Método 1: User agent
+        if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+          isMobile = true;
+        }
+        
+        // Método 2: Ancho de la ventana padre
+        try {
+          if (window.parent.innerWidth <= 768) {
+            isMobile = true;
+          }
+        } catch(e) {
+          // Si no puede acceder al padre, usar window.screen
+          if (window.screen.width <= 768) {
+            isMobile = true;
+          }
+        }
+        
+        // Método 3: Touch capability
+        if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+          isMobile = true;
+        }
+        
+        if (isMobile) {
+          document.body.classList.add('mobile-device');
+          console.log('LUMOS: Dispositivo móvil detectado - ancho:', window.parent.innerWidth || window.screen.width);
+        }
+        
         // Ocultar el botón trigger
         const trigger = document.getElementById('lumos-trigger');
         if (trigger) {
@@ -1186,17 +1477,55 @@
 
     // Enviar mensaje al padre para cerrar
     function closeLumos() {
-      window.parent.postMessage('lumos-close', '*');
+      console.log('LUMOS: closeLumos() llamado');
+      // Si estamos en iframe, notificar al padre
+      if (window.self !== window.top) {
+        console.log('LUMOS: En iframe, enviando mensaje al padre');
+        window.parent.postMessage('lumos-close', '*');
+      } else {
+        console.log('LUMOS: No en iframe, cerrando contenedor');
+        // Si no estamos en iframe, simplemente cerrar el contenedor
+        const container = document.getElementById('lumos-container');
+        if (container) {
+          container.classList.remove('active');
+        }
+      }
     }
 
-    // Actualizar el botón de cerrar para funcionar en iframe
-    document.getElementById('lumos-close').onclick = function() {
-      if (window.self !== window.top) {
-        closeLumos();
+    // Actualizar el botón de cerrar para funcionar en iframe y standalone
+    document.addEventListener('DOMContentLoaded', function() {
+      const closeButton = document.getElementById('lumos-close');
+      if (closeButton) {
+        console.log('LUMOS: Botón de cerrar encontrado, añadiendo eventos');
+        
+        // Remover onclick inline si existe
+        closeButton.onclick = null;
+        
+        // Función handler unificada
+        const handleClose = function(e) {
+          console.log('LUMOS: Evento de cierre disparado -', e.type);
+          e.preventDefault();
+          e.stopPropagation();
+          e.stopImmediatePropagation();
+          closeLumos();
+          return false;
+        };
+        
+        // Múltiples eventos para máxima compatibilidad
+        closeButton.addEventListener('click', handleClose, false);
+        closeButton.addEventListener('touchstart', handleClose, { passive: false });
+        closeButton.addEventListener('pointerdown', handleClose, false);
+        
+        // Evitar comportamiento por defecto en todos los casos
+        closeButton.addEventListener('touchend', function(e) {
+          e.preventDefault();
+        }, { passive: false });
+        
+        console.log('LUMOS: Eventos de cierre vinculados correctamente');
       } else {
-        toggleLumos();
+        console.error('LUMOS: Botón de cerrar NO encontrado');
       }
-    };
+    });
   </script>
 
 </body>

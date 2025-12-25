@@ -37,7 +37,7 @@ class EmailService {
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: email,
-      subject: 'Un libro capturado ahora está a tu alcance',
+      subject: '📜 Un libro ha sido capturado en Azkaban Reads',
       html: `
         <!DOCTYPE html>
         <html>
@@ -169,28 +169,30 @@ class EmailService {
         <body>
           <div class="container">
             <div class="header">
-              <h1>🪄 LIBRO CAPTURADO</h1>
-              <p>Azkaban Reads - Notificación</p>
+              <h1>🔮 LIBRO CAPTURADO</h1>
+              <p>Mensaje del Guardián</p>
             </div>
             
             <div class="content">
-              <p><strong>Desde los muros donde se confinan los libros...</strong></p>
+              <p><strong>Desde las sombras de Azkaban...</strong></p>
               
-              <p>Ha sido capturado y encerrado, retenido entre estas páginas hasta que alguien lo descubra.</p>
+              <p>Este libro ha sido capturado y encerrado entre estas páginas oscuras. Permanecía oculto, pero ahora ha sido traído a la luz para ti.</p>
               
-              <p>El libro que pediste ahora se encuentra bajo custodia en <strong>Azkaban Reads</strong> y solo tú puedes acceder a él.</p>
+              <p>LUMOS, el guardián de estas obras prohibidas, te notifica que <strong>"${bookTitle}"</strong> de <strong>${author}</strong> está ahora disponible para su liberación.</p>
               
               <div class="book-info">
                 <div class="book-title">${bookTitle}</div>
                 <div class="book-author">${author}</div>
               </div>
               
+              <p>Los muros de Azkaban Reads protegen este conocimiento. Solo los elegidos pueden acceder a él.</p>
+              
               <div class="btn-container">
-                <a href="${bookUrl}" class="btn">📥 ACCEDER AL LIBRO</a>
+                <a href="${bookUrl}" class="btn">🔓 LIBERAR EL LIBRO</a>
               </div>
               
               <div class="note">
-                <p><strong>⚡ Importante:</strong> No pierdas tiempo. Lo que está capturado rara vez permanece disponible por mucho tiempo.</p>
+                <p><strong>⚠️ Advertencia:</strong> Lo que está capturado no permanece disponible eternamente. Accede pronto antes de que las sombras lo reclamen de nuevo.</p>
               </div>
             </div>
             
