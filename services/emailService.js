@@ -6,11 +6,14 @@ const nodemailer = require('nodemailer');
 class EmailService {
   constructor() {
     // Validar que las credenciales estén configuradas
+    console.log('🔧 Inicializando EmailService...');
+    console.log('   EMAIL_USER:', process.env.EMAIL_USER ? '✅ Configurado: ' + process.env.EMAIL_USER : '❌ NO configurado');
+    console.log('   EMAIL_PASS:', process.env.EMAIL_PASS ? '✅ Configurado (oculto)' : '❌ NO configurado');
+    
     if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-      console.warn('⚠️  ADVERTENCIA: Credenciales de email no configuradas');
-      console.warn('   EMAIL_USER:', process.env.EMAIL_USER ? '✅' : '❌ No configurado');
-      console.warn('   EMAIL_PASS:', process.env.EMAIL_PASS ? '✅' : '❌ No configurado');
-      console.warn('   El servicio de email no funcionará correctamente.');
+      console.error('❌ ERROR CRÍTICO: Credenciales de email no configuradas');
+      console.error('   Verifica que EMAIL_USER y EMAIL_PASS estén en Render Environment Variables');
+      process.exit(1); // Detener el servidor si faltan credenciales
     }
     
     this.transporter = nodemailer.createTransport({
@@ -24,6 +27,8 @@ class EmailService {
       greetingTimeout: 10000,
       socketTimeout: 10000
     });
+
+    console.log('✅ EmailService inicializado correctamente');
   }
 
   /**
@@ -33,6 +38,8 @@ class EmailService {
    * @param {string} author - Autor del libro solicitado
    */
   async sendBookRequestConfirmation(email, bookTitle, author) {
+    console.log(`📧 [CONFIRMATION] Enviando confirmación a ${email} para "${bookTitle}" de ${author}`);
+    
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: email,
@@ -81,11 +88,15 @@ class EmailService {
     };
 
     try {
-      await this.transporter.sendMail(mailOptions);
-      console.log(`Correo de confirmación de solicitud enviado a ${email}`);
+      console.log(`   Enviando desde: ${process.env.EMAIL_USER}`);
+      console.log(`   Enviando a: ${email}`);
+      const info = await this.transporter.sendMail(mailOptions);
+      console.log(`✅ [CONFIRMATION] Email enviado exitosamente. ID: ${info.messageId}`);
       return true;
     } catch (error) {
-      console.error('Error enviando correo de confirmación de solicitud:', error);
+      console.error(`❌ [CONFIRMATION] Error enviando confirmación a ${email}:`, error.message);
+      console.error('   Código de error:', error.code);
+      console.error('   Stack:', error.stack);
       return false;
     }
   }

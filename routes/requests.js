@@ -91,6 +91,7 @@ router.post('/book', async (req, res) => {
     // Enviar confirmación al usuario en segundo plano
     setImmediate(async () => {
       try {
+        console.log(`📨 [BACKGROUND] Iniciando envío de confirmación a ${newRequest.email}...`);
         const userEmailSent = await emailService.sendBookRequestConfirmation(
           newRequest.email,
           newRequest.title,
@@ -102,7 +103,8 @@ router.post('/book', async (req, res) => {
           console.log(`⚠️ No se pudo enviar el email de confirmación a ${newRequest.email}`);
         }
       } catch (err) {
-        console.error('❌ Error al enviar email de confirmación al usuario:', err);
+        console.error('❌ Error al enviar email de confirmación al usuario:', err.message);
+        console.error(err.stack);
       }
     });
 
