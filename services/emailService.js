@@ -185,29 +185,43 @@ class EmailService {
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
           ${LUMOS_EMAIL_STYLE}
         </head>
-        <body>
-          <div class="container">
-            <div class="header">
-              <h1>🔗 SOLICITUD REGISTRADA</h1>
-              <p>Azkaban Reads – Guardián LUMOS</p>
-            </div>
-            
-            <div class="content">
-              <p>Las sombras han tomado nota de tu petición. Tu solicitud ya está en los archivos de Azkaban Reads.</p>
-              
-              <div class="book-info">
-                <div class="book-title">${bookTitle}</div>
-                <div class="book-author">${author}</div>
-              </div>
-              
-              <p>Cuando el libro sea capturado, enviaré un cuervo digital a esta dirección para avisarte.</p>
-            </div>
-            
-            <div class="footer">
-              <p>🪄 LUMOS – Guardián de Azkaban Reads</p>
-              <p>"Los libros permanecen capturados entre estos muros... y solo los elegidos pueden acceder a ellos."</p>
-            </div>
-          </div>
+        <body bgcolor="#000000">
+          <table width="100%" cellpadding="0" cellspacing="0" bgcolor="#000000">
+            <tr>
+              <td align="center" style="padding: 20px;">
+                <table width="600" cellpadding="0" cellspacing="0" bgcolor="#000000" style="border: 2px solid #00FFFF; border-radius: 12px;">
+                  <tr>
+                    <td bgcolor="#000000" style="border-bottom: 2px solid #00FFFF; padding: 20px; text-align: center;">
+                      <h1 style="font-family: 'VT323', monospace; font-size: 24px; color: #00FFFF; margin: 0; letter-spacing: 2px;">🔗 SOLICITUD REGISTRADA</h1>
+                      <p style="font-size: 12px; color: #00FFFF; opacity: 0.7; margin: 5px 0 0 0;">Azkaban Reads – Guardián LUMOS</p>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td bgcolor="#000000" style="padding: 25px; color: #00FFFF;">
+                      <p style="line-height: 1.6; margin-bottom: 15px; color: #00FFFF; font-size: 14px; font-family: 'VT323', monospace;">Las sombras han tomado nota de tu petición. Tu solicitud ya está en los archivos de Azkaban Reads.</p>
+                      
+                      <table width="100%" cellpadding="0" cellspacing="0" bgcolor="#0a0a0a" style="border: 1px solid #00FFFF; border-radius: 8px; margin: 20px 0;">
+                        <tr>
+                          <td style="padding: 15px;">
+                            <div style="font-size: 16px; color: #00FFFF; font-weight: bold; margin-bottom: 5px; font-family: 'VT323', monospace;">${bookTitle}</div>
+                            <div style="font-size: 12px; color: #00FFFF; opacity: 0.8; font-style: italic; font-family: 'VT323', monospace;">${author}</div>
+                          </td>
+                        </tr>
+                      </table>
+                      
+                      <p style="line-height: 1.6; margin-bottom: 15px; color: #00FFFF; font-size: 14px; font-family: 'VT323', monospace;">Cuando el libro sea capturado, enviaré un cuervo digital a esta dirección para avisarte.</p>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td bgcolor="#000000" style="border-top: 2px solid #00FFFF; padding: 15px; text-align: center; font-size: 11px;">
+                      <p style="color: #00FFFF; margin: 5px 0; font-family: 'VT323', monospace;">🪄 LUMOS – Guardián de Azkaban Reads</p>
+                      <p style="color: #00FFFF; margin: 5px 0; font-family: 'VT323', monospace;">"Los libros permanecen capturados entre estos muros... y solo los elegidos pueden acceder a ellos."</p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
         </body>
         </html>
       `
@@ -247,33 +261,53 @@ class EmailService {
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
           ${LUMOS_EMAIL_STYLE}
         </head>
-        <body>
-          <div class="container">
-            <div class="header">
-              <h1>🔮 LIBRO CAPTURADO</h1>
-              <p>Azkaban Reads – Guardián LUMOS</p>
-            </div>
-            
-            <div class="content">
-              <p>Este libro ha sido capturado y encerrado entre estas páginas oscuras. Permanecía oculto, pero ahora ha sido traído a la luz para ti.</p>
-              
-              <p>LUMOS te notifica que <strong>${bookTitle}</strong> de <strong>${author}</strong> está ahora disponible para su liberación.</p>
-              
-              <div class="book-info">
-                <div class="book-title">${bookTitle}</div>
-                <div class="book-author">${author}</div>
-              </div>
-              
-              <p>Los muros de Azkaban Reads protegen este conocimiento. Solo los elegidos pueden acceder a él.</p>
-              
-              <a href="${bookUrl}" class="button">🔓 LIBERAR EL LIBRO</a>
-            </div>
-            
-            <div class="footer">
-              <p>🪄 LUMOS – Asistente de Azkaban Reads</p>
-              <p>"Los libros permanecen capturados entre estos muros... y solo los elegidos pueden acceder a ellos."</p>
-            </div>
-          </div>
+        <body bgcolor="#000000">
+          <table width="100%" cellpadding="0" cellspacing="0" bgcolor="#000000">
+            <tr>
+              <td align="center" style="padding: 20px;">
+                <table width="600" cellpadding="0" cellspacing="0" bgcolor="#000000" style="border: 2px solid #00FFFF; border-radius: 12px;">
+                  <tr>
+                    <td bgcolor="#000000" style="border-bottom: 2px solid #00FFFF; padding: 20px; text-align: center;">
+                      <h1 style="font-family: 'VT323', monospace; font-size: 24px; color: #00FFFF; margin: 0; letter-spacing: 2px;">🔮 LIBRO CAPTURADO</h1>
+                      <p style="font-size: 12px; color: #00FFFF; opacity: 0.7; margin: 5px 0 0 0;">Azkaban Reads – Guardián LUMOS</p>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td bgcolor="#000000" style="padding: 25px; color: #00FFFF;">
+                      <p style="line-height: 1.6; margin-bottom: 15px; color: #00FFFF; font-size: 14px; font-family: 'VT323', monospace;">Este libro ha sido capturado y encerrado entre estas páginas oscuras. Permanecía oculto, pero ahora ha sido traído a la luz para ti.</p>
+                      
+                      <p style="line-height: 1.6; margin-bottom: 15px; color: #00FFFF; font-size: 14px; font-family: 'VT323', monospace;">LUMOS te notifica que <strong style="color: #00FFFF;">${bookTitle}</strong> de <strong style="color: #00FFFF;">${author}</strong> está ahora disponible para su liberación.</p>
+                      
+                      <table width="100%" cellpadding="0" cellspacing="0" bgcolor="#0a0a0a" style="border: 1px solid #00FFFF; border-radius: 8px; margin: 20px 0;">
+                        <tr>
+                          <td style="padding: 15px;">
+                            <div style="font-size: 16px; color: #00FFFF; font-weight: bold; margin-bottom: 5px; font-family: 'VT323', monospace;">${bookTitle}</div>
+                            <div style="font-size: 12px; color: #00FFFF; opacity: 0.8; font-style: italic; font-family: 'VT323', monospace;">${author}</div>
+                          </td>
+                        </tr>
+                      </table>
+                      
+                      <p style="line-height: 1.6; margin-bottom: 15px; color: #00FFFF; font-size: 14px; font-family: 'VT323', monospace;">Los muros de Azkaban Reads protegen este conocimiento. Solo los elegidos pueden acceder a él.</p>
+                      
+                      <table cellpadding="0" cellspacing="0" style="margin: 20px 0;">
+                        <tr>
+                          <td bgcolor="#000000" style="border: 2px solid #00FFFF; border-radius: 6px; padding: 10px 20px;">
+                            <a href="${bookUrl}" style="font-family: 'VT323', monospace; text-decoration: none; color: #00FFFF; font-weight: bold; font-size: 14px;">🔓 LIBERAR EL LIBRO</a>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td bgcolor="#000000" style="border-top: 2px solid #00FFFF; padding: 15px; text-align: center; font-size: 11px;">
+                      <p style="color: #00FFFF; margin: 5px 0; font-family: 'VT323', monospace;">🪄 LUMOS – Asistente de Azkaban Reads</p>
+                      <p style="color: #00FFFF; margin: 5px 0; font-family: 'VT323', monospace;">"Los libros permanecen capturados entre estos muros... y solo los elegidos pueden acceder a ellos."</p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
         </body>
         </html>
       `
@@ -442,33 +476,51 @@ class EmailService {
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
           ${LUMOS_EMAIL_STYLE}
         </head>
-        <body>
-          <div class="container">
-            <div class="header">
-              <h1>🔗 SOLICITUD RECIBIDA</h1>
-              <p>Azkaban Reads – Sistema de Notificaciones</p>
-            </div>
-            
-            <div class="content">
-              <p>Un prisionero ha clamado entre los muros. Su voz resuena en la oscuridad, pidiendo un libro que aún no ha sido capturado.</p>
-              
-              <div class="book-info">
-                <div class="book-title">${bookTitle}</div>
-                <div class="book-author">${author}</div>
-              </div>
-              
-              <p><strong>Solicitante:</strong> ${userEmail}</p>
-              
-              <div class="alert-box">
-                <p>⚡ Acción: Captura este libro y libera al prisionero de su espera.</p>
-              </div>
-            </div>
-            
-            <div class="footer">
-              <p>🪄 LUMOS – Sistema de Azkaban Reads</p>
-              <p>"Las voces de los que esperan... nunca dejan de resonar en estos muros."</p>
-            </div>
-          </div>
+        <body bgcolor="#000000">
+          <table width="100%" cellpadding="0" cellspacing="0" bgcolor="#000000">
+            <tr>
+              <td align="center" style="padding: 20px;">
+                <table width="600" cellpadding="0" cellspacing="0" bgcolor="#000000" style="border: 2px solid #00FFFF; border-radius: 12px;">
+                  <tr>
+                    <td bgcolor="#000000" style="border-bottom: 2px solid #00FFFF; padding: 20px; text-align: center;">
+                      <h1 style="font-family: 'VT323', monospace; font-size: 24px; color: #00FFFF; margin: 0; letter-spacing: 2px;">🔗 SOLICITUD RECIBIDA</h1>
+                      <p style="font-size: 12px; color: #00FFFF; opacity: 0.7; margin: 5px 0 0 0;">Azkaban Reads – Sistema de Notificaciones</p>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td bgcolor="#000000" style="padding: 25px; color: #00FFFF;">
+                      <p style="line-height: 1.6; margin-bottom: 15px; color: #00FFFF; font-size: 14px; font-family: 'VT323', monospace;">Un prisionero ha clamado entre los muros. Su voz resuena en la oscuridad, pidiendo un libro que aún no ha sido capturado.</p>
+                      
+                      <table width="100%" cellpadding="0" cellspacing="0" bgcolor="#0a0a0a" style="border: 1px solid #00FFFF; border-radius: 8px; margin: 20px 0;">
+                        <tr>
+                          <td style="padding: 15px;">
+                            <div style="font-size: 16px; color: #00FFFF; font-weight: bold; margin-bottom: 5px; font-family: 'VT323', monospace;">${bookTitle}</div>
+                            <div style="font-size: 12px; color: #00FFFF; opacity: 0.8; font-style: italic; font-family: 'VT323', monospace;">${author}</div>
+                          </td>
+                        </tr>
+                      </table>
+                      
+                      <p style="line-height: 1.6; margin-bottom: 15px; color: #00FFFF; font-size: 14px; font-family: 'VT323', monospace;"><strong style="color: #00FFFF;">Solicitante:</strong> ${userEmail}</p>
+                      
+                      <table width="100%" cellpadding="0" cellspacing="0" bgcolor="#0a0a0a" style="border-left: 3px solid #00FFFF; border-radius: 4px; margin: 20px 0;">
+                        <tr>
+                          <td style="padding: 12px 15px;">
+                            <p style="margin: 0; font-size: 13px; color: #00FFFF; font-family: 'VT323', monospace;">⚡ Acción: Captura este libro y libera al prisionero de su espera.</p>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td bgcolor="#000000" style="border-top: 2px solid #00FFFF; padding: 15px; text-align: center; font-size: 11px;">
+                      <p style="color: #00FFFF; margin: 5px 0; font-family: 'VT323', monospace;">🪄 LUMOS – Sistema de Azkaban Reads</p>
+                      <p style="color: #00FFFF; margin: 5px 0; font-family: 'VT323', monospace;">"Las voces de los que esperan... nunca dejan de resonar en estos muros."</p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
         </body>
         </html>
       `
