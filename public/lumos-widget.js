@@ -20,7 +20,9 @@
       width: 48px;
       height: 48px;
       border-radius: 50%;
-      background: transparent;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
       border: 2px solid #19E6D6;
       cursor: pointer;
       z-index: 9999;
@@ -30,10 +32,12 @@
       transition: 0.25s;
       padding: 0;
       color: #19E6D6;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
     }
 
     #lumos-trigger:hover {
-      box-shadow: 0 0 15px rgba(25,230,214,0.5);
+      background: rgba(0, 0, 0, 0.85);
+      box-shadow: 0 0 15px rgba(25,230,214,0.5), 0 4px 12px rgba(0, 0, 0, 0.7);
       transform: scale(1.1);
     }
 
@@ -127,18 +131,18 @@
       #lumos-trigger {
         bottom: 15px;
         right: 25px;
-        width: 70px;
-        height: 70px;
+        width: 91px;
+        height: 91px;
       }
       
       #lumos-trigger svg {
-        width: 35px !important;
-        height: 35px !important;
+        width: 46px !important;
+        height: 46px !important;
       }
       
       #lumos-label {
-        font-size: 25px;
-        right: 75px;
+        font-size: 33px;
+        right: 95px;
       }
     }
   `;

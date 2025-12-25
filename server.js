@@ -452,70 +452,70 @@ body { padding-top:220px; }
   .header-banner.top { height:220px; }
   .overlay.top { height:220px; }
   body { padding-top:220px; }
-  h1 { font-size:48px; }
+  h1 { font-size:53px; }
   .header-banner.home { background-size:80%; background-repeat:no-repeat; }
   
   /* Grid más grande para móvil */
   #grid { 
-    grid-template-columns: repeat(auto-fit, minmax(165px, 165px)); 
-    gap: 22px; 
+    grid-template-columns: repeat(auto-fit, minmax(182px, 182px)); 
+    gap: 24px; 
     padding: 20px 10px; 
   }
   
   /* Cards de libros más grandes */
   .book { 
-    width: 165px; 
-    padding: 11px; 
+    width: 182px; 
+    padding: 12px; 
     min-height: auto;
   }
   
   .book img { 
-    width: 115px; 
-    height: 182px; 
+    width: 127px; 
+    height: 200px; 
   }
   
   /* Texto más legible */
   .title { 
-    font-size: 18px; 
-    padding: 9px 5px; 
+    font-size: 20px; 
+    padding: 10px 6px; 
   }
   
   .author-span, .number-span { 
-    font-size: 15px; 
+    font-size: 17px; 
   }
   
   /* Botones más grandes */
   .top-buttons a { 
-    font-size: 24px; 
-    padding: 11px 20px; 
+    font-size: 26px; 
+    padding: 12px 22px; 
     margin: 4px; 
   }
   
   /* Formularios más accesibles */
   input[type="search"], select, button[type="submit"] { 
-    font-size: 20px; 
-    padding: 13px 18px; 
+    font-size: 22px; 
+    padding: 14px 20px; 
     margin: 5px; 
   }
   
   /* Avatares y emblemas más grandes */
   .avatar-rect, .emblem-rect { 
-    width: 115px; 
-    height: 154px; 
+    width: 127px; 
+    height: 170px; 
   }
   
   .avatar-rect { 
-    font-size: 40px; 
+    font-size: 44px; 
   }
   
   .emblem-rect svg { 
-    width: 60px; 
-    height: 60px; 
+    width: 66px; 
+    height: 66px; 
   }
   
   .count-badge { 
-    font-size: 15px; 
-    padding: 6px 13px; 
+    font-size: 17px; 
+    padding: 7px 14px; 
   }
   
   /* Botones flotantes más grandes en móvil */
@@ -523,17 +523,17 @@ body { padding-top:220px; }
   #stats-btn,
   #sync-kobo-btn,
   #upload-btn {
-    width: 62px !important;
-    height: 62px !important;
+    width: 68px !important;
+    height: 68px !important;
     bottom: 15px !important;
   }
   
   #stats-btn {
-    right: 165px !important;
+    right: 175px !important;
   }
   
   #sync-kobo-btn {
-    right: 95px !important;
+    right: 100px !important;
   }
   
   #upload-btn {
@@ -544,8 +544,8 @@ body { padding-top:220px; }
   #stats-btn svg,
   #sync-kobo-btn svg,
   #upload-btn svg {
-    width: 31px !important;
-    height: 31px !important;
+    width: 34px !important;
+    height: 34px !important;
   }
   
   /* Modal más accesible en móvil */
@@ -555,17 +555,17 @@ body { padding-top:220px; }
   }
   
   #login-modal h2 {
-    font-size: 24px !important;
+    font-size: 26px !important;
   }
   
   #login-modal input {
-    font-size: 18px !important;
-    padding: 15px !important;
+    font-size: 20px !important;
+    padding: 16px !important;
   }
   
   #login-modal button {
-    font-size: 18px !important;
-    padding: 15px 22px !important;
+    font-size: 20px !important;
+    padding: 16px 24px !important;
   }
 }
 `;
