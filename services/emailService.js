@@ -1,6 +1,145 @@
 const sgMail = require('@sendgrid/mail');
 
 /**
+ * Template CSS para todos los emails (estilo LUMOS)
+ */
+const LUMOS_EMAIL_STYLE = `
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'VT323', 'Courier New', monospace;
+      background: #000 !important;
+      color: #00FFFF !important;
+      padding: 20px;
+    }
+    
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: #000 !important;
+      border: 2px solid #00FFFF;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 0 20px rgba(0,255,255,0.3);
+    }
+    
+    .header {
+      background: #000 !important;
+      border-bottom: 2px solid #00FFFF;
+      padding: 20px;
+      text-align: center;
+    }
+    
+    .header h1 {
+      font-family: 'VT323', 'Courier New', monospace;
+      font-size: 24px;
+      color: #00FFFF !important;
+      margin-bottom: 5px;
+      letter-spacing: 2px;
+    }
+    
+    .header p {
+      font-size: 12px;
+      color: #00FFFF !important;
+      opacity: 0.7;
+      margin: 0;
+    }
+    
+    .content {
+      padding: 25px;
+      color: #00FFFF !important;
+    }
+    
+    .content p {
+      line-height: 1.6;
+      margin-bottom: 15px;
+      color: #00FFFF !important;
+      font-size: 14px;
+    }
+    
+    .content strong {
+      color: #00FFFF !important;
+      font-weight: bold;
+    }
+    
+    .book-info {
+      background: #0a0a0a !important;
+      border: 1px solid #00FFFF;
+      border-radius: 8px;
+      padding: 15px;
+      margin: 20px 0;
+    }
+    
+    .book-title {
+      font-size: 16px;
+      color: #00FFFF !important;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    
+    .book-author {
+      font-size: 12px;
+      color: #00FFFF !important;
+      opacity: 0.8;
+      font-style: italic;
+    }
+    
+    .alert-box {
+      background: #0a0a0a !important;
+      border-left: 3px solid #00FFFF;
+      padding: 12px 15px;
+      margin: 20px 0;
+      border-radius: 4px;
+    }
+    
+    .alert-box p {
+      margin: 0;
+      font-size: 13px;
+      color: #00FFFF !important;
+    }
+    
+    .button {
+      display: inline-block;
+      background: #000 !important;
+      border: 2px solid #00FFFF;
+      color: #00FFFF !important;
+      padding: 10px 20px;
+      text-decoration: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: bold;
+      margin: 20px 0;
+      transition: all 0.3s;
+    }
+    
+    .button:hover {
+      background: #00FFFF !important;
+      color: #000 !important;
+    }
+    
+    .footer {
+      background: #000 !important;
+      border-top: 2px solid #00FFFF;
+      padding: 15px;
+      text-align: center;
+      font-size: 11px;
+    }
+    
+    .footer p {
+      color: #00FFFF !important;
+      margin: 5px 0;
+    }
+  </style>
+`;
+
+/**
  * Servicio de envío de correos electrónicos usando SendGrid API REST
  * (No usa SMTP, evita bloqueos de firewall en Render)
  */
@@ -44,36 +183,33 @@ class EmailService {
         <head>
           <meta charset="utf-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <style>
-            body { background: #111 !important; color: #eee !important; font-family: 'MedievalSharp', Georgia, serif; padding: 24px; }
-            .card { max-width: 640px; margin: 0 auto; background: #1c1c1c !important; border: 2px solid #19E6D6; border-radius: 10px; box-shadow: 0 0 24px rgba(25,230,214,0.3); overflow: hidden; }
-            .header { background: linear-gradient(135deg, #19E6D6 0%, #0fb3a3 100%) !important; color: #0c0c0c !important; padding: 24px; text-align: center; }
-            .title { font-size: 24px; margin: 0; font-weight: bold; }
-            .subtitle { margin: 6px 0 0; opacity: 0.85; font-size: 14px; }
-            .content { padding: 24px; }
-            p { line-height: 1.7; margin: 0 0 14px; color: #e6e6e6 !important; }
-            .book { background: #252525 !important; border-left: 4px solid #19E6D6; padding: 16px; border-radius: 8px; margin: 18px 0; }
-            .book-title { color: #19E6D6 !important; font-weight: 700; font-size: 18px; }
-            .book-author { color: #b5b5b5 !important; font-style: italic; margin-top: 4px; }
-            .footer { padding: 16px 24px 22px; border-top: 1px solid rgba(25,230,214,0.25); color: #9a9a9a !important; font-size: 12px; text-align: center; background: #141414 !important; }
-          </style>
+          ${LUMOS_EMAIL_STYLE}
         </head>
         <body>
-          <div class="card">
+          <div class="container">
             <div class="header">
-              <p class="title">🔗 Solicitud registrada</p>
-              <p class="subtitle">Azkaban Reads – Confirmación</p>
+              <h1>🔗 SOLICITUD REGISTRADA</h1>
+              <p>Azkaban Reads – Guardián LUMOS</p>
             </div>
+            
             <div class="content">
               <p>Las sombras han tomado nota de tu petición. Tu solicitud ya está en los archivos de Azkaban Reads.</p>
-              <div class="book">
+              
+              <div class="book-info">
                 <div class="book-title">${bookTitle}</div>
                 <div class="book-author">${author}</div>
               </div>
-              <p>Cuando el libro sea capturado, enviaré un cuervo digital a esta dirección para avisarte. Si no lo ves, revisa la carpeta de spam.</p>
+              
+              <p>Cuando el libro sea capturado, enviaré un cuervo digital a esta dirección para avisarte.</p>
+              
+              <div class="alert-box">
+                <p>⚠️ Si no ves el email en tu bandeja de entrada, revisa la carpeta de <strong>spam</strong>.</p>
+              </div>
             </div>
+            
             <div class="footer">
               <p>🪄 LUMOS – Guardián de Azkaban Reads</p>
+              <p>"Los libros permanecen capturados entre estos muros... y solo los elegidos pueden acceder a ellos."</p>
             </div>
           </div>
         </body>
