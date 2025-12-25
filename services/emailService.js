@@ -200,9 +200,9 @@ class EmailService {
                     <td bgcolor="#000000" style="padding: 25px; color: #00FFFF;">
                       <p style="line-height: 1.6; margin-bottom: 15px; color: #00FFFF; font-size: 14px; font-family: 'VT323', monospace;">Las sombras han tomado nota de tu petición. Tu solicitud ya está en los archivos de Azkaban Reads.</p>
                       
-                      <table width="100%" cellpadding="0" cellspacing="0" bgcolor="#0a0a0a" style="border: 1px solid #00FFFF; border-radius: 8px; margin: 20px 0;">
+                      <table width="100%" cellpadding="0" cellspacing="0" bgcolor="#0a0a0a" style="background: #0a0a0a !important; background-color: #0a0a0a !important; border: 3px solid #00FFFF; margin: 20px 0;">
                         <tr>
-                          <td style="padding: 15px;">
+                          <td style="padding: 15px; background: #0a0a0a !important; background-color: #0a0a0a !important;">
                             <div style="font-size: 16px; color: #00FFFF; font-weight: bold; margin-bottom: 5px; font-family: 'VT323', monospace;">${bookTitle}</div>
                             <div style="font-size: 12px; color: #00FFFF; opacity: 0.8; font-style: italic; font-family: 'VT323', monospace;">${author}</div>
                           </td>
@@ -278,9 +278,9 @@ class EmailService {
                       
                       <p style="line-height: 1.6; margin-bottom: 15px; color: #00FFFF; font-size: 14px; font-family: 'VT323', monospace;">LUMOS te notifica que <strong style="color: #00FFFF;">${bookTitle}</strong> de <strong style="color: #00FFFF;">${author}</strong> está ahora disponible para su liberación.</p>
                       
-                      <table width="100%" cellpadding="0" cellspacing="0" bgcolor="#0a0a0a" style="border: 1px solid #00FFFF; border-radius: 8px; margin: 20px 0;">
+                      <table width="100%" cellpadding="0" cellspacing="0" bgcolor="#0a0a0a" style="background: #0a0a0a !important; background-color: #0a0a0a !important; border: 3px solid #00FFFF; margin: 20px 0;">
                         <tr>
-                          <td style="padding: 15px;">
+                          <td style="padding: 15px; background: #0a0a0a !important; background-color: #0a0a0a !important;">
                             <div style="font-size: 16px; color: #00FFFF; font-weight: bold; margin-bottom: 5px; font-family: 'VT323', monospace;">${bookTitle}</div>
                             <div style="font-size: 12px; color: #00FFFF; opacity: 0.8; font-style: italic; font-family: 'VT323', monospace;">${author}</div>
                           </td>
@@ -491,9 +491,9 @@ class EmailService {
                     <td bgcolor="#000000" style="padding: 25px; color: #00FFFF;">
                       <p style="line-height: 1.6; margin-bottom: 15px; color: #00FFFF; font-size: 14px; font-family: 'VT323', monospace;">Un prisionero ha clamado entre los muros. Su voz resuena en la oscuridad, pidiendo un libro que aún no ha sido capturado.</p>
                       
-                      <table width="100%" cellpadding="0" cellspacing="0" bgcolor="#0a0a0a" style="border: 1px solid #00FFFF; border-radius: 8px; margin: 20px 0;">
+                      <table width="100%" cellpadding="0" cellspacing="0" bgcolor="#0a0a0a" style="background: #0a0a0a !important; background-color: #0a0a0a !important; border: 3px solid #00FFFF; margin: 20px 0;">
                         <tr>
-                          <td style="padding: 15px;">
+                          <td style="padding: 15px; background: #0a0a0a !important; background-color: #0a0a0a !important;">
                             <div style="font-size: 16px; color: #00FFFF; font-weight: bold; margin-bottom: 5px; font-family: 'VT323', monospace;">${bookTitle}</div>
                             <div style="font-size: 12px; color: #00FFFF; opacity: 0.8; font-style: italic; font-family: 'VT323', monospace;">${author}</div>
                           </td>
@@ -502,9 +502,9 @@ class EmailService {
                       
                       <p style="line-height: 1.6; margin-bottom: 15px; color: #00FFFF; font-size: 14px; font-family: 'VT323', monospace;"><strong style="color: #00FFFF;">Solicitante:</strong> ${userEmail}</p>
                       
-                      <table width="100%" cellpadding="0" cellspacing="0" bgcolor="#0a0a0a" style="border-left: 3px solid #00FFFF; border-radius: 4px; margin: 20px 0;">
+                      <table width="100%" cellpadding="0" cellspacing="0" bgcolor="#0a0a0a" style="background: #0a0a0a !important; background-color: #0a0a0a !important; border-left: 3px solid #00FFFF; margin: 20px 0;">
                         <tr>
-                          <td style="padding: 12px 15px;">
+                          <td style="padding: 12px 15px; background: #0a0a0a !important; background-color: #0a0a0a !important;">
                             <p style="margin: 0; font-size: 13px; color: #00FFFF; font-family: 'VT323', monospace;">⚡ Acción: Captura este libro y libera al prisionero de su espera.</p>
                           </td>
                         </tr>
