@@ -1,12 +1,13 @@
-const nodemailer = require('nodemailer');
+const sgMail = require('@sendgrid/mail');
 
 /**
- * Servicio de envío de correos electrónicos
+ * Servicio de envío de correos electrónicos usando SendGrid API REST
+ * (No usa SMTP, evita bloqueos de firewall en Render)
  */
 class EmailService {
   constructor() {
     // Validar que las credenciales estén configuradas
-    console.log('🔧 Inicializando EmailService...');
+    console.log('🔧 Inicializando EmailService con SendGrid API REST...');
     console.log('   SENDGRID_API_KEY:', process.env.SENDGRID_API_KEY ? '✅ Configurado' : '❌ NO configurado');
     console.log('   EMAIL_FROM:', process.env.EMAIL_FROM ? '✅ Configurado: ' + process.env.EMAIL_FROM : '❌ NO configurado');
     
@@ -16,26 +17,12 @@ class EmailService {
       process.exit(1);
     }
     
-    // Usar SendGrid para enviar emails (gratuito hasta 100/día)
-    this.transporter = nodemailer.createTransport({
-      host: 'smtp.sendgrid.net',
-      port: 587,
-      secure: false,
-      auth: {
-        user: 'apikey',
-        pass: process.env.SENDGRID_API_KEY
-      },
-      tls: {
-        rejectUnauthorized: false
-      },
-      connectionTimeout: 10000,
-      greetingTimeout: 10000,
-      socketTimeout: 10000,
-      logger: true,
-      debug: true
-    });
+    // Configurar SDK de SendGrid (usa API REST, no SMTP)
+    sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+    this.sendgrid = sgMail;
+    this.fromEmail = process.env.EMAIL_FROM;
 
-    console.log('✅ EmailService inicializado con SendGrid (SMTP)');
+    console.log('✅ EmailService inicializado con SendGrid API REST (sin SMTP)');
   }
 
   /**
@@ -47,9 +34,9 @@ class EmailService {
   async sendBookRequestConfirmation(email, bookTitle, author) {
     console.log(`📧 [CONFIRMATION] Enviando confirmación a ${email} para "${bookTitle}" de ${author}`);
     
-    const mailOptions = {
-      from: process.env.EMAIL_FROM,
+    const mailContent = {
       to: email,
+      from: this.fromEmail,
       subject: '📜 Tu solicitud ha sido registrada en Azkaban Reads',
       html: `
         <!DOCTYPE html>
@@ -95,15 +82,15 @@ class EmailService {
     };
 
     try {
-      console.log(`   Enviando desde: ${process.env.EMAIL_FROM}`);
+      console.log(`   Enviando desde: ${this.fromEmail}`);
       console.log(`   Enviando a: ${email}`);
-      const info = await this.transporter.sendMail(mailOptions);
-      console.log(`✅ [CONFIRMATION] Email enviado exitosamente. ID: ${info.messageId}`);
+      const response = await this.sendgrid.send(mailContent);
+      console.log(`✅ [CONFIRMATION] Email enviado exitosamente. ID: ${response[0].headers['x-message-id']}`);
       return true;
     } catch (error) {
       console.error(`❌ [CONFIRMATION] Error enviando confirmación a ${email}:`, error.message);
       console.error('   Código de error:', error.code);
-      console.error('   Stack:', error.stack);
+      console.error('   Respuesta:', error.response?.body?.errors);
       return false;
     }
   }
@@ -116,8 +103,8 @@ class EmailService {
    * @param {string} bookUrl - URL del libro en la página
    */
   async sendBookCapturedEmail(email, bookTitle, author, bookUrl) {
-    const mailOptions = {
-      from: process.env.EMAIL_FROM,
+    const mailContent = {
+      from: this.fromEmail,
       to: email,
       subject: '📜 Un libro ha sido capturado en Azkaban Reads',
       html: `
@@ -289,11 +276,11 @@ class EmailService {
     };
 
     try {
-      await this.transporter.sendMail(mailOptions);
-      console.log(`Correo enviado a ${email} para el libro: ${bookTitle}`);
+      const response = await this.sendgrid.send(mailContent);
+      console.log(`📖 [CAPTURED] Correo de libro capturado enviado a ${email}. ID: ${response[0].headers['x-message-id']}`);
       return true;
     } catch (error) {
-      console.error('Error enviando correo:', error);
+      console.error(`❌ [CAPTURED] Error enviando correo a ${email}:`, error.message);
       return false;
     }
   }
@@ -304,8 +291,8 @@ class EmailService {
    * @param {string} notificationType - Tipo de notificación
    */
   async sendSubscriptionConfirmation(email, notificationType) {
-    const mailOptions = {
-      from: process.env.EMAIL_FROM,
+    const mailContent = {
+      from: this.fromEmail,
       to: email,
       subject: 'Vigilancia activada en Azkaban Reads',
       html: `
@@ -423,11 +410,11 @@ class EmailService {
     };
 
     try {
-      await this.transporter.sendMail(mailOptions);
-      console.log(`Correo de suscripción enviado a ${email}`);
+      const response = await this.sendgrid.send(mailContent);
+      console.log(`📬 [SUBSCRIPTION] Correo de vigilancia enviado a ${email}. ID: ${response[0].headers['x-message-id']}`);
       return true;
     } catch (error) {
-      console.error('Error enviando correo de suscripción:', error);
+      console.error(`❌ [SUBSCRIPTION] Error enviando correo de suscripción a ${email}:`, error.message);
       return false;
     }
   }
@@ -439,8 +426,8 @@ class EmailService {
    * @param {string} author - Autor del libro solicitado
    */
   async sendBookRequestNotificationToAdmin(userEmail, bookTitle, author) {
-    const mailOptions = {
-      from: process.env.EMAIL_FROM,
+    const mailContent = {
+      from: this.fromEmail,
       to: 'azkabanreads@gmail.com',
       subject: '🔗 Nueva solicitud de un prisionero - Azkaban Reads',
       html: `
@@ -594,20 +581,13 @@ class EmailService {
     };
 
     try {
-      // Timeout de 15 segundos para evitar esperas largas
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Timeout al enviar email')), 15000)
-      );
-      
-      const sendPromise = this.transporter.sendMail(mailOptions);
-      
-      await Promise.race([sendPromise, timeoutPromise]);
-      
-      console.log(`Notificación de solicitud enviada al admin para: ${bookTitle}`);
+      console.log(`📬 [ADMIN] Enviando notificación para solicitud: ${bookTitle}`);
+      const response = await this.sendgrid.send(mailContent);
+      console.log(`✅ [ADMIN] Notificación enviada al admin. ID: ${response[0].headers['x-message-id']}`);
       return true;
     } catch (error) {
-      console.error('Error enviando notificación al admin:', error);
-      console.error('Tipo de error:', error.code || error.message);
+      console.error(`❌ [ADMIN] Error enviando notificación:`, error.message);
+      console.error('   Respuesta del error:', error.response?.body?.errors);
       return false;
     }
   }
