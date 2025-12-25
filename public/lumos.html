@@ -285,6 +285,19 @@
       text-align: right;
     }
 
+    .message.alert {
+      background: #0a0a0a;
+      border: 1px solid #00FFFF;
+      border-left: 3px solid #00FFFF;
+      align-self: center;
+      width: 95%;
+      max-width: 300px;
+      padding: 12px 14px;
+      margin: 8px auto;
+      font-size: 14px;
+      color: #00FFFF;
+    }
+
     /* CHIPS / ACCIONES RÁPIDAS */
     .chips-container {
       display: flex;
@@ -978,6 +991,16 @@
       scrollToBottom();
     }
 
+    // Agregar mensaje de alerta (spam warning, etc)
+    function addAlertMessage(text) {
+      const messagesContainer = document.getElementById('lumos-messages');
+      const messageDiv = document.createElement('div');
+      messageDiv.className = 'message alert';
+      messageDiv.innerHTML = text;
+      messagesContainer.appendChild(messageDiv);
+      scrollToBottom();
+    }
+
     // Añadir mensaje del usuario (permite HTML controlado para iconos)
     function addUserMessage(text, allowHTML = false) {
       const messagesContainer = document.getElementById('lumos-messages');
@@ -1572,8 +1595,14 @@
 
         removeLoading();
         addLumosMessage(data.message);
+        
+        // Agregar aviso sobre spam después de 800ms
+        setTimeout(() => {
+          addAlertMessage('⚠️ Si no ves el email en tu bandeja de entrada, revisa la carpeta de <strong>spam</strong>.');
+        }, 800);
+        
         state.requestData = {};
-        showContinueOptions();
+        setTimeout(() => showContinueOptions(), 1200);
       } catch (error) {
         console.error('❌ Error al enviar solicitud:', error);
         removeLoading();

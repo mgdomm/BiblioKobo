@@ -201,10 +201,6 @@ class EmailService {
               </div>
               
               <p>Cuando el libro sea capturado, enviaré un cuervo digital a esta dirección para avisarte.</p>
-              
-              <div class="alert-box">
-                <p>⚠️ Si no ves el email en tu bandeja de entrada, revisa la carpeta de <strong>spam</strong>.</p>
-              </div>
             </div>
             
             <div class="footer">
@@ -271,10 +267,6 @@ class EmailService {
               <p>Los muros de Azkaban Reads protegen este conocimiento. Solo los elegidos pueden acceder a él.</p>
               
               <a href="${bookUrl}" class="button">🔓 LIBERAR EL LIBRO</a>
-              
-              <div class="alert-box">
-                <p>⚠️ Lo que está capturado no permanece disponible eternamente. Accede pronto antes de que las sombras lo reclamen de nuevo.</p>
-              </div>
             </div>
             
             <div class="footer">
