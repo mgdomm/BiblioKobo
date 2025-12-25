@@ -119,12 +119,13 @@
 
     @media (max-width: 768px) {
       #lumos-iframe-container {
-        width: calc(100% - 10px);
-        height: calc(100vh - 20px);
-        bottom: 10px;
-        right: 5px;
-        left: 5px;
-        border-radius: 12px;
+        width: 100%;
+        height: 100%;
+        bottom: 0;
+        right: 0;
+        left: 0;
+        top: 0;
+        border-radius: 0;
         max-width: none;
       }
 
