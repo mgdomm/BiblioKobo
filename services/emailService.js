@@ -13,22 +13,28 @@ class EmailService {
     if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
       console.error('❌ ERROR CRÍTICO: Credenciales de email no configuradas');
       console.error('   Verifica que EMAIL_USER y EMAIL_PASS estén en Render Environment Variables');
-      process.exit(1); // Detener el servidor si faltan credenciales
+      process.exit(1);
     }
     
     this.transporter = nodemailer.createTransport({
-      service: 'gmail',
+      host: 'smtp.gmail.com',
+      port: 465,  // Puerto seguro SSL
+      secure: true,  // Usar SSL desde el inicio
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
       },
-      // Configuración de timeouts para evitar esperas largas
-      connectionTimeout: 10000, // 10 segundos
+      tls: {
+        rejectUnauthorized: false  // Permitir certificados auto-firmados (importante en Render)
+      },
+      connectionTimeout: 10000,
       greetingTimeout: 10000,
-      socketTimeout: 10000
+      socketTimeout: 10000,
+      logger: true,  // Habilitar logs de nodemailer
+      debug: true    // Debug mode para ver detalles de conexión
     });
 
-    console.log('✅ EmailService inicializado correctamente');
+    console.log('✅ EmailService inicializado correctamente (Puerto 465 SSL)');
   }
 
   /**
