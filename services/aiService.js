@@ -39,9 +39,11 @@ function getRandomInitialMessage() {
 function detectIntent(message) {
   const lowerMessage = message.toLowerCase().trim();
   
-  // Patrones de detección
+  // Patrones de detección MEJORADOS
   const patterns = {
-    spoiler: /spoiler|spoilea|revelar|final|termina|acabar|muere|cuenta.*final|qué pasa/i,
+    spoiler_character: /spoiler.*(?:de|del|sobre|qué pasa con|qué le pasa a|personaje|muerte de)\s+(\w+)|qué le pasa a\s+(\w+)|muere\s+(\w+)|final.*(?:de|de la)\s+(\w+)/i,
+    spoiler_book: /spoiler.*(?:de|del|sobre|del libro|del libro titulado)\s+(.+?)(?:\?|$|por favor)|spoiler.*libro|final.*(?:del|de)\s+(.+?)(?:\?|$)/i,
+    spoiler: /spoiler|spoilea|revelar|final|termina|acabar|qué pasa|cuenta.*final/i,
     search: /busco|buscar|encontrar|quiero.*libro|dame.*libro|tienes.*libro|búsqueda/i,
     recommend: /recomien|recomienda|suger|qué.*leer|dame.*algo|sorpren|inspira/i,
     test: /test|quiz|cuestionario|descubr.*lector|qué.*tipo.*lector/i,
@@ -52,9 +54,26 @@ function detectIntent(message) {
     thanks: /gracias|perfecto|genial|excelente|ok|vale/i
   };
   
-  // Comprobar cada patrón
+  // Comprobar patrones específicos PRIMERO (más específicos)
+  if (patterns.spoiler_character.test(lowerMessage)) {
+    return {
+      intent: 'spoiler_character',
+      confidence: 0.9,
+      entities: extractEntities(lowerMessage, 'spoiler_character')
+    };
+  }
+  
+  if (patterns.spoiler_book.test(lowerMessage)) {
+    return {
+      intent: 'spoiler_book',
+      confidence: 0.9,
+      entities: extractEntities(lowerMessage, 'spoiler_book')
+    };
+  }
+  
+  // Luego patrones generales
   for (const [intent, pattern] of Object.entries(patterns)) {
-    if (pattern.test(lowerMessage)) {
+    if (intent !== 'spoiler_character' && intent !== 'spoiler_book' && pattern.test(lowerMessage)) {
       return {
         intent,
         confidence: 0.8,
@@ -89,15 +108,35 @@ function extractEntities(message, intent) {
     entities.query = message;
   }
   
-  if (intent === 'spoiler') {
-    // Intentar extraer nombre del libro
-    const bookMatch = message.match(/(?:de|del|sobre)\s+(.+?)(?:\?|$|por favor)/i);
-    if (bookMatch) {
+  if (intent === 'spoiler_character') {
+    // Extraer nombre del personaje
+    const charMatch = message.match(/(?:de|del|sobre|qué pasa con|qué le pasa a|personaje|muerte de)\s+(\w+(?:\s+\w+)?)|qué le pasa a\s+(\w+(?:\s+\w+)?)|muere\s+(\w+(?:\s+\w+)?)/i);
+    if (charMatch) {
+      entities.characterName = charMatch[1] || charMatch[2] || charMatch[3];
+    }
+    
+    // Extraer nombre del libro si está disponible
+    const bookMatch = message.match(/(?:en|del|de)\s+(.+?)(?:\?|$|por favor)/i);
+    if (bookMatch && !bookMatch[1].toLowerCase().includes(entities.characterName || '')) {
       entities.bookTitle = bookMatch[1].trim();
     }
   }
   
-  if (intent === 'recommend') {
+  if (intent === 'spoiler_book') {
+    // Intentar extraer nombre del libro
+    const bookMatch = message.match(/(?:de|del|sobre|del libro|del libro titulado)\s+(.+?)(?:\?|$|por favor)|spoiler.*libro|final.*(?:del|de)\s+(.+?)(?:\?|$)/i);
+    if (bookMatch) {
+      entities.bookTitle = (bookMatch[1] || bookMatch[2] || '').trim();
+    }
+    
+    // Intentar extraer autor si está disponible
+    const authorMatch = message.match(/(?:de|autor|escrito por)\s+(\w+(?:\s+\w+)?)/i);
+    if (authorMatch) {
+      entities.author = authorMatch[1].trim();
+    }
+  }
+  
+  if (intent === 'spoiler') {
     // Detectar preferencias
     if (/saga|serie/i.test(message)) entities.type = 'saga';
     if (/corto|autoconclusivo|único/i.test(message)) entities.type = 'standalone';
@@ -154,6 +193,61 @@ async function getLumosResponse({ message, context = {}, intent = null }) {
         ]
       };
       
+    case 'spoiler_character':
+      const charName = context.entities?.characterName;
+      const bookForChar = context.entities?.bookTitle;
+      
+      if (!charName) {
+        return {
+          text: '🔮 ¿Qué personaje te interesa? Dime su nombre... y si quieres, el libro del que viene.',
+          waitFor: 'character_name'
+        };
+      }
+      
+      if (!bookForChar) {
+        return {
+          text: `📖 Entiendo que buscas el destino de <strong>${charName}</strong>. ¿En qué libro ocurre esta historia?`,
+          waitFor: 'book_title'
+        };
+      }
+      
+      return {
+        text: `⚠️ ¿Confirmas que deseas el spoiler del personaje <strong>${charName}</strong> en <strong>${bookForChar}</strong>? No hay vuelta atrás...`,
+        actions: [
+          { type: 'spoiler', label: '🔓 Revelar spoiler', payload: { type: 'character', character: charName, book: bookForChar } },
+          { type: 'back', label: '← Cancelar' }
+        ],
+        requiresConfirmation: true
+      };
+      
+    case 'spoiler_book':
+      const book = context.entities?.bookTitle;
+      const author = context.entities?.author;
+      
+      if (!book) {
+        return {
+          text: '📚 ¿De qué libro deseas conocer el final? Dime el título...',
+          waitFor: 'book_title'
+        };
+      }
+      
+      if (!author) {
+        return {
+          text: `¿Del libro <strong>${book}</strong> de quién es? (el autor puede ayudar a encontrar el correcto)`,
+          waitFor: 'author_name',
+          optional: true
+        };
+      }
+      
+      return {
+        text: `⚠️ ¿Confirmas que deseas el spoiler de <strong>${book}</strong> de <strong>${author}</strong>? Una vez revelado, el hechizo no puede deshacerse.`,
+        actions: [
+          { type: 'spoiler', label: '🔓 Revelar spoiler', payload: { type: 'book', title: book, author: author } },
+          { type: 'back', label: '← Cancelar' }
+        ],
+        requiresConfirmation: true
+      };
+    
     case 'spoiler':
       const bookTitle = context.entities?.bookTitle || 'ese libro';
       return {
