@@ -1018,18 +1018,27 @@
       showLoading();
       
       try {
+        console.log('📨 Enviando solicitud de libro:', state.requestData);
+        const startTime = Date.now();
+        
         const response = await fetch('/api/requests/book', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(state.requestData)
         });
+        
+        const responseTime = Date.now() - startTime;
+        console.log(`⏱️ Respuesta recibida en ${responseTime}ms`);
+        
         const data = await response.json();
+        console.log('📬 Respuesta del servidor:', data);
 
         removeLoading();
         addLumosMessage(data.message);
         state.requestData = {};
         showContinueOptions();
       } catch (error) {
+        console.error('❌ Error al enviar solicitud:', error);
         removeLoading();
         addLumosMessage('Error al procesar la solicitud. Las sombras interfieren...');
       }

@@ -62,27 +62,30 @@ router.post('/book', async (req, res) => {
 
     await FileHandler.addToJSON(requestsPath, newRequest);
 
-    // Enviar notificación al admin
-    try {
-      console.log('Intentando enviar notificación al admin...');
-      const emailSent = await emailService.sendBookRequestNotificationToAdmin(
-        newRequest.email,
-        newRequest.title,
-        newRequest.author
-      );
-      if (emailSent) {
-        console.log('✅ Email de solicitud enviado exitosamente al admin');
-      } else {
-        console.log('⚠️ No se pudo enviar el email al admin');
-      }
-    } catch (emailError) {
-      console.error('❌ Error al enviar email al admin:', emailError);
-    }
-
+    // Responder inmediatamente al usuario
     res.json({
       success: true,
       message: 'Solicitud registrada. El libro permanece encerrado, y serás notificado cuando esté disponible.',
       request: newRequest
+    });
+
+    // Enviar notificación al admin en segundo plano (sin bloquear la respuesta)
+    setImmediate(async () => {
+      try {
+        console.log('Intentando enviar notificación al admin...');
+        const emailSent = await emailService.sendBookRequestNotificationToAdmin(
+          newRequest.email,
+          newRequest.title,
+          newRequest.author
+        );
+        if (emailSent) {
+          console.log('✅ Email de solicitud enviado exitosamente al admin');
+        } else {
+          console.log('⚠️ No se pudo enviar el email al admin');
+        }
+      } catch (emailError) {
+        console.error('❌ Error al enviar email al admin:', emailError);
+      }
     });
 
   } catch (error) {

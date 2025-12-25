@@ -5,12 +5,24 @@ const nodemailer = require('nodemailer');
  */
 class EmailService {
   constructor() {
+    // Validar que las credenciales estén configuradas
+    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+      console.warn('⚠️  ADVERTENCIA: Credenciales de email no configuradas');
+      console.warn('   EMAIL_USER:', process.env.EMAIL_USER ? '✅' : '❌ No configurado');
+      console.warn('   EMAIL_PASS:', process.env.EMAIL_PASS ? '✅' : '❌ No configurado');
+      console.warn('   El servicio de email no funcionará correctamente.');
+    }
+    
     this.transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
-      }
+      },
+      // Configuración de timeouts para evitar esperas largas
+      connectionTimeout: 10000, // 10 segundos
+      greetingTimeout: 10000,
+      socketTimeout: 10000
     });
   }
 
@@ -498,11 +510,20 @@ class EmailService {
     };
 
     try {
-      await this.transporter.sendMail(mailOptions);
+      // Timeout de 15 segundos para evitar esperas largas
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Timeout al enviar email')), 15000)
+      );
+      
+      const sendPromise = this.transporter.sendMail(mailOptions);
+      
+      await Promise.race([sendPromise, timeoutPromise]);
+      
       console.log(`Notificación de solicitud enviada al admin para: ${bookTitle}`);
       return true;
     } catch (error) {
       console.error('Error enviando notificación al admin:', error);
+      console.error('Tipo de error:', error.code || error.message);
       return false;
     }
   }
