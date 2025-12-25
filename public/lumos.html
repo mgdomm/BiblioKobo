@@ -506,7 +506,6 @@
       searchQuery: '',
       notificationData: {}
     };
-    console.log('DEBUG: Estado inicializado', state);
 
     // Toggle LUMOS visibility
     function toggleLumos() {
@@ -554,7 +553,6 @@
 
     // Añadir mensaje de LUMOS
     function addLumosMessage(text, isFirst = false) {
-        console.log('DEBUG: addLumosMessage llamada con', text);
       const messagesContainer = document.getElementById('lumos-messages');
       const messageDiv = document.createElement('div');
       messageDiv.className = 'message lumos';
@@ -565,7 +563,6 @@
 
     // Añadir mensaje del usuario
     function addUserMessage(text) {
-        console.log('DEBUG: addUserMessage llamada con', text);
       const messagesContainer = document.getElementById('lumos-messages');
       const messageDiv = document.createElement('div');
       messageDiv.className = 'message user';
@@ -587,13 +584,8 @@
         btn.addEventListener('click', function(e) {
           e.preventDefault();
           e.stopPropagation();
-          console.log('Botón clickeado:', option.action, option.data);
-          addLumosMessage('DEBUG: Botón ' + option.text + ' clickeado');
           if (window.handleOptionClick) {
             window.handleOptionClick(option.action, option.data);
-          } else {
-            console.error('handleOptionClick no está definida');
-            addLumosMessage('ERROR: handleOptionClick no está definida');
           }
         });
         optionsContainer.appendChild(btn);
@@ -605,9 +597,6 @@
 
     // Manejar clic en opciones
     window.handleOptionClick = async function(action, data) {
-      console.log('DEBUG: handleOptionClick llamada con:', action, data);
-      addLumosMessage('DEBUG: handleOptionClick llamada con acción: <b>' + String(action) + '</b> y data: ' + JSON.stringify(data));
-
       switch (action) {
         case 'search':
           addUserMessage('🔍 Buscar libro');
@@ -717,7 +706,6 @@
 
     // Mostrar opciones de recomendación
     function showRecommendOptions() {
-        console.log('DEBUG: showRecommendOptions llamada');
       addLumosMessage('¿Qué tipo de lectura buscas?');
       
       const options = [
@@ -762,7 +750,6 @@
 
     // Iniciar test lector
     function startReaderTest() {
-        console.log('DEBUG: startReaderTest llamada');
       addLumosMessage('Necesito conocer tus 3 libros favoritos para analizar tus preferencias.');
       addLumosMessage('Escribe el título de tu primer libro favorito:');
       state.currentFlow = 'test';
@@ -772,7 +759,6 @@
 
     // Mostrar opciones de notificación
     function showNotifyOptions() {
-        console.log('DEBUG: showNotifyOptions llamada');
       addLumosMessage('¿De qué quieres ser notificado?');
       
       const options = [
@@ -787,7 +773,6 @@
 
     // Iniciar solicitud de libro
     function startBookRequest() {
-        console.log('DEBUG: startBookRequest llamada');
       addLumosMessage('¿Qué libro buscas entre las sombras? Dime su título:');
       state.currentFlow = 'request';
       state.waitingFor = 'request_title';
@@ -796,7 +781,6 @@
 
     // Mostrar ayuda
     function showHelp() {
-        console.log('DEBUG: showHelp llamada');
       addLumosMessage(
         `<strong>¿Cómo funciona Azkaban Reads?</strong><br><br>
         🔍 <strong>Búsqueda:</strong> Encuentra libros por título, autor o saga.<br>

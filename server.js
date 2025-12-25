@@ -2126,8 +2126,8 @@ app.get('/stats', async (req, res) => {
                   minute: '2-digit'
                 })}</td>
                 <td>${req.status === 'notified' 
-                  ? '<span style="background: #d4edda; color: #155724; padding: 4px 12px; border-radius: 12px; font-size: 11px; font-weight: 600;">✅ Resuelto</span>'
-                  : '<span style="background: #fff3cd; color: #856404; padding: 4px 12px; border-radius: 12px; font-size: 11px; font-weight: 600;">⏳ Pendiente</span>'
+                  ? '<span style="display: inline-flex; align-items: center; gap: 6px; background: transparent; color: #19E6D6; padding: 6px 14px; border-radius: 20px; border: 2px solid #19E6D6; font-size: 12px; font-weight: 600;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>Resuelto</span>'
+                  : '<span style="display: inline-flex; align-items: center; gap: 6px; background: transparent; color: #19E6D6; padding: 6px 14px; border-radius: 20px; border: 2px solid #19E6D6; font-size: 12px; font-weight: 600;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>Pendiente</span>'
                 }</td>
                 <td>${req.notifiedAt ? new Date(req.notifiedAt).toLocaleDateString('es-ES', {
                   day: '2-digit',
