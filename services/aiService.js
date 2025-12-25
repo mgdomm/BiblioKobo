@@ -593,40 +593,102 @@ async function searchGoogleBooks(bookTitle) {
 }
 
 /**
- * Genera spoilers falsos plausibles pero creativos
+ * Genera spoilers falsos inteligentes basados en el spoiler real
+ * Analiza el contenido y crea variaciones plausibles y únicas
  */
 async function generateFakeSpoiler(trueSpoiler, bookTitle) {
-  const fakeSpoilers = [
-    // Giros clásicos
-    `${bookTitle} termina con el descubrimiento de que el personaje principal llevaba una doble vida.`,
-    `En el desenlace, el mentor resulta ser el verdadero antagonista de la historia.`,
-    `El final revela que hubo un gemelo secreto todo el tiempo.`,
-    `La verdadera naturaleza del poder del protagonista se revela en el último capítulo.`,
+  try {
+    // Extraer elementos del spoiler real para crear falsos relacionados
+    const elements = extractNarrativeElements(trueSpoiler, bookTitle);
     
-    // Muertes y sacrificios inesperados
-    `Uno de los personajes principales muere justo cuando estaba por ser rescatado.`,
-    `La muerte que presenciaste al inicio resulta ser completamente diferente a lo que imaginabas.`,
-    `El héroe se sacrifica pero su legado continúa de una forma inesperada.`,
+    // Templates de variación basados en elementos reales
+    const variations = [
+      // Cambiar el resultado
+      `${elements.protagonist} no logra cumplir su objetivo, y ${elements.antagonist || 'los enemigos'} prevalecen.`,
+      `${elements.protagonist} sobrevive pero pierde ${elements.stakes || 'lo más importante'}.`,
+      `El viaje de ${elements.protagonist} termina en ${elements.location || 'un lugar inesperado'} con ${elements.consequence || 'consecuencias irreversibles'}.`,
+      
+      // Cambiar personajes
+      `${elements.antagonist || 'Un personaje secundario'} es revelado como el verdadero héroe ${elements.ofWhat || 'de esta historia'}.`,
+      `${elements.ally || 'Un aliado'} traiciona a ${elements.protagonist} en el momento más crítico.`,
+      
+      // Cambiar el contexto
+      `Lo que parecía ${elements.challenge || 'un desafío'} resulta ser ${elements.revelation || 'una ilusión desde el inicio'}.`,
+      `${elements.protagonist} descubre que su verdadera misión era ${elements.truePurpose || 'completamente diferente a lo que creía'}.`,
+      
+      // Cambiar temporalidad
+      `Los eventos de ${bookTitle} sucedieron en un orden diferente al que fue narrado.`,
+      `Todo lo que ${elements.protagonist} vivió fue ${elements.wasActually || 'un entrenamiento o prueba'}.`,
+      
+      // Giros paradójicos
+      `${elements.protagonist} y ${elements.antagonist || 'su enemigo'} deben unirse para enfrentar la verdadera amenaza.`,
+      `La solución estaba en ${elements.location || 'donde empezó todo'}, pero ${elements.protagonist} tuvo que recorrer el mundo para verla.`,
+    ];
     
-    // Tramas ocultas
-    `Descubrimos que el romance fue una manipulación de principio a fin.`,
-    `La organización secreta que buscaban era gobernada por alguien muy cercano.`,
-    `El objeto que perseguían todo el libro era una falsificación.`,
-    
-    // Realidades alternativas
-    `Todo ocurrió en una línea temporal alternativa que afecta el presente.`,
-    `El final es completamente diferente según qué camino eligió el protagonista.`,
-    `Nada de lo que viste fue real: era un entrenamiento desde el inicio.`,
-    
-    // Revelaciones sorprendentes
-    `Los enemigos eran necesarios para proteger un secreto aún más oscuro.`,
-    `La verdadera batalla ocurre después del "final" que todos veían llegar.`,
-    `El antagonista tenía razón todo el tiempo sobre la verdadera amenaza.`,
-  ];
-  
-  const randomFake = fakeSpoilers[Math.floor(Math.random() * fakeSpoilers.length)];
-  return randomFake;
+    // Seleccionar una variación aleatoria
+    const randomVariation = variations[Math.floor(Math.random() * variations.length)];
+    return randomVariation;
+  } catch (error) {
+    console.error('Error en generateFakeSpoiler:', error);
+    // Fallback a templates simples si falla el análisis
+    return generateGenericFakeSpoiler(bookTitle);
+  }
 }
+
+/**
+ * Extrae elementos narrativos del spoiler real
+ */
+function extractNarrativeElements(spoiler, bookTitle) {
+  const text = spoiler.toLowerCase();
+  
+  // Buscar patrones de nombres (palabras en mayúscula en el spoiler original)
+  const uppercaseWords = spoiler.match(/\b[A-Z][a-zá-ú]+(?:\s+[A-Z][a-zá-ú]+)*\b/g) || [];
+  
+  const elements = {
+    protagonist: uppercaseWords[0] || 'El protagonista',
+    antagonist: uppercaseWords[1] || null,
+    ally: uppercaseWords[2] || 'Un aliado',
+    location: null,
+    stakes: 'todo lo importante',
+    consequence: 'cambios irreversibles',
+    challenge: 'el desafío principal',
+    revelation: 'una sorpresa',
+    truePurpose: 'diferente a lo esperado',
+    wasActually: 'no lo que parecía',
+    ofWhat: 'de esta historia'
+  };
+  
+  // Buscar patrones de ubicaciones
+  if (/castillo|fortaleza|torre|reino|tierra|mundo|ciudad|batalla/i.test(spoiler)) {
+    elements.location = 'un lugar desconocido';
+  }
+  if (/muerte|pérdida|sacrificio/i.test(spoiler)) {
+    elements.stakes = 'su vida o la de otros';
+  }
+  if (/secreto|verdad|oculto|descubre/i.test(spoiler)) {
+    elements.revelation = 'una verdad oculta';
+  }
+  
+  return elements;
+}
+
+/**
+ * Genera spoilers falsos genéricos como fallback
+ */
+function generateGenericFakeSpoiler(bookTitle) {
+  const templates = [
+    `En ${bookTitle}, el final es completamente diferente a lo que esperabas.`,
+    `El personaje que menos sospechabas es el clave en el desenlace de ${bookTitle}.`,
+    `${bookTitle} termina con una revelación que cambia todo lo anterior.`,
+    `El verdadero conflicto de ${bookTitle} ocurre después de lo que parece ser el final.`,
+    `En ${bookTitle}, el sacrificio de alguien no fue en vano, sino parte de un plan mayor.`,
+  ];
+  return templates[Math.floor(Math.random() * templates.length)];
+}
+
+/**
+ * Genera un spoiler aleatorio (versión antigua - mantener por compatibilidad)
+ */
 
 // Fallback para entorno sin fuentes externas
 function generateFallbackTrueSpoiler(bookTitle) {
