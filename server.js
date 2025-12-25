@@ -2009,7 +2009,20 @@ app.get('/stats', async (req, res) => {
     .stat-card:hover { transform: translateY(-3px); box-shadow: 0 5px 20px rgba(25,230,214,0.2); border-color: rgba(25,230,214,0.6); }
     .stat-number { font-family: 'MedievalSharp', cursive; font-size: 36px; color: #19E6D6; font-weight: bold; margin: 10px 0; }
     .stat-label { font-size: 16px; color: #999; text-transform: uppercase; letter-spacing: 1px; }
-    .stat-icon { font-size: 24px; margin-bottom: 10px; }
+    .stat-icon { 
+      width: 40px; 
+      height: 40px; 
+      margin: 0 auto 10px; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center;
+    }
+    .stat-icon svg { 
+      width: 32px; 
+      height: 32px; 
+      stroke: #19E6D6; 
+      fill: none;
+    }
     
     .top-list { list-style: none; padding: 0; margin: 15px 0 0 0; }
     .top-list li { display: flex; justify-content: space-between; padding: 10px; margin: 5px 0; background: rgba(0,0,0,0.3); border-radius: 6px; border-left: 3px solid #19E6D6; }
@@ -2032,60 +2045,60 @@ app.get('/stats', async (req, res) => {
   <div class="dashboard-content">
     <!-- Estadísticas Generales -->
     <div style="margin-bottom: 30px;">
-      <h2 style="font-family: 'MedievalSharp', cursive; color: #19E6D6; font-size: 24px; margin: 0 0 20px 0; padding-left: 10px;">📊 Estadísticas Generales</h2>
+      <h2 style="font-family: 'MedievalSharp', cursive; color: #19E6D6; font-size: 24px; margin: 0 0 20px 0; padding-left: 10px;"><svg viewBox="0 0 24 24" fill="none" stroke="#19E6D6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 28px; height: 28px; vertical-align: middle; margin-right: 8px;"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>Estadísticas Generales</h2>
       <div class="stats-grid">
         <div class="stat-card">
-          <div class="stat-icon">📚</div>
+          <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg></div>
           <div class="stat-number">${totalLibros}</div>
           <div class="stat-label">Total Libros</div>
         </div>
         <div class="stat-card">
-          <div class="stat-icon">✍️</div>
+          <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg></div>
           <div class="stat-number">${totalAutores}</div>
           <div class="stat-label">Autores</div>
         </div>
         <div class="stat-card">
-          <div class="stat-icon">📖</div>
+          <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg></div>
           <div class="stat-number">${totalSagas}</div>
           <div class="stat-label">Sagas</div>
         </div>
         <div class="stat-card">
-          <div class="stat-icon">🔢</div>
+          <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line><path d="M8 14h.01"></path><path d="M12 14h.01"></path><path d="M16 14h.01"></path><path d="M8 18h.01"></path><path d="M12 18h.01"></path><path d="M16 18h.01"></path></svg></div>
           <div class="stat-number">${librosConISBN}</div>
           <div class="stat-label">Con ISBN</div>
         </div>
         <div class="stat-card">
-          <div class="stat-icon">🏢</div>
+          <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg></div>
           <div class="stat-number">${librosConPublisher}</div>
           <div class="stat-label">Con Editorial</div>
         </div>
         <div class="stat-card">
-          <div class="stat-icon">📄</div>
+          <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg></div>
           <div class="stat-number">${librosConPageCount}</div>
           <div class="stat-label">Con Páginas</div>
         </div>
         <div class="stat-card">
-          <div class="stat-icon">🏷️</div>
+          <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg></div>
           <div class="stat-number">${librosConCategories}</div>
           <div class="stat-label">Con Categorías</div>
         </div>
         <div class="stat-card">
-          <div class="stat-icon">📅</div>
+          <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg></div>
           <div class="stat-number">${librosConFecha}</div>
           <div class="stat-label">Con Fecha Pub.</div>
         </div>
         <div class="stat-card">
-          <div class="stat-icon">🌐</div>
+          <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg></div>
           <div class="stat-number">${librosConIdioma}</div>
           <div class="stat-label">Con Idioma</div>
         </div>
         <div class="stat-card">
-          <div class="stat-icon">📥</div>
+          <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg></div>
           <div class="stat-number">${downloadCount}</div>
           <div class="stat-label">Descargas (sesión)</div>
         </div>
         <div class="stat-card">
-          <div class="stat-icon">📤</div>
+          <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg></div>
           <div class="stat-number">${uploadsReales}</div>
           <div class="stat-label">Uploads</div>
         </div>
@@ -2094,9 +2107,9 @@ app.get('/stats', async (req, res) => {
     
     <!-- Solicitudes de Libros -->
     <div class="section">
-      <h2>📨 Solicitudes de Libros (${requests.length})</h2>
+      <h2><svg viewBox="0 0 24 24" fill="none" stroke="#19E6D6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 28px; height: 28px; vertical-align: middle; margin-right: 8px;"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>Solicitudes de Libros (${requests.length})</h2>
       <p style="color: #999; margin-bottom: 15px; font-size: 14px;">
-        ⏳ Pendientes: ${pendingRequests.length} | ✅ Resueltas: ${completedRequests.length}
+        <svg viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px; vertical-align: middle; margin-right: 4px;"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>Pendientes: ${pendingRequests.length} | <svg viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px; vertical-align: middle; margin-right: 4px; margin-left: 4px;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>Resueltas: ${completedRequests.length}
       </p>
       
       ${requests.length === 0 ? 
@@ -2145,7 +2158,7 @@ app.get('/stats', async (req, res) => {
     
     <!-- Top Rankings -->
     <div class="section">
-      <h2>🏆 Top Rankings</h2>
+      <h2><svg viewBox="0 0 24 24" fill="none" stroke="#19E6D6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 28px; height: 28px; vertical-align: middle; margin-right: 8px;"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg>Top Rankings</h2>
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
         <div>
           <h3 style="color: #19E6D6; font-family: 'MedievalSharp', cursive; font-size: 18px; margin-bottom: 15px;">Top 5 Autores</h3>
