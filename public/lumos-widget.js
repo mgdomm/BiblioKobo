@@ -127,18 +127,18 @@
       #lumos-trigger {
         bottom: 15px;
         right: 25px;
-        width: 56px;
-        height: 56px;
+        width: 70px;
+        height: 70px;
       }
       
       #lumos-trigger svg {
-        width: 28px !important;
-        height: 28px !important;
+        width: 35px !important;
+        height: 35px !important;
       }
       
       #lumos-label {
-        font-size: 20px;
-        right: 60px;
+        font-size: 25px;
+        right: 75px;
       }
     }
   `;
