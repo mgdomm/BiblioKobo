@@ -153,6 +153,13 @@ router.post('/notify', async (req, res) => {
 
     const result = await notifier.subscribeToNotifications(email, type, filters || {});
 
+    // Enviar notificación al admin en background
+    if (result.success) {
+      setImmediate(async () => {
+        await emailService.sendSubscriptionNotificationToAdmin(email, type, filters || {});
+      });
+    }
+
     res.json({
       success: result.success,
       message: result.success 

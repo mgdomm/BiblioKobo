@@ -537,6 +537,95 @@ class EmailService {
       return false;
     }
   }
-}
 
-module.exports = new EmailService();
+  /**
+   * Envía un correo al admin cuando alguien se suscribe a notificaciones
+   * @param {string} userEmail - Correo del usuario que se suscribe
+   * @param {string} type - Tipo de notificación (all, author, saga)
+   * @param {object} filters - Filtros adicionales
+   */
+  async sendSubscriptionNotificationToAdmin(userEmail, type, filters = {}) {
+    let typeLabel = '';
+    let filterText = '';
+
+    switch(type) {
+      case 'all':
+        typeLabel = 'Todas las novedades';
+        break;
+      case 'author':
+        typeLabel = 'Novedades de autor';
+        filterText = filters.author ? ` - ${filters.author}` : '';
+        break;
+      case 'saga':
+        typeLabel = 'Novedades de saga';
+        filterText = filters.saga ? ` - ${filters.saga}` : '';
+        break;
+      default:
+        typeLabel = 'Notificaciones personalizadas';
+    }
+
+    const mailContent = {
+      from: this.fromEmail,
+      to: 'azkabanreads@gmail.com',
+      subject: '🔔 Nueva suscripción a notificaciones - Azkaban Reads',
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          ${LUMOS_EMAIL_STYLE}
+        </head>
+        <body bgcolor="#000000">
+          <table width="100%" cellpadding="0" cellspacing="0" bgcolor="#000000">
+            <tr>
+              <td align="center" style="padding: 20px;">
+                <table width="600" cellpadding="0" cellspacing="0" bgcolor="#000000" style="border: 2px solid #00FFFF; border-radius: 12px;">
+                  <tr>
+                    <td bgcolor="#000000" style="border-bottom: 2px solid #00FFFF; padding: 20px; text-align: center;">
+                      <h1 style="font-family: 'VT323', monospace; font-size: 24px; color: #00FFFF; margin: 0; letter-spacing: 2px;">🔔 NUEVA SUSCRIPCIÓN</h1>
+                      <p style="font-size: 12px; color: #00FFFF; opacity: 0.7; margin: 5px 0 0 0;">Azkaban Reads – Sistema de Notificaciones</p>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td bgcolor="#000000" style="padding: 25px; color: #00FFFF;">
+                      <p style="line-height: 1.6; margin-bottom: 15px; color: #00FFFF; font-size: 14px; font-family: 'VT323', monospace;">Un nuevo custodio se ha suscrito a las notificaciones de Azkaban Reads. Estarán pendientes de las novedades que lleguen.</p>
+                      
+                      <table width="100%" cellpadding="0" cellspacing="0" bgcolor="#0a0a0a" style="background: #0a0a0a !important; background-color: #0a0a0a !important; border: 3px solid #00FFFF; margin: 20px 0;">
+                        <tr>
+                          <td style="padding: 15px; background: #0a0a0a !important; background-color: #0a0a0a !important;">
+                            <div style="font-size: 14px; color: #00FFFF; margin-bottom: 8px; font-family: 'VT323', monospace;"><strong>Correo:</strong> ${userEmail}</div>
+                            <div style="font-size: 14px; color: #00FFFF; margin-bottom: 0px; font-family: 'VT323', monospace;"><strong>Tipo:</strong> ${typeLabel}${filterText}</div>
+                          </td>
+                        </tr>
+                      </table>
+                      
+                      <p style="line-height: 1.6; margin-bottom: 15px; color: #00FFFF; font-size: 14px; font-family: 'VT323', monospace;">Cuando un libro nuevo sea capturado que coincida con sus preferencias, recibirán una notificación.</p>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td bgcolor="#000000" style="border-top: 2px solid #00FFFF; padding: 15px; text-align: center; font-size: 11px;">
+                      <p style="color: #00FFFF; margin: 5px 0; font-family: 'VT323', monospace;">🪄 LUMOS – Sistema de Azkaban Reads</p>
+                      <p style="color: #00FFFF; margin: 5px 0; font-family: 'VT323', monospace;">"La vigilancia nunca cesa en los muros de Azkaban."</p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </body>
+        </html>
+      `
+    };
+
+    try {
+      console.log(`📬 [SUBSCRIPTION ADMIN] Enviando notificación para suscripción: ${typeLabel}`);
+      const response = await this.sendgrid.send(mailContent);
+      console.log(`✅ [SUBSCRIPTION ADMIN] Notificación enviada al admin. ID: ${response[0].headers['x-message-id']}`);
+      return true;
+    } catch (error) {
+      console.error(`❌ [SUBSCRIPTION ADMIN] Error enviando notificación:`, error.message);
+      console.error('   Respuesta del error:', error.response?.body?.errors);
+      return false;
+    }
+  }
