@@ -113,21 +113,47 @@ console.log('Script cargado. Funciones disponibles.');
 </html>`);
 });
 
-// Auth: prioriza OAuth si existe, sino usa Service Account
+// Auth: prioriza OAuth (variables de entorno) si existe, sino usa Service Account
 const OAUTH_CREDENTIALS = path.join(__dirname, 'oauth-credentials.json');
 const OAUTH_TOKEN = path.join(__dirname, 'oauth-token.json');
 const SERVICE_ACCOUNT_FILE = path.join(__dirname, 'service-account.json');
 
-const hasOAuth = fs.existsSync(OAUTH_TOKEN) && fs.existsSync(OAUTH_CREDENTIALS);
+// Detectar OAuth desde variables de entorno O archivos locales
+const hasOAuthEnv = process.env.OAUTH_CLIENT_ID && process.env.OAUTH_CLIENT_SECRET && process.env.OAUTH_ACCESS_TOKEN;
+const hasOAuthFiles = fs.existsSync(OAUTH_TOKEN) && fs.existsSync(OAUTH_CREDENTIALS);
+const hasOAuth = hasOAuthEnv || hasOAuthFiles;
 const hasServiceAccount = fs.existsSync(SERVICE_ACCOUNT_FILE);
 
 let driveUpload = null; // se usa para subidas
 let driveRead = null;   // se usa para listados/descargas
 
 if (hasOAuth) {
-  // Usar OAuth (cuenta personal)
-  const credentials = JSON.parse(fs.readFileSync(OAUTH_CREDENTIALS));
-  const token = JSON.parse(fs.readFileSync(OAUTH_TOKEN));
+  // Usar OAuth (cuenta personal) - desde env o archivos
+  let credentials, token;
+  
+  if (hasOAuthEnv) {
+    // Leer desde variables de entorno (Render)
+    credentials = {
+      installed: {
+        client_id: process.env.OAUTH_CLIENT_ID,
+        client_secret: process.env.OAUTH_CLIENT_SECRET,
+        redirect_uris: ['http://localhost']
+      }
+    };
+    token = {
+      access_token: process.env.OAUTH_ACCESS_TOKEN,
+      refresh_token: process.env.OAUTH_REFRESH_TOKEN || null,
+      scope: 'https://www.googleapis.com/auth/drive.file',
+      token_type: 'Bearer'
+    };
+    console.log('🌐 OAuth cargado desde variables de entorno (Render)');
+  } else {
+    // Leer desde archivos locales (desarrollo)
+    credentials = JSON.parse(fs.readFileSync(OAUTH_CREDENTIALS));
+    token = JSON.parse(fs.readFileSync(OAUTH_TOKEN));
+    console.log('💾 OAuth cargado desde archivos locales');
+  }
+  
   const { client_id, client_secret, redirect_uris } = credentials.installed || credentials.web;
   
   const oauthAuth = new google.auth.OAuth2(client_id, client_secret, redirect_uris[0]);
@@ -3836,15 +3862,23 @@ app.post('/api/upload-to-drive', upload.single('file'), async (req, res) => {
 
     // Evitar intentos con Service Account (sin cuota de subida)
     if (!hasOAuth) {
-      console.error('[UPLOAD] ❌ OAuth no disponible. Archivos faltantes:', {
+      console.error('[UPLOAD] ❌ OAuth no disponible. Variables de entorno faltantes:', {
+        'OAUTH_CLIENT_ID': !!process.env.OAUTH_CLIENT_ID,
+        'OAUTH_CLIENT_SECRET': !!process.env.OAUTH_CLIENT_SECRET,
+        'OAUTH_ACCESS_TOKEN': !!process.env.OAUTH_ACCESS_TOKEN,
         'oauth-credentials.json': fs.existsSync(OAUTH_CREDENTIALS),
         'oauth-token.json': fs.existsSync(OAUTH_TOKEN)
       });
       return res.status(503).json({ 
-        error: 'Para subir archivos necesitas configurar OAuth2. Ejecuta: node generate-oauth-token.js',
+        error: 'Para subir archivos necesitas configurar OAuth2 en variables de entorno o archivos locales',
         details: {
-          hasCredentials: fs.existsSync(OAUTH_CREDENTIALS),
-          hasToken: fs.existsSync(OAUTH_TOKEN)
+          hasEnvVars: hasOAuthEnv,
+          hasFiles: hasOAuthFiles,
+          missingVars: {
+            OAUTH_CLIENT_ID: !process.env.OAUTH_CLIENT_ID,
+            OAUTH_CLIENT_SECRET: !process.env.OAUTH_CLIENT_SECRET,
+            OAUTH_ACCESS_TOKEN: !process.env.OAUTH_ACCESS_TOKEN
+          }
         }
       });
     }
