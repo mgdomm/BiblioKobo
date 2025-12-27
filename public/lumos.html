@@ -906,8 +906,36 @@
   <link rel="stylesheet" href="/themes/default.css">
   <link rel="stylesheet" href="/themes/stranger-things.css">
   <!-- === END THEME SYSTEM === -->
+  <script>
+    (function() {
+      const applyTheme = (themeName) => {
+        const nextTheme = themeName || 'stranger';
+        document.documentElement.setAttribute('data-theme', nextTheme);
+        if (document.body) {
+          document.body.setAttribute('data-theme', nextTheme);
+        } else {
+          document.addEventListener('DOMContentLoaded', () => document.body.setAttribute('data-theme', nextTheme), { once: true });
+        }
+      };
+
+      const savedTheme = localStorage.getItem('theme') || 'stranger';
+      applyTheme(savedTheme);
+
+      window.addEventListener('storage', (event) => {
+        if (event.key === 'theme' && event.newValue) {
+          applyTheme(event.newValue);
+        }
+      });
+
+      window.addEventListener('message', (event) => {
+        if (event.data && event.data.type === 'THEME_CHANGED' && event.data.theme) {
+          applyTheme(event.data.theme);
+        }
+      });
+    })();
+  </script>
 </head>
-<body data-theme="stranger">
+<body>
 
   <!-- Definiciones SVG reutilizables -->
   <svg style="display:none;">

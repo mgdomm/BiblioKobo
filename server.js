@@ -966,6 +966,18 @@ const themeScript = `
     body.setAttribute('data-theme', themeName);
     localStorage.setItem('theme', themeName);
     console.log('✅ data-theme y localStorage actualizados a:', themeName);
+    try {
+      window.postMessage({ type: 'THEME_CHANGED', theme: themeName }, '*');
+      document.querySelectorAll('iframe').forEach(frame => {
+        try {
+          frame.contentWindow?.postMessage({ type: 'THEME_CHANGED', theme: themeName }, '*');
+        } catch (iframeErr) {
+          console.warn('⚠️ No se pudo notificar al iframe:', iframeErr.message);
+        }
+      });
+    } catch (notifyErr) {
+      console.warn('⚠️ Error notificando nuevo tema:', notifyErr.message);
+    }
     
     // Cambiar imagen de fondo del banner
     const banner = document.querySelector('.header-banner.top, .header-banner.home');

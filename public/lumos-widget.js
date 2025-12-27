@@ -13,6 +13,33 @@
 
   // CSS del widget
   const styles = `
+    :root {
+      --lumos-trigger-bg: rgba(0, 0, 0, 0.75);
+      --lumos-trigger-border: #19E6D6;
+      --lumos-trigger-color: #19E6D6;
+      --lumos-trigger-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+      --lumos-trigger-shadow-hover: 0 0 15px rgba(25,230,214,0.5), 0 4px 12px rgba(0, 0, 0, 0.7);
+      --lumos-label-shadow: rgba(25, 230, 214, 0.8);
+      --lumos-iframe-border: rgba(25,230,214,0.4);
+      --lumos-iframe-shadow: 0 10px 50px rgba(0, 0, 0, 0.8);
+    }
+
+    body[data-theme="default"] {
+      --lumos-trigger-border: #00FFFF;
+      --lumos-trigger-color: #00FFFF;
+      --lumos-trigger-shadow-hover: 0 0 15px rgba(0,255,255,0.6), 0 4px 12px rgba(0,0,0,0.7);
+      --lumos-label-shadow: rgba(0,255,255,0.85);
+      --lumos-iframe-border: rgba(0,255,255,0.4);
+    }
+
+    body[data-theme="stranger"] {
+      --lumos-trigger-border: #ff305b;
+      --lumos-trigger-color: #ff305b;
+      --lumos-trigger-shadow-hover: 0 0 18px rgba(255,48,91,0.6), 0 4px 16px rgba(0,0,0,0.8);
+      --lumos-label-shadow: rgba(255,48,91,0.8);
+      --lumos-iframe-border: rgba(255,48,91,0.5);
+    }
+
     #lumos-trigger {
       position: fixed;
       bottom: 20px;
@@ -20,10 +47,10 @@
       width: 48px;
       height: 48px;
       border-radius: 50%;
-      background: rgba(0, 0, 0, 0.75);
+      background: var(--lumos-trigger-bg);
       backdrop-filter: blur(4px);
       -webkit-backdrop-filter: blur(4px);
-      border: 2px solid #19E6D6;
+      border: 2px solid var(--lumos-trigger-border);
       cursor: pointer;
       z-index: 9999;
       display: flex;
@@ -31,13 +58,13 @@
       justify-content: center;
       transition: 0.25s;
       padding: 0;
-      color: #19E6D6;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+      color: var(--lumos-trigger-color);
+      box-shadow: var(--lumos-trigger-shadow);
     }
 
     #lumos-trigger:hover {
       background: rgba(0, 0, 0, 0.85);
-      box-shadow: 0 0 15px rgba(25,230,214,0.5), 0 4px 12px rgba(0, 0, 0, 0.7);
+      box-shadow: var(--lumos-trigger-shadow-hover);
       transform: scale(1.1);
     }
 
@@ -56,7 +83,7 @@
       position: absolute;
       right: 50px;
       background: transparent;
-      color: #19E6D6;
+      color: var(--lumos-trigger-color);
       font-family: 'MedievalSharp', serif;
       font-size: 24px;
       font-weight: bold;
@@ -68,7 +95,7 @@
       padding: 0;
       overflow: hidden;
       transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-      filter: drop-shadow(0 0 10px rgba(25, 230, 214, 0.8));
+      filter: drop-shadow(0 0 10px var(--lumos-label-shadow));
     }
 
     #lumos-iframe-container {
@@ -80,7 +107,8 @@
       z-index: 10000;
       display: none;
       border-radius: 15px;
-      box-shadow: 0 10px 50px rgba(0, 0, 0, 0.8);
+      border: 1px solid var(--lumos-iframe-border);
+      box-shadow: var(--lumos-iframe-shadow);
       overflow: hidden;
       animation: slideIn 0.3s ease;
     }
