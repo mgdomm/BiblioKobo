@@ -924,6 +924,32 @@ body[data-theme="stranger"] .saga a:hover {
 }
 `;
 
+// Script INLINE para aplicar tema ANTES de renderizar (evita flash)
+const themeInitScript = `
+<script>
+(function() {
+  const savedTheme = localStorage.getItem('theme') || 'stranger';
+  document.documentElement.setAttribute('data-theme', savedTheme);
+  
+  // Aplicar al body también cuando esté listo
+  document.addEventListener('DOMContentLoaded', function() {
+    document.body.setAttribute('data-theme', savedTheme);
+    
+    // Establecer imagen del banner según tema
+    const banner = document.querySelector('.header-banner.top, .header-banner.home');
+    if (banner) {
+      const isInicio = window.location.pathname === '/';
+      const themeImages = {
+        'default': isInicio ? '/cover/portada/portada1.webp' : '/cover/secuendarias/portada11.webp',
+        'stranger': isInicio ? '/cover/portada/starnger_portada1.webp' : '/cover/secuendarias/stranger_portada11.webp'
+      };
+      banner.style.backgroundImage = "url('" + themeImages[savedTheme] + "')";
+    }
+  });
+})();
+</script>
+`;
+
 // Script global para aplicar tema en todas las páginas
 const themeScript = `
 <script>
@@ -1540,8 +1566,8 @@ function renderBookPage({ libros, titlePage, tipo, nombre, req, noResultsHtml })
 
   return `<!DOCTYPE html>
 <html lang="es">
-<head><meta charset="UTF-8"><title>${titlePage}</title><style>${css}</style>${themeScript}</head>
-<body data-theme="stranger">
+<head><meta charset="UTF-8"><title>${titlePage}</title><style>${css}</style>${themeInitScript}${themeScript}</head>
+<body>
   <div class="header-banner top" style="background-image:url('/cover/secuendarias/stranger_portada11.webp');"></div>
   <div class="overlay top">
     <div class="top-buttons secondary"><a href="/">Inicio</a></div>
@@ -1769,7 +1795,7 @@ function renderBookPage({ libros, titlePage, tipo, nombre, req, noResultsHtml })
 app.get('/', (req,res)=>{
   res.send(`<!DOCTYPE html>
 <html lang="es">
-  <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Azkaban Reads</title><link rel="preload" as="image" href="/cover/portada/starnger_portada1.webp"><style>${css}</style>${themeScript}<style>body{padding-top:0;} .header-banner.home{background-size:cover;background-position:center;will-change:transform;background-color:#0a0a0a;opacity:0;} .header-banner.home.loaded{animation:fadeInBanner 0.4s ease forwards;} .header-banner.home::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.4) 70%, #0a0a0a 100%);pointer-events:none;z-index:1;} .overlay.home{opacity:0;visibility:hidden;} .overlay.home.loaded{animation:fadeIn 0.3s ease 0.2s forwards;z-index:2;} @keyframes fadeInBanner{from{opacity:0;} to{opacity:1;}} @keyframes fadeIn{from{opacity:0;} to{opacity:1;visibility:visible;}}</style></head>
+  <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Azkaban Reads</title><link rel="preload" as="image" href="/cover/portada/starnger_portada1.webp"><style>${css}</style>${themeInitScript}${themeScript}<style>body{padding-top:0;} .header-banner.home{background-size:cover;background-position:center;will-change:transform;background-color:#0a0a0a;opacity:0;} .header-banner.home.loaded{animation:fadeInBanner 0.4s ease forwards;} .header-banner.home::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.4) 70%, #0a0a0a 100%);pointer-events:none;z-index:1;} .overlay.home{opacity:0;visibility:hidden;} .overlay.home.loaded{animation:fadeIn 0.3s ease 0.2s forwards;z-index:2;} @keyframes fadeInBanner{from{opacity:0;} to{opacity:1;}} @keyframes fadeIn{from{opacity:0;} to{opacity:1;visibility:visible;}}</style></head>
 <body data-theme="stranger">
   <div class="header-banner home" id="home-bg" style="height:100vh; background-size:cover; background-position:center; background-image:url('/cover/portada/starnger_portada1.webp');"></div>
   <div class="overlay home" id="home-overlay" style="justify-content:center;">
@@ -2002,8 +2028,8 @@ app.get('/autores', (req,res)=>{
   }).join('') : getRandomNoResultHtml();
   res.send(`<!DOCTYPE html>
 <html lang="es">
-<head><meta charset="UTF-8"><title>Autores</title><style>${css}</style>${themeScript}</head>
-<body data-theme="stranger">
+<head><meta charset="UTF-8"><title>Autores</title><style>${css}</style>${themeInitScript}${themeScript}</head>
+<body>
   <div class="header-banner top" style="background-image:url('/cover/secuendarias/stranger_portada11.webp');"></div>
   <div class="overlay top">
     <div class="top-buttons secondary"><a href="/">Inicio</a></div>
@@ -2087,8 +2113,8 @@ app.get('/sagas', (req,res)=>{
   }).join('') : getRandomNoResultHtml();
   res.send(`<!DOCTYPE html>
 <html lang="es">
-<head><meta charset="UTF-8"><title>Sagas</title><style>${css}</style>${themeScript}</head>
-<body data-theme="stranger">
+<head><meta charset="UTF-8"><title>Sagas</title><style>${css}</style>${themeInitScript}${themeScript}</head>
+<body>
   <div class="header-banner top" style="background-image:url('/cover/secuendarias/stranger_portada11.webp');"></div>
   <div class="overlay top">
     <div class="top-buttons secondary"><a href="/">Inicio</a></div>
@@ -2236,8 +2262,8 @@ app.get('/recomendados', async (req,res)=>{
 
     res.send(`<!DOCTYPE html>
 <html lang="es">
-<head><meta charset="UTF-8"><title>Recomendados (Top 5)</title><style>${css}</style>${themeScript}</head>
-<body data-theme="stranger">
+<head><meta charset="UTF-8"><title>Recomendados (Top 5)</title><style>${css}</style>${themeInitScript}${themeScript}</head>
+<body>
   <div class="header-banner top" style="background-image:url('/cover/secuendarias/stranger_portada11.webp');"></div>
   <div class="overlay top">
     <div class="top-buttons secondary"><a href="/">Inicio</a></div>
@@ -2307,8 +2333,8 @@ app.get('/libro', async (req, res) => {
 
   res.send(`<!DOCTYPE html>
 <html lang="es">
-<head><meta charset="utf-8"><title>${title}</title><style>${css}</style>${themeScript}</head>
-<body data-theme="stranger">
+<head><meta charset="utf-8"><title>${title}</title><style>${css}</style>${themeInitScript}${themeScript}</head>
+<body>
   <div class="header-banner top" style="background-image:url('${cover || '/cover/secuendarias/stranger_portada11.webp'}');"></div>
   <div class="overlay top">
     <div class="top-buttons secondary"><a href="/">Inicio</a></div>
@@ -2577,9 +2603,10 @@ app.get('/stats', async (req, res) => {
     .top-list li span:first-child { color: #fff; font-weight: bold; }
     .top-list li span:last-child { color: #19E6D6; font-family: 'MedievalSharp', cursive; }
   </style>
+  ${themeInitScript}
   ${themeScript}
 </head>
-<body data-theme="stranger">
+<body>
   <div class="header-banner top" style="background-image:url('/cover/secuendarias/stranger_portada11.webp');"></div>
   <div class="overlay top">
     <div class="top-buttons secondary"><a href="/">Inicio</a></div>
