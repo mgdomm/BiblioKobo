@@ -946,8 +946,8 @@ const themeScript = `
     if (banner) {
       const isInicio = window.location.pathname === '/';
       const themeImages = {
-        'default': isInicio ? '/cover/portada/portada1.webp' : '/cover/portada/portada11.webp',
-        'stranger': isInicio ? '/cover/portada/starnger_portada1.webp' : '/cover/portada/stranger_portada11.webp'
+        'default': isInicio ? '/cover/portada/portada1.webp' : '/cover/secuendarias/portada11.webp',
+        'stranger': isInicio ? '/cover/portada/starnger_portada1.webp' : '/cover/secuendarias/stranger_portada11.webp'
       };
       banner.style.backgroundImage = "url('" + themeImages[themeName] + "')";
       console.log('🖼️ Banner actualizado a:', themeImages[themeName]);
@@ -982,10 +982,11 @@ const themeScript = `
   if (banner) {
     const isInicio = window.location.pathname === '/';
     const themeImages = {
-      'default': isInicio ? '/cover/portada/portada1.webp' : '/cover/portada/portada11.webp',
-      'stranger': isInicio ? '/cover/portada/starnger_portada1.webp' : '/cover/portada/stranger_portada11.webp'
+      'default': isInicio ? '/cover/portada/portada1.webp' : '/cover/secuendarias/portada11.webp',
+      'stranger': isInicio ? '/cover/portada/starnger_portada1.webp' : '/cover/secuendarias/stranger_portada11.webp'
     };
     banner.style.backgroundImage = "url('" + themeImages[savedTheme] + "')";
+    console.log('🖼️ Banner inicial aplicado:', themeImages[savedTheme]);
   }
   
   // Marcar botón activo en stats
@@ -2584,8 +2585,8 @@ app.get('/stats', async (req, res) => {
   </style>
   ${themeScript}
 </head>
-<body data-theme="stranger">
-  <div class="header-banner top" style="background-image:url('/cover/secuendarias/stranger_portada11.webp');"></div>
+<body>
+  <div class="header-banner top"></div>
   <div class="overlay top">
     <div class="top-buttons secondary"><a href="/">Inicio</a></div>
     <h1>Dashboard Editor</h1>
