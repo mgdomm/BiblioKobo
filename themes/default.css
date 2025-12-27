@@ -1,0 +1,212 @@
+/**
+ * TEMA DEFAULT - Azkaban Reads
+ * 
+ * Este archivo captura el estado ACTUAL de la app
+ * Los valores son EXACTOS, copiados del CSS original
+ * 
+ * ⚠️ NO MODIFICAR - Es el ancla de estabilidad
+ * ⚠️ NO se importa todavía
+ * ⚠️ NO se aplica aún
+ * 
+ * Este archivo existe como "snapshot ejecutable" del diseño retro original.
+ */
+
+:root[data-theme="default"] {
+  /* ========================================
+     COLORES DE FONDO
+     ======================================== */
+  
+  /* Fondo principal - Negro puro retro */
+  --theme-bg-primary: #000000;
+  
+  /* Fondo secundario - Negro ligeramente más claro */
+  --theme-bg-secondary: #0A0A0A;
+  
+  /* Fondo header - Negro muy oscuro */
+  --theme-bg-header: #0A0A0A;
+
+  /* ========================================
+     COLORES DE TEXTO
+     ======================================== */
+  
+  /* Color de texto principal - Cyan retro */
+  --theme-text-primary: #00FFFF;
+  
+  /* Color de texto secundario - Cyan semi-transparente */
+  --theme-text-secondary: rgba(0, 255, 255, 0.7);
+  
+  /* Color de texto terciario - Cyan más transparente */
+  --theme-text-tertiary: rgba(0, 255, 255, 0.4);
+  
+  /* Color de texto en mensaje del usuario */
+  --theme-text-user: #00FFFF;
+
+  /* ========================================
+     COLORES DE BORDE
+     ======================================== */
+  
+  /* Borde principal - Cyan brillante */
+  --theme-border-primary: #00FFFF;
+  
+  /* Borde secundario - Cyan semi-transparente */
+  --theme-border-secondary: rgba(0, 255, 255, 0.2);
+  
+  /* Borde terciario - Cyan más transparente */
+  --theme-border-tertiary: rgba(0, 255, 255, 0.3);
+
+  /* ========================================
+     BOTONES Y ELEMENTOS INTERACTIVOS
+     ======================================== */
+  
+  /* Trigger button (botón flotante) */
+  --theme-trigger-bg: #000000;
+  --theme-trigger-border: #00FFFF;
+  --theme-trigger-color: #00FFFF;
+  
+  /* Input field */
+  --theme-input-bg: #000000;
+  --theme-input-border: #00FFFF;
+  --theme-input-color: #00FFFF;
+  --theme-input-placeholder: rgba(0, 255, 255, 0.4);
+  
+  /* Send button */
+  --theme-send-bg: #0A0A0A;
+  --theme-send-border: #00FFFF;
+  --theme-send-color: #00FFFF;
+  
+  /* Option buttons */
+  --theme-option-btn-bg: #0A0A0A;
+  --theme-option-btn-border: #00FFFF;
+  --theme-option-btn-color: #00FFFF;
+  
+  /* Chips / Quick actions */
+  --theme-chip-bg: #000000;
+  --theme-chip-border: #00FFFF;
+  --theme-chip-color: #00FFFF;
+
+  /* ========================================
+     MENSAJES DEL CHAT
+     ======================================== */
+  
+  /* Mensaje de LUMOS (bot) */
+  --theme-msg-bot-bg: rgba(0, 255, 255, 0.07);
+  --theme-msg-bot-border: rgba(0, 255, 255, 0.2);
+  --theme-msg-bot-color: #00FFFF;
+  
+  /* Mensaje del usuario */
+  --theme-msg-user-bg: rgba(0, 255, 255, 0.18);
+  --theme-msg-user-border: rgba(0, 255, 255, 0.3);
+  --theme-msg-user-color: #00FFFF;
+  
+  /* Mensaje de alerta */
+  --theme-msg-alert-bg: #0A0A0A;
+  --theme-msg-alert-border: #00FFFF;
+  --theme-msg-alert-border-left: #00FFFF;
+  --theme-msg-alert-color: #00FFFF;
+
+  /* ========================================
+     TARJETAS DE LIBROS
+     ======================================== */
+  
+  --theme-book-card-bg: #0A0A0A;
+  --theme-book-card-border: #00FFFF;
+  --theme-book-title-color: #00FFFF;
+  --theme-book-text-color: rgba(0, 255, 255, 0.8);
+  
+  /* Botones de libro */
+  --theme-book-btn-bg: #0A0A0A;
+  --theme-book-btn-border: #00FFFF;
+  --theme-book-btn-color: #00FFFF;
+
+  /* ========================================
+     EFECTOS Y SOMBRAS
+     ======================================== */
+  
+  /* Text shadows - Efecto de brillo retro CRT */
+  --theme-text-shadow-primary: 0 0 8px rgba(0, 255, 255, 0.9), 
+                                0 0 16px rgba(0, 255, 255, 0.7), 
+                                0 0 24px rgba(0, 255, 255, 0.5);
+  
+  --theme-text-shadow-secondary: 0 0 4px rgba(0, 255, 255, 0.5);
+  --theme-text-shadow-tertiary: 0 0 3px rgba(0, 255, 255, 0.4);
+  --theme-text-shadow-subtle: 0 0 2px rgba(0, 255, 255, 0.3);
+  
+  /* Box shadows - Brillos de elementos */
+  --theme-box-shadow-trigger: 0 0 8px rgba(0, 255, 255, 0.3);
+  --theme-box-shadow-trigger-hover: 0 0 15px rgba(0, 255, 255, 0.6);
+  
+  --theme-box-shadow-container: 0 0 10px rgba(0, 255, 255, 0.4), 
+                                 0 10px 30px rgba(0, 0, 0, 0.8);
+  
+  --theme-box-shadow-header: 0 2px 8px rgba(0, 255, 255, 0.15);
+  
+  --theme-box-shadow-input-focus: 0 0 8px rgba(0, 255, 255, 0.4);
+  --theme-box-shadow-btn-hover: 0 0 8px rgba(0, 255, 255, 0.6);
+  --theme-box-shadow-book-card: 0 0 6px rgba(0, 255, 255, 0.2);
+  
+  /* Drop shadow para hover en close button */
+  --theme-drop-shadow-close-hover: drop-shadow(0 0 8px rgba(0, 255, 255, 0.8));
+
+  /* ========================================
+     SCROLLBAR
+     ======================================== */
+  
+  --theme-scrollbar-width: 6px;
+  --theme-scrollbar-track-bg: #0A0A0A;
+  --theme-scrollbar-thumb-bg: #00FFFF;
+  --theme-scrollbar-thumb-shadow: 0 0 4px rgba(0, 255, 255, 0.5);
+
+  /* ========================================
+     LOADING ANIMATION
+     ======================================== */
+  
+  --theme-loading-dot-bg: #00FFFF;
+  --theme-loading-dot-shadow: 0 0 4px rgba(0, 255, 255, 0.6);
+
+  /* ========================================
+     ESTADOS HOVER
+     ======================================== */
+  
+  /* Fondo hover genérico */
+  --theme-hover-bg: rgba(0, 255, 255, 0.1);
+  
+  /* Highlight tap en móvil */
+  --theme-tap-highlight: rgba(0, 255, 255, 0.2);
+
+  /* ========================================
+     SVG ICONS
+     ======================================== */
+  
+  --theme-svg-stroke: #00FFFF;
+  --theme-svg-fill: #00FFFF;
+  --theme-svg-stroke-width: 2;
+
+  /* ========================================
+     GRADIENTES (si se usaran)
+     ======================================== */
+  
+  /* Nota: El tema retro actual NO usa gradientes, 
+     pero se mantiene esta sección para futuros temas */
+  --theme-gradient-primary: none;
+  --theme-gradient-secondary: none;
+
+  /* ========================================
+     OTROS VALORES IMPORTANTES
+     ======================================== */
+  
+  /* Close button (X) */
+  --theme-close-color: #00FFFF;
+  --theme-close-opacity: 0.8;
+  --theme-close-opacity-hover: 1;
+  
+  /* Container */
+  --theme-container-border-radius: 16px;
+  --theme-container-border-width: 2px;
+  
+  /* Mensajes */
+  --theme-message-border-radius: 8px;
+  --theme-message-border-width: 1px;
+  
+  /* Alert border especial */
+  --theme-alert-border-left-width: 3px;
+}

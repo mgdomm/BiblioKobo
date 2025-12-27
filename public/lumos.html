@@ -696,9 +696,218 @@
       fill: #00FFFF;
       stroke: none;
     }
+
+    /* ========================================
+       TEMA STRANGER THINGS - OVERRIDES
+       ======================================== */
+    body[data-theme="stranger"] {
+      background: var(--theme-bg-primary);
+      color: var(--theme-text-primary);
+    }
+
+    body[data-theme="stranger"] #lumos-trigger {
+      background: var(--theme-trigger-bg);
+      border-color: var(--theme-trigger-border);
+      color: var(--theme-trigger-color);
+      box-shadow: var(--theme-box-shadow-trigger);
+    }
+
+    body[data-theme="stranger"] #lumos-trigger:hover {
+      box-shadow: var(--theme-box-shadow-trigger-hover);
+    }
+
+    /* Contenedor del bot con fondo semitransparente para contraste y borde degradado */
+    body[data-theme="stranger"] #lumos-container {
+      background: rgba(8, 4, 13, 0.95);
+      border: 3px solid transparent;
+      background-image: 
+        linear-gradient(rgba(8, 4, 13, 0.95), rgba(8, 4, 13, 0.95)),
+        linear-gradient(135deg, #ff305b 0%, #ff305b 50%, #7dd3ff 50%, #7dd3ff 100%);
+      background-origin: border-box;
+      background-clip: padding-box, border-box;
+      box-shadow: 0 0 20px rgba(255, 48, 91, 0.4), 0 0 40px rgba(125, 211, 255, 0.2);
+    }
+
+    body[data-theme="stranger"] #lumos-header {
+      background: var(--theme-bg-header);
+      border-bottom-color: var(--theme-border-primary);
+      box-shadow: var(--theme-box-shadow-header);
+    }
+
+    body[data-theme="stranger"] .lumos-title {
+      color: var(--theme-text-primary);
+      text-shadow: var(--theme-text-shadow-primary);
+    }
+
+    body[data-theme="stranger"] #lumos-header h2,
+    body[data-theme="stranger"] #lumos-header p {
+      color: var(--theme-text-primary);
+      text-shadow: var(--theme-text-shadow-secondary);
+    }
+
+    body[data-theme="stranger"] #lumos-close {
+      color: var(--theme-close-color);
+    }
+
+    body[data-theme="stranger"] #lumos-close:hover {
+      filter: var(--theme-drop-shadow-close-hover);
+    }
+
+    body[data-theme="stranger"] #lumos-messages {
+      background: var(--theme-bg-primary);
+    }
+
+    body[data-theme="stranger"] #lumos-messages::-webkit-scrollbar-track {
+      background: var(--theme-scrollbar-track-bg);
+    }
+
+    body[data-theme="stranger"] #lumos-messages::-webkit-scrollbar-thumb {
+      background: var(--theme-scrollbar-thumb-bg);
+      box-shadow: var(--theme-scrollbar-thumb-shadow);
+    }
+
+    body[data-theme="stranger"] .message {
+      color: var(--theme-text-primary);
+      text-shadow: var(--theme-text-shadow-subtle);
+    }
+
+    body[data-theme="stranger"] .message.lumos {
+      background: var(--theme-msg-bot-bg);
+      border-color: var(--theme-msg-bot-border);
+      color: var(--theme-msg-bot-color);
+    }
+
+    body[data-theme="stranger"] .message.user {
+      background: var(--theme-msg-user-bg);
+      border-color: var(--theme-msg-user-border);
+      color: var(--theme-msg-user-color);
+    }
+
+    body[data-theme="stranger"] .message.alert {
+      background: var(--theme-msg-alert-bg);
+      border-color: var(--theme-msg-alert-border);
+      border-left-color: var(--theme-msg-alert-border-left);
+      color: var(--theme-msg-alert-color);
+    }
+
+    /* Chips con degradado rojo→azul */
+    body[data-theme="stranger"] .lumos-chip {
+      background: linear-gradient(90deg, rgba(255, 48, 91, 0.1) 0%, rgba(125, 211, 255, 0.1) 100%);
+      border: 2px solid transparent;
+      background-image: 
+        linear-gradient(var(--theme-chip-bg), var(--theme-chip-bg)),
+        linear-gradient(90deg, #ff305b 0%, #7dd3ff 100%);
+      background-origin: border-box;
+      background-clip: padding-box, border-box;
+      color: transparent;
+      background-clip: text, padding-box, border-box;
+      -webkit-background-clip: text, padding-box, border-box;
+      -webkit-text-fill-color: transparent;
+      background-image: linear-gradient(90deg, #ff305b 0%, #7dd3ff 100%);
+    }
+
+    body[data-theme="stranger"] .lumos-chip:hover {
+      box-shadow: 0 0 12px rgba(255, 48, 91, 0.5), 0 0 8px rgba(125, 211, 255, 0.3);
+    }
+
+    /* Botones de opción con degradado rojo→azul */
+    body[data-theme="stranger"] .option-btn {
+      background: linear-gradient(90deg, rgba(255, 48, 91, 0.1) 0%, rgba(125, 211, 255, 0.1) 100%);
+      border: 2px solid transparent;
+      background-image: 
+        linear-gradient(var(--theme-option-btn-bg), var(--theme-option-btn-bg)),
+        linear-gradient(90deg, #ff305b 0%, #7dd3ff 100%);
+      background-origin: border-box;
+      background-clip: padding-box, border-box;
+      color: #ff305b;
+      text-shadow: var(--theme-text-shadow-tertiary);
+    }
+
+    body[data-theme="stranger"] .option-btn:hover {
+      background: var(--theme-hover-bg);
+      box-shadow: var(--theme-box-shadow-btn-hover);
+    }
+
+    body[data-theme="stranger"] #lumos-input-container {
+      background: var(--theme-bg-header);
+      border-top-color: var(--theme-border-primary);
+    }
+
+    body[data-theme="stranger"] #lumos-input {
+      background: var(--theme-input-bg);
+      border-color: var(--theme-input-border);
+      color: var(--theme-input-color);
+      text-shadow: var(--theme-text-shadow-subtle);
+    }
+
+    body[data-theme="stranger"] #lumos-input:focus {
+      border-color: var(--theme-input-border);
+      box-shadow: var(--theme-box-shadow-input-focus);
+    }
+
+    body[data-theme="stranger"] #lumos-input::placeholder {
+      color: var(--theme-input-placeholder);
+    }
+
+    body[data-theme="stranger"] #lumos-send {
+      background: var(--theme-send-bg);
+      border-color: var(--theme-send-border);
+      color: var(--theme-send-color);
+      text-shadow: var(--theme-text-shadow-tertiary);
+    }
+
+    body[data-theme="stranger"] #lumos-send:hover {
+      background: var(--theme-hover-bg);
+      box-shadow: var(--theme-box-shadow-btn-hover);
+    }
+
+    body[data-theme="stranger"] .book-card {
+      background: var(--theme-book-card-bg);
+      border-color: var(--theme-book-card-border);
+      box-shadow: var(--theme-box-shadow-book-card);
+    }
+
+    body[data-theme="stranger"] .book-card h4 {
+      color: var(--theme-book-title-color);
+      text-shadow: var(--theme-text-shadow-tertiary);
+    }
+
+    body[data-theme="stranger"] .book-card p {
+      color: var(--theme-book-text-color);
+    }
+
+    body[data-theme="stranger"] .book-btn {
+      background: var(--theme-book-btn-bg);
+      color: var(--theme-book-btn-color);
+      border-color: var(--theme-book-btn-border);
+      text-shadow: var(--theme-text-shadow-subtle);
+    }
+
+    body[data-theme="stranger"] .book-btn:hover {
+      background: var(--theme-hover-bg);
+      box-shadow: var(--theme-box-shadow-btn-hover);
+    }
+
+    body[data-theme="stranger"] .loading span {
+      background: var(--theme-loading-dot-bg);
+      box-shadow: var(--theme-loading-dot-shadow);
+    }
+
+    body[data-theme="stranger"] .svg-icon {
+      stroke: var(--theme-svg-stroke);
+    }
+
+    body[data-theme="stranger"] .svg-icon.filled {
+      fill: var(--theme-svg-fill);
+    }
   </style>
+
+  <!-- === THEME SYSTEM (ACTIVO) === -->
+  <link rel="stylesheet" href="/themes/default.css">
+  <link rel="stylesheet" href="/themes/stranger-things.css">
+  <!-- === END THEME SYSTEM === -->
 </head>
-<body>
+<body data-theme="stranger">
 
   <!-- Definiciones SVG reutilizables -->
   <svg style="display:none;">
@@ -870,6 +1079,64 @@
   <script src="/services/aiService.js"></script>
 
   <script>
+    /* ========================================
+       SISTEMA DE TEMAS - PREPARADO (APAGADO)
+       ======================================== */
+    
+    /**
+     * 🚫 IMPORTANTE: Este código está PREPARADO pero NO SE EJECUTA
+     * 
+     * Se activa manualmente cuando el sistema de temas esté listo.
+     * Por ahora, es solo un "interruptor apagado" que no afecta nada.
+     * 
+     * Paso actual: PASO 2 - Preparar el interruptor (APAGADO)
+     * Estado: ✅ Preparado | 🚫 NO ejecutado | 🔴 NO aplicado
+     */
+    
+    // FUNCIÓN PREPARADA (no se ejecuta automáticamente)
+    function initThemeSystem() {
+      // Cargar tema guardado o usar default
+      const savedTheme = localStorage.getItem('azkaban-theme') || 'default';
+      
+      // Aplicar el tema al elemento root
+      document.documentElement.dataset.theme = savedTheme;
+      
+      console.log(`🎨 Sistema de temas inicializado: ${savedTheme}`);
+    }
+    
+    // FUNCIÓN PREPARADA para cambiar temas
+    function setTheme(themeName) {
+      // Validar que el tema existe
+      const validThemes = ['default', 'stranger-things'];
+      
+      if (!validThemes.includes(themeName)) {
+        console.warn(`⚠️ Tema "${themeName}" no válido. Usando default.`);
+        themeName = 'default';
+      }
+      
+      // Aplicar tema
+      document.documentElement.dataset.theme = themeName;
+      
+      // Guardar preferencia
+      localStorage.setItem('azkaban-theme', themeName);
+      
+      console.log(`🎨 Tema cambiado a: ${themeName}`);
+    }
+    
+    /**
+     * ⚠️ NO DESCOMENTAR HASTA PASO 3
+     * 
+     * Para activar el sistema de temas:
+     * 1. Importar el CSS de temas en el <head>
+     * 2. Descomentar la línea siguiente
+     * 3. Verificar que todo funciona
+     */
+    
+    // ❌ NO EJECUTAR TODAVÍA
+    // document.addEventListener('DOMContentLoaded', initThemeSystem);
+    
+    /* ======================================== */
+    
     // Función auxiliar para generar iconos SVG en lugar de emojis
     function icon(name, className = 'svg-icon') {
       return `<svg class="${className}"><use href="#icon-${name}"></use></svg>`;

@@ -55,6 +55,13 @@ app.use('/cover', express.static(path.join(__dirname, 'cover'), {
   immutable: true
 }));
 
+// Servir carpeta themes para sistema de temas CSS
+app.use('/themes', express.static(path.join(__dirname, 'themes'), {
+  maxAge: '1d',
+  etag: true,
+  lastModified: true
+}));
+
 // Servir carpeta public para LUMOS y otros archivos estáticos
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -395,8 +402,20 @@ function checkAuth(req, res, next) {
 
 // ------------------ CSS ------------------
 const css = `
+/* TEMA GLOBAL EN TODAS LAS PÁGINAS - v${Date.now()} */
 @import url('https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap');
-body { margin:0; padding:0 0 40px 0; background:#000; color:#eee; font-family:Garamond, serif; }
+@import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+
+/* Variables globales - Default */
+:root {
+  --page-bg: #000;
+  --page-text: #eee;
+  --accent-primary: #19E6D6;
+  --surface-card: rgba(18,18,18,0.92);
+  --border-subtle: rgba(255,255,255,0.04);
+}
+
+body { margin:0; padding:0 0 40px 0; background:var(--page-bg); color:var(--page-text); font-family:Garamond, serif; }
 /* Top banner variations */
 .header-banner { background-size:cover; background-position:center; overflow:hidden; }
 .header-banner.top { position:fixed; top:0; left:0; right:0; height:220px; z-index:1; background-position: center 50%; background-size:cover; }
@@ -407,44 +426,44 @@ body { margin:0; padding:0 0 40px 0; background:#000; color:#eee; font-family:Ga
 .overlay.top { position:fixed; top:0; left:0; width:100%; height:220px; z-index:2; }
 .overlay.home { position:absolute; top:0; left:0; width:100%; height:100vh; z-index:2; display:flex; justify-content:center; align-items:center; }
 
-h1 { font-family:'MedievalSharp', cursive; font-size:56px; color:#fff; margin:0; text-shadow: 0 2px 6px rgba(0,0,0,0.9); }
+h1 { font-family:'MedievalSharp', cursive; font-size:56px; color:var(--page-text); margin:0; text-shadow: 0 2px 6px rgba(0,0,0,0.9); }
 
 .top-buttons { display:flex; justify-content:center; flex-wrap:wrap; margin-bottom:6px; }
 /* primary buttons: visible, subtle bg, no harsh border */
-.top-buttons a { font-family:'MedievalSharp', cursive; font-size:24px; color:#fff; text-decoration:none; border-radius:6px; padding:8px 16px; margin:2px; background:rgba(255,255,255,0.06); transition:0.2s; }
+.top-buttons a { font-family:'MedievalSharp', cursive; font-size:24px; color:var(--page-text); text-decoration:none; border-radius:6px; padding:8px 16px; margin:2px; background:rgba(255,255,255,0.06); transition:0.2s; }
 .top-buttons a:hover { background:rgba(255,255,255,0.12); }
 .top-buttons.secondary { position:absolute; top:10px; right:10px; font-size:16px; }
 /* secondary (Inicio) should be plain text, no border */
-.top-buttons.secondary a { color:#fff; text-decoration:none; border:none; padding:6px 10px; background:transparent; font-size:18px; }
+.top-buttons.secondary a { color:var(--page-text); text-decoration:none; border:none; padding:6px 10px; background:transparent; font-size:18px; }
 
 form { margin:20px 0; text-align:center; }
-input[type="search"] { padding:8px 12px; margin:0 4px; font-size:16px; border-radius:6px; border:2px solid #19E6D6; background:#111; color:#fff; font-family:'MedievalSharp', cursive; font-weight:normal; transition:0.2s; }
-input[type="search"]:focus { outline:none; border-color:#19E6D6; box-shadow:0 0 8px rgba(25,230,214,0.4); }
-select { padding:8px 12px; margin:0 4px; font-size:16px; border-radius:6px; border:2px solid #fff; background:#111; color:#fff; font-family:'MedievalSharp', cursive; font-weight:normal; transition:0.2s; }
-select:focus { outline:none; border-color:#fff; box-shadow:0 0 8px rgba(255,255,255,0.4); }
-button[type="submit"] { padding:8px 16px; font-family:'MedievalSharp', cursive; font-weight:normal; font-size:16px; border:2px solid #19E6D6; background:#111; color:#fff; border-radius:6px; cursor:pointer; transition:0.2s; }
-button[type="submit"]:hover { background:#19E6D6; color:#000; }
+input[type="search"] { padding:8px 12px; margin:0 4px; font-size:16px; border-radius:6px; border:2px solid var(--accent-primary); background:var(--surface-card); color:var(--page-text); font-family:'MedievalSharp', cursive; font-weight:normal; transition:0.2s; }
+input[type="search"]:focus { outline:none; border-color:var(--accent-primary); box-shadow:0 0 8px rgba(25,230,214,0.4); }
+select { padding:8px 12px; margin:0 4px; font-size:16px; border-radius:6px; border:2px solid var(--page-text); background:var(--surface-card); color:var(--page-text); font-family:'MedievalSharp', cursive; font-weight:normal; transition:0.2s; }
+select:focus { outline:none; border-color:var(--page-text); box-shadow:0 0 8px rgba(255,255,255,0.4); }
+button[type="submit"] { padding:8px 16px; font-family:'MedievalSharp', cursive; font-weight:normal; font-size:16px; border:2px solid var(--accent-primary); background:var(--surface-card); color:var(--page-text); border-radius:6px; cursor:pointer; transition:0.2s; }
+button[type="submit"]:hover { background:var(--accent-primary); color:#000; }
 
 #grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 130px)); gap:30px; padding:30px 20px 40px 20px; max-width:100%; margin:0 auto; justify-content:center; }
-.book { position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; width:130px; min-height:auto; background:linear-gradient(180deg, rgba(18,18,18,0.92), rgba(12,12,12,0.9)); padding:8px; border-radius:10px; border:1px solid rgba(255,255,255,0.04); text-align:center; word-wrap:break-word; transition:opacity 0.3s, transform 0.15s; box-shadow:0 6px 18px rgba(0,0,0,0.6); }
+.book { position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; width:130px; min-height:auto; background:linear-gradient(180deg, var(--surface-card), rgba(12,12,12,0.9)); padding:8px; border-radius:10px; border:1px solid var(--border-subtle); text-align:center; word-wrap:break-word; transition:opacity 0.3s, transform 0.15s; box-shadow:0 6px 18px rgba(0,0,0,0.6); }
 .book img { width:90px; height:140px; border-radius:6px; object-fit:cover; margin-bottom:8px; display:block; margin-left:auto; margin-right:auto; }
-.title { font-size:15px; font-weight:700; color:#fff; font-family:'MedievalSharp', cursive; margin:0 0 6px 0; padding:6px 4px 6px 4px; border-bottom:1px solid rgba(255,255,255,0.04); line-height:1.4; }
+.title { font-size:15px; font-weight:700; color:var(--page-text); font-family:'MedievalSharp', cursive; margin:0 0 6px 0; padding:6px 4px 6px 4px; border-bottom:1px solid var(--border-subtle); line-height:1.4; }
 .title a { color: inherit; text-decoration: none; display:block; padding:0; }
 .author-span, .number-span { font-size:13px; color:#ddd; font-family:'MedievalSharp', cursive; font-weight:400; display:block; margin-top:4px; padding:0 2px; line-height:1.3; }
-.author-span a { color:#fff; text-decoration:none; font-style:italic; font-weight:400; }
-.number-span a { color:#19E6D6; text-decoration:none; font-weight:600; font-size:12px; text-transform:uppercase; }
-.meta a { font-size:13px; font-weight:bold; text-decoration:none; color:#fff; background:rgba(34,34,34,0.7); padding:4px 8px; border-radius:4px; display:inline-block; margin-top:4px; transition:0.2s; }
+.author-span a { color:var(--page-text); text-decoration:none; font-style:italic; font-weight:400; }
+.number-span a { color:var(--accent-primary); text-decoration:none; font-weight:600; font-size:12px; text-transform:uppercase; }
+.meta a { font-size:13px; font-weight:bold; text-decoration:none; color:var(--page-text); background:rgba(34,34,34,0.7); padding:4px 8px; border-radius:4px; display:inline-block; margin-top:4px; transition:0.2s; }
 .meta a:hover { background:rgba(68,68,68,0.9); }
-.author-span a:hover, .number-span a:hover { color:#fff; text-decoration:none; opacity:0.9; }
-a.button { display:inline-block; margin:10px; text-decoration:none; padding:16px 32px; background:#222; color:#fff; border-radius:8px; font-size:22px; font-weight:bold; transition:0.2s; }
+.author-span a:hover, .number-span a:hover { color:var(--page-text); text-decoration:none; opacity:0.9; }
+a.button { display:inline-block; margin:10px; text-decoration:none; padding:16px 32px; background:#222; color:var(--page-text); border-radius:8px; font-size:22px; font-weight:bold; transition:0.2s; }
 a.button:hover { background:#444; }
 
 /* Avatares para autores y emblemas para sagas */
 .card-block { display:flex; flex-direction:column; align-items:center; gap:8px; }
-.avatar-rect { width:90px; height:120px; border-radius:8px; background:linear-gradient(160deg, rgba(40,40,40,0.9), rgba(18,18,18,0.9)); border:1px solid rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; font-family:'MedievalSharp', cursive; font-size:32px; color:#fff; letter-spacing:1px; text-shadow:0 2px 6px rgba(0,0,0,0.6); }
-.count-badge { margin-top:-4px; font-size:13px; color:#19E6D6; background:rgba(25,230,214,0.12); border:1px solid rgba(25,230,214,0.5); padding:4px 10px; border-radius:999px; font-family:Garamond, serif; }
+.avatar-rect { width:90px; height:120px; border-radius:8px; background:linear-gradient(160deg, rgba(40,40,40,0.9), rgba(18,18,18,0.9)); border:1px solid rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; font-family:'MedievalSharp', cursive; font-size:32px; color:var(--page-text); letter-spacing:1px; text-shadow:0 2px 6px rgba(0,0,0,0.6); }
+.count-badge { margin-top:-4px; font-size:13px; color:var(--accent-primary); background:rgba(25,230,214,0.12); border:1px solid rgba(25,230,214,0.5); padding:4px 10px; border-radius:999px; font-family:Garamond, serif; }
 .emblem-rect { width:90px; height:120px; border-radius:8px; background:linear-gradient(180deg, rgba(18,18,18,0.95), rgba(8,8,8,0.9)); border:1px solid rgba(25,230,214,0.35); position:relative; display:flex; align-items:center; justify-content:center; }
-.emblem-rect svg { width:48px; height:48px; fill:none; stroke:#19E6D6; stroke-width:2; filter:drop-shadow(0 0 4px rgba(25,230,214,0.5)); }
+.emblem-rect svg { width:48px; height:48px; fill:none; stroke:var(--accent-primary); stroke-width:2; filter:drop-shadow(0 0 4px rgba(25,230,214,0.5)); }
 .book:hover { transform:translateY(-2px); box-shadow:0 10px 24px rgba(0,0,0,0.35); }
 
 /* Checkbox de selección en esquina */
@@ -452,22 +471,22 @@ a.button:hover { background:#444; }
 .book-checkbox:hover { border-color:rgba(255,255,255,0.6); }
 .book-checkbox:focus { outline:none; box-shadow:0 0 6px rgba(25,230,214,0.5); }
 .book-checkbox::after { content:""; width:8px; height:8px; border-radius:1px; clip-path:polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0, 43% 62%); background:transparent; transform:scale(0); transition:0.15s ease; }
-.book-checkbox:checked { border-color:#19E6D6; background:rgba(25,230,214,0.3); box-shadow:0 0 0 1px rgba(25,230,214,0.4), 0 0 8px rgba(25,230,214,0.4); }
-.book-checkbox:checked::after { background:#19E6D6; transform:scale(1); filter:drop-shadow(0 0 3px rgba(25,230,214,0.6)); }
+.book-checkbox:checked { border-color:var(--accent-primary); background:rgba(25,230,214,0.3); box-shadow:0 0 0 1px rgba(25,230,214,0.4), 0 0 8px rgba(25,230,214,0.4); }
+.book-checkbox:checked::after { background:var(--accent-primary); transform:scale(1); filter:drop-shadow(0 0 3px rgba(25,230,214,0.6)); }
 
 /* Modal login para stats */
 #login-modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; justify-content:center; align-items:center; }
 #login-modal.active { display:flex; }
 .login-box { background:linear-gradient(135deg, rgba(18,18,18,0.95), rgba(12,12,12,0.9)); border:2px solid rgba(25,230,214,0.5); border-radius:12px; padding:40px; text-align:center; max-width:400px; box-shadow:0 8px 32px rgba(0,0,0,0.8); }
-.login-box h2 { font-family:'MedievalSharp', cursive; color:#19E6D6; font-size:24px; margin:0 0 20px 0; }
-.login-box input { width:100%; padding:14px; margin:10px 0; border:1px solid rgba(25,230,214,0.4); background:rgba(25,25,25,0.8); color:#fff; border-radius:6px; font-size:17px; box-sizing:border-box; }
-.login-box input:focus { outline:none; border-color:#19E6D6; box-shadow:0 0 8px rgba(25,230,214,0.4); }
-.login-box button { padding:12px 24px; margin:10px 5px; border:none; border-radius:6px; font-weight:bold; cursor:pointer; background:#19E6D6; color:#000; font-size:17px; }
+.login-box h2 { font-family:'MedievalSharp', cursive; color:var(--accent-primary); font-size:24px; margin:0 0 20px 0; }
+.login-box input { width:100%; padding:14px; margin:10px 0; border:1px solid rgba(25,230,214,0.4); background:rgba(25,25,25,0.8); color:var(--page-text); border-radius:6px; font-size:17px; box-sizing:border-box; }
+.login-box input:focus { outline:none; border-color:var(--accent-primary); box-shadow:0 0 8px rgba(25,230,214,0.4); }
+.login-box button { padding:12px 24px; margin:10px 5px; border:none; border-radius:6px; font-weight:bold; cursor:pointer; background:var(--accent-primary); color:#000; font-size:17px; }
 .login-box button:hover { background:#1dd4c8; }
-.login-box button.cancel { background:rgba(255,255,255,0.1); color:#fff; }
+.login-box button.cancel { background:rgba(255,255,255,0.1); color:var(--page-text); }
 .login-box button.cancel:hover { background:rgba(255,255,255,0.2); }
-.hidden-stats-btn { position:fixed; bottom:20px; right:20px; width:44px; height:44px; background:transparent; border:1px solid #19E6D6; border-radius:50%; color:#19E6D6; cursor:pointer; z-index:100; transition:0.25s; display:flex; align-items:center; justify-content:center; padding:0; }
-.hidden-stats-btn svg { width:22px; height:22px; fill:none; stroke:#19E6D6; stroke-width:2.2; filter:drop-shadow(0 0 4px rgba(25,230,214,0.4)); }
+.hidden-stats-btn { position:fixed; bottom:20px; right:20px; width:44px; height:44px; background:transparent; border:1px solid var(--accent-primary); border-radius:50%; color:var(--accent-primary); cursor:pointer; z-index:100; transition:0.25s; display:flex; align-items:center; justify-content:center; padding:0; }
+.hidden-stats-btn svg { width:22px; height:22px; fill:none; stroke:var(--accent-primary); stroke-width:2.2; filter:drop-shadow(0 0 4px rgba(25,230,214,0.4)); }
 .hidden-stats-btn:hover { box-shadow:0 0 10px rgba(25,230,214,0.4), 0 0 20px rgba(25,230,214,0.2); transform:scale(1.08); }
 
 /* ensure content sits below fixed top banner */
@@ -615,6 +634,369 @@ body { padding-top:220px; }
     padding: 16px 24px !important;
   }
 }
+
+/* ========================================
+   TEMA STRANGER THINGS - OVERRIDES GLOBALES
+   ======================================== */
+
+/* Variables globales del tema Stranger Things */
+body[data-theme="stranger"] {
+  --page-bg: #08040d;
+  --page-text: #f5f5f5;
+  --accent-primary: #ff305b;
+  --accent-secondary: #7dd3ff;
+  --surface-card: rgba(26,10,26,0.92);
+  --border-subtle: rgba(255, 48, 91, 0.15);
+}
+
+/* Fondo y texto base */
+body[data-theme="stranger"] {
+  background: var(--page-bg);
+  color: var(--page-text);
+}
+
+/* Portadas y banners - INICIO usa portada principal */
+body[data-theme="stranger"] .header-banner.home {
+  background-image: url('/cover/portada/starnger_portada1.webp') !important;
+}
+
+/* Portadas y banners - PÁGINAS INTERNAS usan secundaria */
+body[data-theme="stranger"] .header-banner.top {
+  background-image: url('/cover/secuendarias/stranger_portada11.webp') !important;
+}
+
+/* TÍTULOS H1 - Degradado rojo→azul con efecto CRT (Stranger Things) */
+body[data-theme="stranger"] h1,
+body[data-theme="stranger"] .overlay h1 {
+  font-family: 'VT323', monospace !important;
+  font-weight: normal !important;
+  font-size: 3.5em !important;
+  background: linear-gradient(90deg, #ff305b 0%, #7dd3ff 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  -moz-background-clip: text !important;
+  -moz-text-fill-color: transparent !important;
+  background-clip: text !important;
+  text-shadow: 
+    0 0 15px rgba(255, 48, 91, 0.8),
+    0 0 30px rgba(125, 211, 255, 0.6) !important;
+  letter-spacing: 0.05em !important;
+  display: inline-block !important;
+  position: relative !important;
+}
+
+/* Sombra animada detrás del texto */
+body[data-theme="stranger"] h1::before,
+body[data-theme="stranger"] .overlay h1::before {
+  content: attr(data-text);
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: -1;
+  background: linear-gradient(90deg, #ff305b 0%, #7dd3ff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: blur(8px);
+  opacity: 0.7;
+}
+
+body[data-theme="stranger"] h2 {
+  font-size: 2em !important;
+  color: var(--accent-primary) !important;
+  text-shadow: 0 0 8px rgba(255, 48, 91, 0.6) !important;
+}
+
+body[data-theme="stranger"] h3 {
+  font-size: 1.625em !important;
+  color: var(--accent-primary) !important;
+  text-shadow: 0 0 6px rgba(255, 48, 91, 0.5) !important;
+}
+
+body[data-theme="stranger"] h4 {
+  font-size: 1.375em !important;
+  color: var(--accent-primary) !important;
+  text-shadow: 0 0 4px rgba(255, 48, 91, 0.4) !important;
+}
+
+/* TARJETAS DE LIBROS */
+body[data-theme="stranger"] .book {
+  background: linear-gradient(180deg, var(--surface-card), rgba(15,5,21,0.9));
+  border-color: rgba(255, 48, 91, 0.2);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.8), 0 0 4px rgba(255, 48, 91, 0.2);
+}
+
+body[data-theme="stranger"] .title {
+  color: var(--page-text);
+  border-bottom-color: rgba(255, 48, 91, 0.2);
+}
+
+body[data-theme="stranger"] .title a {
+  color: var(--page-text);
+}
+
+body[data-theme="stranger"] .author-span,
+body[data-theme="stranger"] .number-span {
+  color: rgba(255, 48, 91, 0.8);
+}
+
+body[data-theme="stranger"] .author-span a {
+  color: rgba(255, 48, 91, 0.9);
+}
+
+body[data-theme="stranger"] .number-span a {
+  color: var(--accent-secondary);
+}
+
+body[data-theme="stranger"] .meta a {
+  background: rgba(255, 48, 91, 0.15);
+  color: var(--page-text);
+  border: 1px solid rgba(255, 48, 91, 0.3);
+}
+
+body[data-theme="stranger"] .meta a:hover {
+  background: rgba(255, 48, 91, 0.25);
+  box-shadow: 0 0 8px rgba(255, 48, 91, 0.4);
+}
+
+/* BOTONES PRINCIPALES */
+body[data-theme="stranger"] .top-buttons a,
+body[data-theme="stranger"] a.button {
+  background: linear-gradient(135deg, rgba(255, 48, 91, 0.1) 0%, rgba(125, 211, 255, 0.1) 100%);
+  border: 2px solid var(--accent-primary);
+  color: var(--page-text);
+  text-shadow: 0 0 3px rgba(255, 48, 91, 0.4);
+  box-shadow: 0 0 6px rgba(255, 48, 91, 0.3);
+}
+
+body[data-theme="stranger"] .top-buttons a:hover,
+body[data-theme="stranger"] a.button:hover {
+  background: linear-gradient(135deg, rgba(255, 48, 91, 0.2) 0%, rgba(125, 211, 255, 0.2) 100%);
+  box-shadow: 0 0 12px rgba(255, 48, 91, 0.6), 0 0 8px rgba(125, 211, 255, 0.4);
+  border-color: #ff305b;
+}
+
+/* INPUTS Y FORMULARIOS */
+body[data-theme="stranger"] input[type="search"],
+body[data-theme="stranger"] select {
+  background: rgba(8,4,13,0.8);
+  border: 2px solid var(--accent-secondary) !important;
+  color: var(--accent-secondary) !important;
+}
+
+body[data-theme="stranger"] input[type="search"]::placeholder {
+  color: rgba(125, 211, 255, 0.6) !important;
+}
+
+body[data-theme="stranger"] input[type="search"]:focus,
+body[data-theme="stranger"] select:focus {
+  border-color: var(--accent-secondary) !important;
+  box-shadow: 0 0 12px rgba(125, 211, 255, 0.6) !important;
+}
+
+body[data-theme="stranger"] button[type="submit"] {
+  background: rgba(8,4,13,0.8);
+  border: 2px solid var(--accent-secondary) !important;
+  color: var(--accent-secondary) !important;
+}
+
+body[data-theme="stranger"] button[type="submit"]:hover {
+  background: var(--accent-secondary);
+  color: #000;
+  box-shadow: 0 0 12px rgba(125, 211, 255, 0.6);
+}
+
+/* SORT MENU */
+body[data-theme="stranger"] #sort-btn {
+  border: 2px solid var(--accent-secondary) !important;
+  color: var(--accent-secondary) !important;
+  background: rgba(8,4,13,0.8) !important;
+  box-shadow: 0 0 6px rgba(125, 211, 255, 0.4) !important;
+}
+
+body[data-theme="stranger"] #sort-btn:hover {
+  box-shadow: 0 0 12px rgba(125, 211, 255, 0.7) !important;
+}
+
+body[data-theme="stranger"] #sort-menu {
+  background: linear-gradient(135deg, rgba(26,10,26,0.95), rgba(15,5,21,0.9));
+  border-color: rgba(255, 48, 91, 0.5);
+}
+
+body[data-theme="stranger"] #sort-menu a {
+  color: var(--page-text);
+  border-bottom-color: rgba(255, 48, 91, 0.2);
+}
+
+body[data-theme="stranger"] #sort-menu a:hover {
+  background: rgba(255, 48, 91, 0.3) !important;
+}
+
+/* AUTORES Y SAGAS (páginas de listado) */
+body[data-theme="stranger"] .author,
+body[data-theme="stranger"] .saga {
+  color: var(--page-text);
+}
+
+body[data-theme="stranger"] .author a,
+body[data-theme="stranger"] .saga a {
+  border-color: var(--accent-primary);
+  background: linear-gradient(135deg, rgba(255, 48, 91, 0.1) 0%, rgba(125, 211, 255, 0.1) 100%);
+}
+
+body[data-theme="stranger"] .author a:hover,
+body[data-theme="stranger"] .saga a:hover {
+  background: linear-gradient(135deg, rgba(255, 48, 91, 0.2) 0%, rgba(125, 211, 255, 0.2) 100%);
+  box-shadow: 0 0 8px rgba(255, 48, 91, 0.6);
+}
+
+/* Iniciales de autores (span inline) - AZUL */
+body[data-theme="stranger"] .book > div > span {
+  color: #7dd3ff !important;
+  text-shadow: 0 0 8px #7dd3ff !important;
+}
+
+/* Círculos de autores y sagas - borde azul */
+body[data-theme="stranger"] .book > div[style*="border-radius:50%"] {
+  border-color: #7dd3ff !important;
+}
+
+/* PAGINACIÓN */
+body[data-theme="stranger"] .pagination {
+  border-color: rgba(255, 48, 91, 0.2);
+}
+
+body[data-theme="stranger"] .pagination a {
+  color: var(--accent-primary);
+  border-color: var(--accent-primary);
+}
+
+body[data-theme="stranger"] .pagination a:hover {
+  background: rgba(255, 48, 91, 0.2);
+  box-shadow: 0 0 8px rgba(255, 48, 91, 0.5);
+}
+
+body[data-theme="stranger"] .pagination .current {
+  background: rgba(255, 48, 91, 0.25);
+  color: var(--page-text);
+  border-color: var(--accent-primary);
+}
+
+/* STATS (página de estadísticas) */
+body[data-theme="stranger"] .stats-container {
+  background: var(--surface-card);
+  border-color: rgba(255, 48, 91, 0.3);
+}
+
+body[data-theme="stranger"] .stat-item {
+  border-color: rgba(255, 48, 91, 0.2);
+}
+
+body[data-theme="stranger"] .stat-value {
+  color: var(--accent-primary);
+}
+
+body[data-theme="stranger"] .stat-label {
+  color: var(--accent-secondary);
+}
+
+/* FOOTER */
+body[data-theme="stranger"] footer {
+  border-top-color: rgba(255, 48, 91, 0.2);
+  color: rgba(245, 245, 245, 0.7);
+}
+
+body[data-theme="stranger"] footer a {
+  color: var(--accent-secondary);
+}
+
+body[data-theme="stranger"] footer a:hover {
+  color: var(--accent-primary);
+  text-shadow: 0 0 4px rgba(255, 48, 91, 0.6);
+}
+body[data-theme="stranger"] .saga a {
+  border-color: var(--theme-border-primary);
+}
+
+body[data-theme="stranger"] .author a:hover,
+body[data-theme="stranger"] .saga a:hover {
+  background: var(--theme-hover-bg);
+  box-shadow: var(--theme-box-shadow-btn-hover);
+}
+`;
+
+// Script global para aplicar tema en todas las páginas
+const themeScript = `
+<script>
+(function() {
+  console.log('🎨 ThemeScript cargado');
+  
+  // Función global para cambiar tema
+  window.setTheme = function(themeName) {
+    console.log('🔄 setTheme llamado con:', themeName);
+    const body = document.body;
+    body.setAttribute('data-theme', themeName);
+    localStorage.setItem('theme', themeName);
+    console.log('✅ data-theme y localStorage actualizados');
+    
+    // Cambiar imagen de fondo del banner
+    const banner = document.querySelector('.header-banner.top, .header-banner.home');
+    if (banner) {
+      const isInicio = window.location.pathname === '/';
+      const themeImages = {
+        'default': isInicio ? '/cover/portada/portada1.webp' : '/cover/portada/portada11.webp',
+        'stranger': isInicio ? '/cover/portada/starnger_portada1.webp' : '/cover/portada/stranger_portada11.webp'
+      };
+      banner.style.backgroundImage = "url('" + themeImages[themeName] + "')";
+      console.log('🖼️ Banner actualizado a:', themeImages[themeName]);
+    }
+    
+    // Actualizar botones en stats si existen
+    const buttons = document.querySelectorAll('[onclick^="setTheme"]');
+    console.log('🔘 Botones encontrados:', buttons.length);
+    buttons.forEach(btn => {
+      const btnTheme = btn.onclick.toString().match(/setTheme\('(\w+)'\)/);
+      if (btnTheme) {
+        btn.textContent = btnTheme[1] === themeName ? '✓ Tema Activo' : 'Activar Tema';
+      }
+    });
+    
+    // Recargar si es necesario para aplicar cambios completos
+    if (window.location.pathname === '/stats') {
+      console.log('📊 Recargando página stats...');
+      setTimeout(() => location.reload(), 300);
+    }
+  };
+  
+  console.log('✅ window.setTheme definido como:', typeof window.setTheme);
+  
+  // Aplicar tema guardado inmediatamente
+  const savedTheme = localStorage.getItem('theme') || 'stranger';
+  console.log('💾 Tema guardado:', savedTheme);
+  document.body.setAttribute('data-theme', savedTheme);
+  
+  // Actualizar imagen de fondo del banner
+  const banner = document.querySelector('.header-banner.top, .header-banner.home');
+  if (banner) {
+    const isInicio = window.location.pathname === '/';
+    const themeImages = {
+      'default': isInicio ? '/cover/portada/portada1.webp' : '/cover/portada/portada11.webp',
+      'stranger': isInicio ? '/cover/portada/starnger_portada1.webp' : '/cover/portada/stranger_portada11.webp'
+    };
+    banner.style.backgroundImage = "url('" + themeImages[savedTheme] + "')";
+  }
+  
+  // Marcar botón activo en stats
+  setTimeout(() => {
+    const buttons = document.querySelectorAll('[onclick^="setTheme"]');
+    buttons.forEach(btn => {
+      const btnTheme = btn.onclick.toString().match(/setTheme\('(\w+)'\)/);
+      if (btnTheme && btnTheme[1] === savedTheme) {
+        btn.textContent = '✓ Tema Activo';
+      }
+    });
+  }, 100);
+})();
+</script>
 `;
 
 // ------------------ FUNCIONES ------------------
@@ -1105,6 +1487,7 @@ function renderBookPage({ libros, titlePage, tipo, nombre, req, noResultsHtml })
     li { padding:10px; border:1px solid #222; border-radius:6px; }
     a { color:#19E6D6; text-decoration:none; }
   </style>
+  ${themeScript}
 </head>
 <body>
   <h1>${titlePage}</h1>
@@ -1159,9 +1542,9 @@ function renderBookPage({ libros, titlePage, tipo, nombre, req, noResultsHtml })
 
   return `<!DOCTYPE html>
 <html lang="es">
-<head><meta charset="UTF-8"><title>${titlePage}</title><style>${css}</style></head>
-<body>
-  <div class="header-banner top" style="background-image:url('/cover/secuendarias/portada11.jpg');"></div>
+<head><meta charset="UTF-8"><title>${titlePage}</title><style>${css}</style>${themeScript}</head>
+<body data-theme="stranger">
+  <div class="header-banner top" style="background-image:url('/cover/secuendarias/stranger_portada11.webp');"></div>
   <div class="overlay top">
     <div class="top-buttons secondary"><a href="/">Inicio</a></div>
     <h1>${titlePage}</h1>
@@ -1174,7 +1557,7 @@ function renderBookPage({ libros, titlePage, tipo, nombre, req, noResultsHtml })
       <input type="search" name="buscar" placeholder="Buscar título o autor" value="${req && req.query.buscar ? req.query.buscar.replace(/"/g,'&quot;') : ''}" />
       <button type="submit">Buscar</button>
       <div style="position:relative;display:inline-block;">
-        <button type="button" id="sort-btn" style="padding:8px 12px;border-radius:6px;border:2px solid #19E6D6;background:#111;color:#19E6D6;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;font-size:18px;transition:0.2s;" title="Ordenar">
+        <button type="button" id="sort-btn" style="padding:8px 12px;border-radius:6px;border:2px solid var(--accent-primary);background:var(--surface-card);color:var(--accent-primary);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;font-size:18px;transition:0.2s;" title="Ordenar">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="12 5 12 19"></polyline>
             <polyline points="19 12 12 19 5 12"></polyline>
@@ -1193,7 +1576,7 @@ function renderBookPage({ libros, titlePage, tipo, nombre, req, noResultsHtml })
       </div>
     </div>
     <div style="margin-top:6px;display:flex;gap:8px;align-items:center;">
-      <button type="button" id="multi-download-btn" style="display:none;padding:8px 16px;border-radius:8px;border:1px solid #19E6D6;background:#19E6D6;color:#000;font-family:'MedievalSharp', cursive;font-size:17px;cursor:pointer;text-shadow:0 1px 2px rgba(255,255,255,0.8);box-shadow:0 4px 12px rgba(0,0,0,0.4);">Descarga múltiple</button>
+      <button type="button" id="multi-download-btn" style="display:none;padding:8px 16px;border-radius:8px;border:1px solid var(--accent-primary);background:var(--accent-primary);color:#000;font-family:'MedievalSharp', cursive;font-size:17px;cursor:pointer;text-shadow:0 1px 2px rgba(255,255,255,0.8);box-shadow:0 4px 12px rgba(0,0,0,0.4);">Descarga múltiple</button>
     </div>
     <input type="hidden" name="name" value="${nombre}" />
     <input type="hidden" name="page" value="${currentPage}" />
@@ -1219,7 +1602,7 @@ function renderBookPage({ libros, titlePage, tipo, nombre, req, noResultsHtml })
   ${totalPages > 1 ? `
   <div style="text-align:center;margin:30px 0;display:flex;justify-content:center;align-items:center;gap:10px;flex-wrap:wrap;">
     ${currentPage > 1 ? `<a href="?${new URLSearchParams({...req.query, page: currentPage - 1}).toString()}" class="button">← Anterior</a>` : ''}
-    <span style="color:#19E6D6;font-family:'MedievalSharp',cursive;font-size:16px;">Página ${currentPage} de ${totalPages}</span>
+    <span style="color:var(--accent-primary);font-family:'MedievalSharp',cursive;font-size:16px;">Página ${currentPage} de ${totalPages}</span>
     ${currentPage < totalPages ? `<a href="?${new URLSearchParams({...req.query, page: currentPage + 1}).toString()}" class="button">Siguiente →</a>` : ''}
   </div>
   ` : ''}
@@ -1388,9 +1771,9 @@ function renderBookPage({ libros, titlePage, tipo, nombre, req, noResultsHtml })
 app.get('/', (req,res)=>{
   res.send(`<!DOCTYPE html>
 <html lang="es">
-  <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Azkaban Reads</title><link rel="preload" as="image" href="/cover/portada/portada1.jpg"><style>${css}</style><style>body{padding-top:0;} .header-banner.home{background-size:cover;background-position:center;will-change:transform;background-color:#0a0a0a;opacity:0;} .header-banner.home.loaded{animation:fadeInBanner 0.4s ease forwards;} .header-banner.home::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.4) 70%, #0a0a0a 100%);pointer-events:none;z-index:1;} .overlay.home{opacity:0;visibility:hidden;} .overlay.home.loaded{animation:fadeIn 0.3s ease 0.2s forwards;z-index:2;} @keyframes fadeInBanner{from{opacity:0;} to{opacity:1;}} @keyframes fadeIn{from{opacity:0;} to{opacity:1;visibility:visible;}}</style></head>
-<body>
-  <div class="header-banner home" id="home-bg" style="height:100vh; background-size:cover; background-position:center; background-image:url('/cover/portada/portada1.jpg');"></div>
+  <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Azkaban Reads</title><link rel="preload" as="image" href="/cover/portada/starnger_portada1.webp"><style>${css}</style>${themeScript}<style>body{padding-top:0;} .header-banner.home{background-size:cover;background-position:center;will-change:transform;background-color:#0a0a0a;opacity:0;} .header-banner.home.loaded{animation:fadeInBanner 0.4s ease forwards;} .header-banner.home::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.4) 70%, #0a0a0a 100%);pointer-events:none;z-index:1;} .overlay.home{opacity:0;visibility:hidden;} .overlay.home.loaded{animation:fadeIn 0.3s ease 0.2s forwards;z-index:2;} @keyframes fadeInBanner{from{opacity:0;} to{opacity:1;}} @keyframes fadeIn{from{opacity:0;} to{opacity:1;visibility:visible;}}</style></head>
+<body data-theme="stranger">
+  <div class="header-banner home" id="home-bg" style="height:100vh; background-size:cover; background-position:center; background-image:url('/cover/portada/starnger_portada1.webp');"></div>
   <div class="overlay home" id="home-overlay" style="justify-content:center;">
     <h1>Azkaban Reads</h1>
     <div class="top-buttons">
@@ -1407,18 +1790,18 @@ app.get('/', (req,res)=>{
       document.getElementById('home-bg').classList.add('loaded');
       document.getElementById('home-overlay').classList.add('loaded');
     };
-    img.src = '/cover/portada/portada1.jpg';
+    img.src = '/cover/portada/starnger_portada1.webp';
   </script>
   
   <!-- Botón flotante de stats -->
-  <button id="stats-btn" style="position:fixed;bottom:20px;right:140px;width:48px;height:48px;border-radius:50%;background:transparent;border:2px solid #19E6D6;cursor:pointer;z-index:100;display:flex;align-items:center;justify-content:center;transition:0.25s;padding:0;color:#19E6D6;">
+  <button id="stats-btn" style="position:fixed;bottom:20px;right:140px;width:48px;height:48px;border-radius:50%;background:transparent;border:2px solid var(--accent-primary);cursor:pointer;z-index:100;display:flex;align-items:center;justify-content:center;transition:0.25s;padding:0;color:var(--accent-primary);">
     <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
       <path d="M13 2l-8 12h7l-7 8 12-14h-7l3-6z"></path>
     </svg>
   </button>
   
   <!-- Botón flotante de sync-kobo -->
-  <button id="sync-kobo-btn" style="position:fixed;bottom:20px;right:80px;width:48px;height:48px;border-radius:50%;background:transparent;border:2px solid #19E6D6;cursor:pointer;z-index:100;display:flex;align-items:center;justify-content:center;transition:0.25s;padding:0;color:#19E6D6;">
+  <button id="sync-kobo-btn" style="position:fixed;bottom:20px;right:80px;width:48px;height:48px;border-radius:50%;background:transparent;border:2px solid var(--accent-primary);cursor:pointer;z-index:100;display:flex;align-items:center;justify-content:center;transition:0.25s;padding:0;color:var(--accent-primary);">
     <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
       <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
       <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
@@ -1427,7 +1810,7 @@ app.get('/', (req,res)=>{
   </button>
   
   <!-- Botón flotante de upload -->
-  <button id="upload-btn" style="position:fixed;bottom:20px;right:20px;width:48px;height:48px;border-radius:50%;background:transparent;border:2px solid #19E6D6;cursor:pointer;z-index:100;display:flex;align-items:center;justify-content:center;transition:0.25s;padding:0;color:#19E6D6;">
+  <button id="upload-btn" style="position:fixed;bottom:20px;right:20px;width:48px;height:48px;border-radius:50%;background:transparent;border:2px solid var(--accent-primary);cursor:pointer;z-index:100;display:flex;align-items:center;justify-content:center;transition:0.25s;padding:0;color:var(--accent-primary);">
     <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
       <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
       <polyline points="17 8 12 3 7 8"></polyline>
@@ -1617,13 +2000,13 @@ app.get('/autores', (req,res)=>{
   if(query) autores = autores.filter(a=>a.toLowerCase().includes(query));
   const authorsHtml = autores.length ? autores.map(a=>{
     const initials = a.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0, 3);
-    return `<div class="book"><div style="width:50px; height:50px; border:2px solid #19E6D6; border-radius:50%; display:flex; align-items:center; justify-content:center; margin-bottom:8px;"><span style="font-family:'MedievalSharp', cursive; color:#19E6D6; font-size:18px; font-weight:normal;">${initials}</span></div><div class="title">${a}</div><div class="meta"><a href="/autor?name=${encodeURIComponent(a)}">Ver libros</a></div></div>`;
+    return `<div class="book"><div style="width:50px; height:50px; border:2px solid var(--accent-primary); border-radius:50%; display:flex; align-items:center; justify-content:center; margin-bottom:8px;"><span style="font-family:'MedievalSharp', cursive; color:var(--accent-primary); font-size:18px; font-weight:normal;">${initials}</span></div><div class="title">${a}</div><div class="meta"><a href="/autor?name=${encodeURIComponent(a)}">Ver libros</a></div></div>`;
   }).join('') : getRandomNoResultHtml();
   res.send(`<!DOCTYPE html>
 <html lang="es">
-<head><meta charset="UTF-8"><title>Autores</title><style>${css}</style></head>
-<body>
-  <div class="header-banner top" style="background-image:url('/cover/secuendarias/portada11.jpg');"></div>
+<head><meta charset="UTF-8"><title>Autores</title><style>${css}</style>${themeScript}</head>
+<body data-theme="stranger">
+  <div class="header-banner top" style="background-image:url('/cover/secuendarias/stranger_portada11.webp');"></div>
   <div class="overlay top">
     <div class="top-buttons secondary"><a href="/">Inicio</a></div>
     <h1>Autores</h1>
@@ -1702,13 +2085,13 @@ app.get('/sagas', (req,res)=>{
   const runes = uniqueRunes(sagas.length);
   const sagasHtml = sagas.length ? sagas.map((s, idx)=>{
     const symbol = runes[idx];
-    return `<div class="book"><div style="width:50px; height:50px; border:2px solid #19E6D6; border-radius:50%; display:flex; align-items:center; justify-content:center; margin-bottom:8px;">${symbol}</div><div class="title">${s}</div><div class="meta"><a href="/saga?name=${encodeURIComponent(s)}">Ver libros</a></div></div>`;
+    return `<div class="book"><div style="width:50px; height:50px; border:2px solid var(--accent-primary); border-radius:50%; display:flex; align-items:center; justify-content:center; margin-bottom:8px;">${symbol}</div><div class="title">${s}</div><div class="meta"><a href="/saga?name=${encodeURIComponent(s)}">Ver libros</a></div></div>`;
   }).join('') : getRandomNoResultHtml();
   res.send(`<!DOCTYPE html>
 <html lang="es">
-<head><meta charset="UTF-8"><title>Sagas</title><style>${css}</style></head>
-<body>
-  <div class="header-banner top" style="background-image:url('/cover/secuendarias/portada11.jpg');"></div>
+<head><meta charset="UTF-8"><title>Sagas</title><style>${css}</style>${themeScript}</head>
+<body data-theme="stranger">
+  <div class="header-banner top" style="background-image:url('/cover/secuendarias/stranger_portada11.webp');"></div>
   <div class="overlay top">
     <div class="top-buttons secondary"><a href="/">Inicio</a></div>
     <h1>Sagas</h1>
@@ -1855,9 +2238,9 @@ app.get('/recomendados', async (req,res)=>{
 
     res.send(`<!DOCTYPE html>
 <html lang="es">
-<head><meta charset="UTF-8"><title>Recomendados (Top 5)</title><style>${css}</style></head>
-<body>
-  <div class="header-banner top" style="background-image:url('/cover/secuendarias/portada11.jpg');"></div>
+<head><meta charset="UTF-8"><title>Recomendados (Top 5)</title><style>${css}</style>${themeScript}</head>
+<body data-theme="stranger">
+  <div class="header-banner top" style="background-image:url('/cover/secuendarias/stranger_portada11.webp');"></div>
   <div class="overlay top">
     <div class="top-buttons secondary"><a href="/">Inicio</a></div>
     <h1>Top 5 recomendados</h1>
@@ -1926,9 +2309,9 @@ app.get('/libro', async (req, res) => {
 
   res.send(`<!DOCTYPE html>
 <html lang="es">
-<head><meta charset="utf-8"><title>${title}</title><style>${css}</style></head>
-<body>
-  <div class="header-banner top" style="background-image:url('${cover || '/cover/secuendarias/portada11.jpg'}');"></div>
+<head><meta charset="utf-8"><title>${title}</title><style>${css}</style>${themeScript}</head>
+<body data-theme="stranger">
+  <div class="header-banner top" style="background-image:url('${cover || '/cover/secuendarias/stranger_portada11.webp'}');"></div>
   <div class="overlay top">
     <div class="top-buttons secondary"><a href="/">Inicio</a></div>
     <h1>${title}</h1>
@@ -2197,8 +2580,8 @@ app.get('/stats', async (req, res) => {
     .top-list li span:last-child { color: #19E6D6; font-family: 'MedievalSharp', cursive; }
   </style>
 </head>
-<body>
-  <div class="header-banner top" style="background-image:url('/cover/secuendarias/portada11.jpg');"></div>
+<body data-theme="stranger">
+  <div class="header-banner top" style="background-image:url('/cover/secuendarias/stranger_portada11.webp');"></div>
   <div class="overlay top">
     <div class="top-buttons secondary"><a href="/">Inicio</a></div>
     <h1>Dashboard Editor</h1>
@@ -2210,6 +2593,27 @@ app.get('/stats', async (req, res) => {
   </div>
 
   <div class="dashboard-content">
+    <!-- Selector de Temas -->
+    <div class="section" style="margin-bottom: 30px;">
+      <h2><svg viewBox="0 0 24 24" fill="none" stroke="#19E6D6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 28px; height: 28px; vertical-align: middle; margin-right: 8px;">
+        <path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path>
+        <path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path>
+      </svg>Temas Disponibles</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+        <div class="stat-card" style="text-align: left;">
+          <h3 style="color: #19E6D6; font-family: 'MedievalSharp', cursive; margin: 0 0 10px 0; font-size: 20px;">🌊 Default (Cyan)</h3>
+          <p style="color: #999; font-size: 14px; margin: 0 0 15px 0;">Tema original con acentos cyan neón (#19E6D6)</p>
+          <button onclick="setTheme('default')" style="padding: 10px 20px; background: linear-gradient(135deg, rgba(25,230,214,0.2), rgba(25,230,214,0.1)); border: 2px solid #19E6D6; color: #19E6D6; border-radius: 6px; cursor: pointer; font-family: 'MedievalSharp', cursive; font-size: 16px; transition: 0.3s;">Activar Tema</button>
+        </div>
+        <div class="stat-card" style="text-align: left;">
+          <h3 style="color: #ff305b; font-family: 'MedievalSharp', cursive; margin: 0 0 10px 0; font-size: 20px;">👾 Stranger Things</h3>
+          <p style="color: #999; font-size: 14px; margin: 0 0 15px 0;">Paleta rojo/azul inspirada en Stranger Things</p>
+          <button onclick="setTheme('stranger')" style="padding: 10px 20px; background: linear-gradient(135deg, rgba(255,48,91,0.2), rgba(125,211,255,0.1)); border: 2px solid #7dd3ff; color: #7dd3ff; border-radius: 6px; cursor: pointer; font-family: 'MedievalSharp', cursive; font-size: 16px; transition: 0.3s;">Activar Tema</button>
+        </div>
+      </div>
+      <p style="color: #999; font-size: 13px; margin: 15px 0 0 0; font-style: italic;">💡 El tema seleccionado se guardará automáticamente y se aplicará en todas las páginas.</p>
+    </div>
+
     <!-- Estadísticas Generales -->
     <div style="margin-bottom: 30px;">
       <h2 style="font-family: 'MedievalSharp', cursive; color: #19E6D6; font-size: 24px; margin: 0 0 20px 0; padding-left: 10px;"><svg viewBox="0 0 24 24" fill="none" stroke="#19E6D6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 28px; height: 28px; vertical-align: middle; margin-right: 8px;"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>Estadísticas Generales</h2>
@@ -2970,6 +3374,7 @@ app.get('/upload', (req, res) => {
   <title>Cargar EPUB - Azkaban Reads</title>
   <link rel="preload" as="image" href="/cover/secuendarias/portada11.jpg">
   <style>${css}</style>
+  ${themeScript}
   <style>
     .upload-container { max-width: 900px; margin: 40px auto; padding: 40px; }
     .drop-zone { border: 3px dashed #19E6D6; border-radius: 12px; padding: 40px; text-align: center; cursor: pointer; transition: all 0.3s; background: rgba(25,230,214,0.05); }
@@ -3208,6 +3613,7 @@ app.get('/sync-kobo', (req, res) => {
   <title>Sync Kobo - Azkaban Reads</title>
   <link rel="preload" as="image" href="/cover/secuendarias/portada11.jpg">
   <style>${css}</style>
+  ${themeScript}
   <style>
     .sync-container { max-width: 1200px; margin: 40px auto; padding: 40px; }
     .instruction-box { background: rgba(25,230,214,0.1); border: 2px solid #19E6D6; border-radius: 12px; padding: 25px; margin-bottom: 30px; }

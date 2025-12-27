@@ -1,0 +1,177 @@
+/*
+  THEME: STRANGER THINGS
+  Tema inspirado en la serie con paleta roja/azul oscura
+  
+  Override completo de todas las variables del tema default
+*/
+
+:root[data-theme="stranger"] {
+
+  /* ========================================
+     COLORES DE FONDO
+     ======================================== */
+  
+  --theme-bg-primary: #08040d;
+  --theme-bg-secondary: #1a0a1a;
+  --theme-bg-header: #0f0515;
+
+  /* ========================================
+     COLORES DE TEXTO
+     ======================================== */
+  
+  --theme-text-primary: #ff305b;
+  --theme-text-secondary: rgba(255, 48, 91, 0.7);
+  --theme-text-tertiary: rgba(255, 48, 91, 0.4);
+  --theme-text-user: #7dd3ff;
+
+  /* ========================================
+     COLORES DE BORDE
+     ======================================== */
+  
+  --theme-border-primary: #ff305b;
+  --theme-border-secondary: rgba(255, 48, 91, 0.3);
+  --theme-border-tertiary: rgba(125, 211, 255, 0.3);
+
+  /* ========================================
+     BOTONES Y ELEMENTOS INTERACTIVOS
+     ======================================== */
+  
+  /* Trigger button (botón flotante) */
+  --theme-trigger-bg: #08040d;
+  --theme-trigger-border: #ff305b;
+  --theme-trigger-color: #ff305b;
+  
+  /* Input field */
+  --theme-input-bg: #08040d;
+  --theme-input-border: #ff305b;
+  --theme-input-color: #ff305b;
+  --theme-input-placeholder: rgba(255, 48, 91, 0.4);
+  
+  /* Send button */
+  --theme-send-bg: #1a0a1a;
+  --theme-send-border: #7dd3ff;
+  --theme-send-color: #7dd3ff;
+  
+  /* Option buttons */
+  --theme-option-btn-bg: #1a0a1a;
+  --theme-option-btn-border: #ff305b;
+  --theme-option-btn-color: #ff305b;
+  
+  /* Chips / Quick actions */
+  --theme-chip-bg: #08040d;
+  --theme-chip-border: #7dd3ff;
+  --theme-chip-color: #7dd3ff;
+
+  /* ========================================
+     MENSAJES DEL CHAT
+     ======================================== */
+  
+  /* Mensaje de LUMOS (bot) */
+  --theme-msg-bot-bg: rgba(255, 48, 91, 0.1);
+  --theme-msg-bot-border: rgba(255, 48, 91, 0.3);
+  --theme-msg-bot-color: #ff305b;
+  
+  /* Mensaje del usuario */
+  --theme-msg-user-bg: rgba(125, 211, 255, 0.1);
+  --theme-msg-user-border: rgba(125, 211, 255, 0.3);
+  --theme-msg-user-color: #7dd3ff;
+  
+  /* Mensaje de alerta */
+  --theme-msg-alert-bg: #1a0a1a;
+  --theme-msg-alert-border: #ff305b;
+  --theme-msg-alert-border-left: #ff305b;
+  --theme-msg-alert-color: #ff305b;
+
+  /* ========================================
+     TARJETAS DE LIBROS
+     ======================================== */
+  
+  --theme-book-card-bg: #1a0a1a;
+  --theme-book-card-border: #ff305b;
+  --theme-book-title-color: #ff305b;
+  --theme-book-text-color: rgba(255, 48, 91, 0.8);
+  
+  /* Botones de libro */
+  --theme-book-btn-bg: #1a0a1a;
+  --theme-book-btn-border: #7dd3ff;
+  --theme-book-btn-color: #7dd3ff;
+
+  /* ========================================
+     EFECTOS Y SOMBRAS
+     ======================================== */
+  
+  /* Text shadows - Efecto de brillo rojo/azul */
+  --theme-text-shadow-primary: 0 0 8px rgba(255, 48, 91, 0.9), 
+                                0 0 16px rgba(255, 48, 91, 0.7), 
+                                0 0 24px rgba(125, 211, 255, 0.3);
+  
+  --theme-text-shadow-secondary: 0 0 4px rgba(255, 48, 91, 0.5);
+  --theme-text-shadow-tertiary: 0 0 3px rgba(255, 48, 91, 0.4);
+  --theme-text-shadow-subtle: 0 0 2px rgba(255, 48, 91, 0.3);
+  
+  /* Box shadows - Brillos rojos/azules */
+  --theme-box-shadow-trigger: 0 0 8px rgba(255, 48, 91, 0.4);
+  --theme-box-shadow-trigger-hover: 0 0 15px rgba(255, 48, 91, 0.7);
+  
+  --theme-box-shadow-container: 0 0 10px rgba(255, 48, 91, 0.5), 
+                                 0 10px 30px rgba(0, 0, 0, 0.9);
+  
+  --theme-box-shadow-header: 0 2px 8px rgba(255, 48, 91, 0.2);
+  
+  --theme-box-shadow-input-focus: 0 0 8px rgba(255, 48, 91, 0.5);
+  --theme-box-shadow-btn-hover: 0 0 8px rgba(125, 211, 255, 0.6);
+  --theme-box-shadow-book-card: 0 0 6px rgba(255, 48, 91, 0.3);
+  
+  /* Drop shadow para hover en close button */
+  --theme-drop-shadow-close-hover: drop-shadow(0 0 8px rgba(255, 48, 91, 0.8));
+
+  /* ========================================
+     SCROLLBAR
+     ======================================== */
+  
+  --theme-scrollbar-width: 6px;
+  --theme-scrollbar-track-bg: #1a0a1a;
+  --theme-scrollbar-thumb-bg: #ff305b;
+  --theme-scrollbar-thumb-shadow: 0 0 4px rgba(255, 48, 91, 0.6);
+
+  /* ========================================
+     LOADING ANIMATION
+     ======================================== */
+  
+  --theme-loading-dot-bg: #ff305b;
+  --theme-loading-dot-shadow: 0 0 4px rgba(255, 48, 91, 0.7);
+
+  /* ========================================
+     ESTADOS HOVER
+     ======================================== */
+  
+  --theme-hover-bg: rgba(255, 48, 91, 0.15);
+  --theme-tap-highlight: rgba(255, 48, 91, 0.3);
+
+  /* ========================================
+     SVG ICONS
+     ======================================== */
+  
+  --theme-svg-stroke: #ff305b;
+  --theme-svg-fill: #ff305b;
+  --theme-svg-stroke-width: 2;
+
+  /* ========================================
+     CLOSE BUTTON
+     ======================================== */
+  
+  --theme-close-color: #ff305b;
+  --theme-close-opacity: 0.8;
+  --theme-close-opacity-hover: 1;
+  
+  /* Container */
+  --theme-container-border-radius: 16px;
+  --theme-container-border-width: 2px;
+  
+  /* Mensajes */
+  --theme-message-border-radius: 8px;
+  --theme-message-border-width: 1px;
+  
+  /* Alert border especial */
+  --theme-alert-border-left-width: 3px;
+}

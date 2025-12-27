@@ -1,0 +1,110 @@
+/* 
+  THEME LOADER — AZKABAN READS
+  
+  ⚠️ NO CAMBIA ESTILOS
+  ⚠️ SOLO DEFINE PUNTOS DE EXTENSIÓN
+  ⚠️ NO SE IMPORTA TODAVÍA
+  ⚠️ NO SE USA TODAVÍA
+  
+  Este archivo actúa como "puente" entre los temas y el CSS real.
+  Las variables aquí definidas apuntan a las variables de tema activo.
+  
+  Estado: PREPARADO | NO APLICADO | NO IMPORTADO
+*/
+
+:root {
+  /* ===== COLORES GENERALES ===== */
+  --color-bg: var(--theme-bg-primary);
+  --color-text: var(--theme-text-primary);
+  --color-muted: var(--theme-text-secondary);
+  --color-border: var(--theme-border-primary);
+
+  /* ===== SUPERFICIES ===== */
+  --surface-primary: var(--theme-bg-primary);
+  --surface-secondary: var(--theme-bg-secondary);
+  --surface-header: var(--theme-bg-header);
+
+  /* ===== ACCENTOS ===== */
+  --accent-primary: var(--theme-text-primary);
+  --accent-border: var(--theme-border-primary);
+  --accent-glow: var(--theme-box-shadow-trigger);
+
+  /* ===== BOT LUMOS - Mensajes ===== */
+  --bot-background: var(--theme-bg-primary);
+  --bot-text: var(--theme-text-primary);
+  --bot-border: var(--theme-border-primary);
+  
+  --bot-message-user-bg: var(--theme-msg-user-bg);
+  --bot-message-user-border: var(--theme-msg-user-border);
+  --bot-message-user-color: var(--theme-msg-user-color);
+  
+  --bot-message-bot-bg: var(--theme-msg-bot-bg);
+  --bot-message-bot-border: var(--theme-msg-bot-border);
+  --bot-message-bot-color: var(--theme-msg-bot-color);
+  
+  --bot-message-alert-bg: var(--theme-msg-alert-bg);
+  --bot-message-alert-border: var(--theme-msg-alert-border);
+  --bot-message-alert-color: var(--theme-msg-alert-color);
+
+  /* ===== BOTONES ===== */
+  --button-bg: var(--theme-option-btn-bg);
+  --button-text: var(--theme-option-btn-color);
+  --button-border: var(--theme-option-btn-border);
+  
+  --button-send-bg: var(--theme-send-bg);
+  --button-send-border: var(--theme-send-border);
+  --button-send-color: var(--theme-send-color);
+
+  /* ===== INPUT ===== */
+  --input-bg: var(--theme-input-bg);
+  --input-border: var(--theme-input-border);
+  --input-color: var(--theme-input-color);
+  --input-placeholder: var(--theme-input-placeholder);
+
+  /* ===== CHIPS ===== */
+  --chip-bg: var(--theme-chip-bg);
+  --chip-border: var(--theme-chip-border);
+  --chip-color: var(--theme-chip-color);
+
+  /* ===== TARJETAS DE LIBROS ===== */
+  --book-card-bg: var(--theme-book-card-bg);
+  --book-card-border: var(--theme-book-card-border);
+  --book-title-color: var(--theme-book-title-color);
+  --book-text-color: var(--theme-book-text-color);
+  
+  --book-btn-bg: var(--theme-book-btn-bg);
+  --book-btn-border: var(--theme-book-btn-border);
+  --book-btn-color: var(--theme-book-btn-color);
+
+  /* ===== EFECTOS ===== */
+  --text-shadow-primary: var(--theme-text-shadow-primary);
+  --text-shadow-secondary: var(--theme-text-shadow-secondary);
+  --text-shadow-subtle: var(--theme-text-shadow-subtle);
+  
+  --box-shadow-hover: var(--theme-box-shadow-btn-hover);
+  --box-shadow-focus: var(--theme-box-shadow-input-focus);
+  
+  /* ===== SCROLLBAR ===== */
+  --scrollbar-track: var(--theme-scrollbar-track-bg);
+  --scrollbar-thumb: var(--theme-scrollbar-thumb-bg);
+  
+  /* ===== LOADING ===== */
+  --loading-dot: var(--theme-loading-dot-bg);
+  
+  /* ===== HOVER STATES ===== */
+  --hover-bg: var(--theme-hover-bg);
+}
+
+/*
+  NOTAS IMPORTANTES:
+  
+  - Este archivo NO se usa hasta que se active el sistema de temas
+  - Todas las variables apuntan a variables de tema
+  - Si no hay tema activo, estas variables no funcionarán
+  - Es solo un "mapa" de traducción
+  
+  PRÓXIMO PASO (cuando se active):
+  - Importar este archivo DESPUÉS de los temas
+  - Reemplazar valores hardcodeados por estas variables
+  - Probar que todo funciona igual
+*/
