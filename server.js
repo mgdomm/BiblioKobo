@@ -933,10 +933,13 @@ const themeScript = `
   // Función global para cambiar tema
   window.setTheme = function(themeName) {
     console.log('🔄 setTheme llamado con:', themeName);
+    console.log('📍 Ruta actual:', window.location.pathname);
     const body = document.body;
+    const prevTheme = body.getAttribute('data-theme');
+    console.log('🎨 Tema anterior:', prevTheme);
     body.setAttribute('data-theme', themeName);
     localStorage.setItem('theme', themeName);
-    console.log('✅ data-theme y localStorage actualizados');
+    console.log('✅ data-theme y localStorage actualizados a:', themeName);
     
     // Cambiar imagen de fondo del banner
     const banner = document.querySelector('.header-banner.top, .header-banner.home');
@@ -2579,6 +2582,7 @@ app.get('/stats', async (req, res) => {
     .top-list li span:first-child { color: #fff; font-weight: bold; }
     .top-list li span:last-child { color: #19E6D6; font-family: 'MedievalSharp', cursive; }
   </style>
+  ${themeScript}
 </head>
 <body data-theme="stranger">
   <div class="header-banner top" style="background-image:url('/cover/secuendarias/stranger_portada11.webp');"></div>
