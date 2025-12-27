@@ -962,12 +962,6 @@ const themeScript = `
         btn.textContent = btnTheme[1] === themeName ? '✓ Tema Activo' : 'Activar Tema';
       }
     });
-    
-    // Recargar si es necesario para aplicar cambios completos
-    if (window.location.pathname === '/stats') {
-      console.log('📊 Recargando página stats...');
-      setTimeout(() => location.reload(), 300);
-    }
   };
   
   console.log('✅ window.setTheme definido como:', typeof window.setTheme);
@@ -2585,8 +2579,8 @@ app.get('/stats', async (req, res) => {
   </style>
   ${themeScript}
 </head>
-<body>
-  <div class="header-banner top"></div>
+<body data-theme="stranger">
+  <div class="header-banner top" style="background-image:url('/cover/secuendarias/stranger_portada11.webp');"></div>
   <div class="overlay top">
     <div class="top-buttons secondary"><a href="/">Inicio</a></div>
     <h1>Dashboard Editor</h1>
