@@ -157,7 +157,26 @@ if (hasOAuth) {
   const { client_id, client_secret, redirect_uris } = credentials.installed || credentials.web;
   
   const oauthAuth = new google.auth.OAuth2(client_id, client_secret, redirect_uris[0]);
-  oauthAuth.setCredentials(token);
+  oauthAuth.setCredentials({
+    access_token: token.access_token,
+    refresh_token: token.refresh_token,
+    scope: token.scope,
+    token_type: token.token_type,
+    expiry_date: token.expiry_date
+  });
+  
+  // Escuchar eventos de token refrescado
+  oauthAuth.on('tokens', (newTokens) => {
+    console.log('🔄 Token OAuth refrescado automáticamente');
+    if (newTokens.refresh_token) {
+      // En desarrollo, actualizar el archivo
+      if (!hasOAuthEnv) {
+        const updatedToken = { ...token, ...newTokens };
+        fs.writeFileSync(OAUTH_TOKEN, JSON.stringify(updatedToken, null, 2));
+      }
+    }
+  });
+  
   const oauthDrive = google.drive({ version: 'v3', auth: oauthAuth });
 
   // Detectar alcance del token: drive.file solo ve archivos creados por la app
