@@ -1,42 +1,73 @@
-# 📚 Azkaban Reads
+# 📚 BiblioKobo - Azkaban Reads
 
 **Plataforma oscura para custodiar y compartir libros prohibidos, olvidados y raramente accesibles.**
 
-Azkaban Reads es un sistema web que combina una biblioteca digital con un asistente inteligente (LUMOS) para gestionar solicitudes de libros, notificaciones de novedades y un generador de spoilers dinámico.
+BiblioKobo es un sistema web que combina una biblioteca digital con un asistente inteligente (LUMOS) para:
+- 🎯 Gestionar solicitudes de libros específicos
+- 📧 Notificaciones automáticas de nuevos libros
+- 🤖 Asistente conversacional inteligente con detección de intents
+- 🔮 Generador de spoilers reales + falsos
+- 📚 Recomendaciones personalizadas basadas en preferencias del usuario
+- 🧪 Test de preferencias de lectura
 
 ---
 
 ## 🎯 Características principales
 
 ### 📖 Gestión de biblioteca
-- Catálogo de libros capturados entre los muros de Azkaban
-- Búsqueda por título, autor o saga
+- Catálogo de 193+ libros capturados
+- Búsqueda inteligente por título, autor o saga
 - Filtrado por categoría y tipo (saga / autoconclusivo)
-- Sistema de recomendaciones personalizadas
+- Sistema de recomendaciones personalizadas por tema (dragones, magia, romance, oscuro, misterio, guerra)
 
-### 🤖 Asistente LUMOS
-- Chat conversacional integrado en el sitio
-- Búsqueda de libros con lenguaje natural
-- Solicitud de libros específicos
-- Revelación de spoilers inteligentes (real + fake)
-- Suscripción a notificaciones de novedades
+### 🤖 Asistente LUMOS - Detección inteligente de intents
+LUMOS entiende la intención del usuario automáticamente:
 
-### 📧 Sistema de notificaciones
-- **Solicitudes de libros**: Confirmación + notificación al admin
-- **Suscripciones**: Autor, saga, todas las novedades
-- **Notificaciones automáticas**: Cuando se sube un libro coincidente
-- Todos los emails con diseño LUMOS personalizado
-- Compatible con Gmail, iCloud, Outlook
+| Intent | Ejemplo | Acción |
+|--------|---------|--------|
+| **REQUEST_BOOK** | "quiero solicitar Alas de Sangre" | Abre formulario de solicitud |
+| **SEARCH** | "busca libros de romántica" | Búsqueda full-text |
+| **RECOMMEND** | "recomiéndame algo" | Sistema de recomendaciones temáticas |
+| **NOTIFY** | "avísame de Colleen Hoover" | Suscripción a autor/saga/todas |
+| **SPOILER** | "spoilers de Harry Potter" | Generador real + fake |
+| **TEST** | "test lector" | Análisis de preferencias |
+| **GREETING** | "hola" | Respuesta conversacional |
+| **HELP** | "ayuda" | Guía de uso |
+
+### 📧 Sistema de notificaciones - 5 tipos de emails
+1. **Confirmación de solicitud** → Usuario solicita libro
+2. **Libro capturado** → Se sube el libro solicitado
+3. **Confirmación de suscripción** → Usuario se suscribe
+4. **Notificación al admin (solicitud)** → Log de nuevas solicitudes
+5. **Notificación al admin (suscripción)** → Log de nuevas suscripciones
+
+Todos con diseño LUMOS retro + compatible con Gmail, iCloud, Outlook
+
+### 🎨 Recomendaciones inteligentes por tema
+Cada tema tiene 8 razones personalizadas y únicas:
+
+- **Dragones**: Criaturas épicas, fuerzas del destino, poder, política...
+- **Magia**: Sistemas complejos, alma de la historia, consecuencias...
+- **Romance**: Profundidad emocional, adversidades, complicidad...
+- **Oscuridad**: Moralidad gris, atmósfera sombría, complejidad del mal...
+- **Misterio**: Preguntas sin respuesta, secretos, revelaciones...
+- **Guerra**: Conflictos militares, estrategia, costo humano...
+
+El sistema **filtra libros que realmente contengan el tema** antes de recomendar.
 
 ### 🔮 Generador de spoilers inteligente
-- Fetching de spoilers reales desde múltiples APIs:
-  - SpoilThePlot
-  - Wikipedia
-  - OpenLibrary
-  - Google Books
-- Extracción de fragmentos cortos (máx 150 caracteres)
-- Generación de spoilers falsos basados en análisis narrativo
-- Distinción automática entre spoilers de libro vs. personaje
+1. **Fetch de fuentes reales**: Wikipedia, OpenLibrary, Google Books, SpoilThePlot
+2. **Extracción inteligente**: Palabras clave (muere, traición, revela...)
+3. **Validación de longitud**: Máximo 150 caracteres
+4. **Generación de fakes**: 2-3 spoilers falsos basados en análisis narrativo
+5. **Lógica de distinción**: Spoilers de libro vs. personaje
+6. **Cache inteligente**: Evita repetir spoilers en la misma sesión
+
+### 🧪 Test de preferencias del lector
+- Solicita 3 libros favoritos del usuario
+- Analiza categorías, autores y preferencia saga/standalone
+- Genera 3 recomendaciones basadas en patrones similares
+- **Sin duplicados**: Filtra por ID y título para evitar repeticiones
 
 ---
 
@@ -54,26 +85,42 @@ Azkaban Reads es un sistema web que combina una biblioteca digital con un asiste
 ```
 BiblioKobo/
 ├── public/
-│   ├── lumos.html           # Chat bot LUMOS
-│   ├── lumos-widget.js      # Componente del bot
-│   ├── dashboard.html       # Panel de admin
-│   └── assets/              # SVGs y recursos
+│   ├── lumos.html              # 2300+ líneas - Chat bot LUMOS completo
+│   ├── lumos-widget.js         # Componente independiente del bot
+│   ├── dashboard.html          # Panel admin
+│   ├── lumos-demo.html         # Demo pública
+│   └── assets/svg/             # Iconos SVG
+│
 ├── routes/
-│   ├── books.js             # Búsqueda y recomendaciones
-│   ├── requests.js          # Solicitudes y notificaciones
-│   └── admin.js             # Gestión de libros
+│   ├── books.js                # Búsqueda + recomendaciones + test lector
+│   ├── requests.js             # Solicitudes + suscripciones
+│   ├── spoilers.js             # Generador de spoilers
+│   └── admin.js                # Gestión de libros (REQUIERE AUTENTICACIÓN)
+│
 ├── services/
-│   ├── aiService.js         # IA: spoilers, intents
-│   ├── emailService.js      # SendGrid API
-│   └── notifier.js          # Gestión de notificaciones
+│   ├── aiService.js            # IA: detección de intents, análisis narrativo
+│   ├── ollamaService.js        # Integración con Ollama para IA local
+│   ├── emailService.js         # SendGrid API REST (sin SMTP)
+│   ├── notifier.js             # Orquestación de notificaciones
+│   ├── aiOllama.js             # Fallback de IA (deprecated)
+│   └── oracleService.js        # Integración Oracle (experimental)
+│
 ├── utils/
-│   └── fileHandler.js       # CRUD JSON
+│   └── fileHandler.js          # CRUD operaciones JSON
+│
 ├── data/
-│   ├── requests.json        # Solicitudes pendientes
-│   ├── notifications.json   # Suscripciones activas
-│   └── ratings-cache.json   # Cache de ratings
-├── books.json              # Catálogo completo
-└── server.js               # Servidor principal
+│   ├── requests.json           # Solicitudes de libros pendientes
+│   ├── notifications.json      # Suscriptores activos
+│   └── ratings-cache.json      # Cache de ratings de Google Books
+│
+├── cover/                      # Archivos XML de portadas (legacy)
+├── themes/                     # Temas CSS alternativos
+│
+├── books.json                  # Base de datos de 193+ libros
+├── server.js                   # Servidor Express principal (4661 líneas)
+├── lumosAI.js                  # Router específico de chat IA
+├── package.json                # Dependencias
+└── .env                        # Variables de entorno (no trackeado)
 ```
 
 ---
@@ -101,6 +148,8 @@ cat > .env << EOF
 SENDGRID_API_KEY=your_api_key_here
 EMAIL_FROM=your-verified-email@gmail.com
 SITE_URL=http://localhost:3000
+OLLAMA_BASE_URL=http://localhost:11434
+OLLAMA_MODEL=llama3.1
 EOF
 
 # Iniciar servidor
@@ -108,6 +157,13 @@ npm start
 ```
 
 El servidor estará disponible en `http://localhost:3000`
+
+### IA (Ollama)
+
+- Levanta Ollama: `ollama serve`.
+- Descarga un modelo: `ollama pull llama3.1` (o el que prefieras).
+- Configura `OLLAMA_BASE_URL` y `OLLAMA_MODEL` si usas otro host o modelo.
+- Node.js consume la API de Ollama vía HTTP.
 
 ### Despliegue en Render
 
