@@ -1456,7 +1456,7 @@
 
         case 'spoiler_confirm':
           addUserMessage(`${icon('check')} Sí, quiero el spoiler`, true);
-          await revealSpoiler(data.bookTitle);
+          await revealSpoiler(data.bookTitle, data.isQuestion || false);
           break;
 
         case 'spoiler_selected':
@@ -1902,17 +1902,27 @@
     }
 
     // Revelar spoiler (solo después de confirmación)
-    async function revealSpoiler(bookTitle) {
+    async function revealSpoiler(bookTitle, isQuestion = false) {
       showLoading();
       
       try {
+        // Preparar la pregunta según si es una pregunta de personaje o un título de libro
+        let question;
+        if (isQuestion) {
+          // Es una pregunta sobre un personaje: mandar la pregunta directamente
+          question = bookTitle; // En este caso, "bookTitle" es realmente la pregunta
+        } else {
+          // Es un título de libro: mandar con contexto de spoiler
+          question = `Spoiler de ${bookTitle}`;
+        }
+        
         // Llamar al endpoint específico de spoilers
         const response = await fetch('/api/spoilers', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
             title: bookTitle,
-            question: `Spoiler de ${bookTitle}`
+            question: question
           })
         });
         const spoilerData = await response.json();
@@ -1921,7 +1931,7 @@
 
         if (spoilerData.success && spoilerData.spoiler) {
           // El spoiler fue encontrado
-          addLumosMessage(`${icon('warning')} <strong>ADVERTENCIA: SPOILERS POTENCIALES DE "${escapeHtml(bookTitle)}"</strong>`);
+          addLumosMessage(`${icon('warning')} <strong>ADVERTENCIA: SPOILERS POTENCIALES</strong>`);
           addLumosMessage(`${icon('spiral')} Las sombras susurran secretos prohibidos... Aquí está lo que he desenterrado:`);
           addLumosMessage(spoilerData.spoiler);
           addLumosMessage('Recuerda: en Azkaban, estos secretos nunca pueden ser olvidados una vez revelados.');
@@ -1929,8 +1939,8 @@
           showContinueOptions();
         } else {
           // El libro NO existe o no hay spoiler disponible
-          addLumosMessage(`${icon('spiral')} Susurro desde la penumbra: «${escapeHtml(bookTitle)}» no anida entre los volúmenes que custodio.`);
-          addLumosMessage('Intenta con otro título de la librería Azkaban...');
+          addLumosMessage(`${icon('spiral')} Susurro desde la penumbra: Los secretos sobre «${escapeHtml(bookTitle)}» no anidan entre los volúmenes que custodio.`);
+          addLumosMessage('Intenta con otro título o pregunta...');
           showMainOptions();
         }
         
@@ -2016,9 +2026,19 @@
 
         case 'spoiler_book':
           state.pendingSpoiler = message;
-          addLumosMessage(`⚠️ <strong>ADVERTENCIA:</strong> Lo que me pides no tiene marcha atrás. ¿Confirmas que deseas un spoiler de <strong>${message}</strong>? Una vez revelado, el hechizo no puede deshacerse.`);
+          // Detectar si es una pregunta sobre un personaje o un título de libro
+          const isCharacterQuestion = /\b(ama|muere|muieren|quien|qué|donde|dónde|cómo|como|es|vuelve|se convierte|traicion|traidor|enemigo|rival|relacion|romance|hijo|hija|padre|madre|hermano|hermana|amigo)\b/i.test(message);
+          
+          let confirmMessage;
+          if (isCharacterQuestion) {
+            confirmMessage = `⚠️ <strong>ADVERTENCIA:</strong> Una pregunta peligrosa. ¿Confirmas que deseas que revele sobre <strong>${message}</strong>? Una vez revelado, el hechizo no puede deshacerse.`;
+          } else {
+            confirmMessage = `⚠️ <strong>ADVERTENCIA:</strong> Lo que me pides no tiene marcha atrás. ¿Confirmas que deseas un spoiler de <strong>${message}</strong>? Una vez revelado, el hechizo no puede deshacerse.`;
+          }
+          
+          addLumosMessage(confirmMessage);
           const options = [
-            { text: '✓ Sí, quiero el spoiler', action: 'spoiler_confirm', data: { bookTitle: message } },
+            { text: '✓ Sí, quiero el spoiler', action: 'spoiler_confirm', data: { bookTitle: message, isQuestion: isCharacterQuestion } },
             { text: '✗ No, mejor no', action: 'cancel' }
           ];
           addOptionsToChat(options);
