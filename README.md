@@ -1,14 +1,48 @@
-# 📚 BiblioKobo - Azkaban Reads
+# 📚 BiblioKobo - Azkaban Reads + 🔮 Azkaban Brain
 
-**Plataforma oscura para custodiar y compartir libros prohibidos, olvidados y raramente accesibles.**
+**Plataforma oscura para custodiar y compartir libros prohibidos + Asistente de IA literaria ARM**
 
-BiblioKobo es un sistema web que combina una biblioteca digital con un asistente inteligente (LUMOS) para:
-- 🎯 Gestionar solicitudes de libros específicos
+BiblioKobo combina biblioteca digital con asistente inteligente LUMOS + Azkaban Brain (TinyLlama 7B):
+- 🎯 Gestión de solicitudes de libros específicos
 - 📧 Notificaciones automáticas de nuevos libros
 - 🤖 Asistente conversacional inteligente con detección de intents
-- 🔮 Generador de spoilers reales + falsos
-- 📚 Recomendaciones personalizadas basadas en preferencias del usuario
+- 🔮 **NUEVO: Azkaban Brain** - IA literaria 100% local para Chromebook ARM
+- 📚 Recomendaciones personalizadas con RAG + embeddings
 - 🧪 Test de preferencias de lectura
+
+---
+
+## 🌟 NUEVO: Azkaban Brain
+
+**Motor de IA literaria optimizado para Chromebook ARM (Snapdragon SC7180)**
+
+### Características
+- 🧠 **TinyLlama 7B** compilado para ARM64
+- 🔎 **RAG** con embeddings locales (TensorFlow.js)
+- 🌐 **Búsqueda híbrida**: biblioteca local + Google Books/Open Library
+- 📝 **Respuestas literarias** en tono de "guardián de Azkaban"
+- ⚡ **Sin GPU** - funciona en CPU ARM (30-60s por respuesta)
+- 🆓 **100% gratis** - sin servicios cloud
+
+### Instalación Rápida
+
+```bash
+# 1. Setup automático ARM
+./setup-azkaban-arm.sh  # ⏱️ 30-40 min
+
+# 2. Instalar dependencias
+npm install
+
+# 3. Iniciar servidor
+npm start
+
+# 4. Validar
+./validate-install.sh
+```
+
+📖 **Documentación completa:** [AZKABAN_BRAIN_SETUP.md](AZKABAN_BRAIN_SETUP.md)  
+🚀 **Guía rápida:** [AZKABAN_QUICK_START.md](AZKABAN_QUICK_START.md)  
+✅ **Checklist:** [CHECKLIST_INSTALACION.md](CHECKLIST_INSTALACION.md)
 
 ---
 
@@ -464,9 +498,81 @@ Este proyecto es de código abierto. Úsalo, modifícalo, comparte.
 
 ---
 
+## 🔮 Azkaban Brain - API Endpoints
+
+### POST `/api/azkaban/ask`
+Pregunta general al guardián de Azkaban.
+
+```bash
+curl -X POST http://localhost:3000/api/azkaban/ask \
+  -H 'Content-Type: application/json' \
+  -d '{"query":"¿Quién escribió El Hobbit?"}'
+```
+
+### POST `/api/azkaban/summarize`
+Resumen literario de un libro.
+
+```bash
+curl -X POST http://localhost:3000/api/azkaban/summarize \
+  -H 'Content-Type: application/json' \
+  -d '{"bookTitle":"1984"}'
+```
+
+### POST `/api/azkaban/recommend`
+Recomendaciones personalizadas.
+
+```bash
+curl -X POST http://localhost:3000/api/azkaban/recommend \
+  -H 'Content-Type: application/json' \
+  -d '{"preferences":"fantasía épica con dragones"}'
+```
+
+### GET `/api/azkaban/status`
+Estado del sistema.
+
+```bash
+curl http://localhost:3000/api/azkaban/status
+```
+
+### POST `/api/azkaban/index`
+Indexar biblioteca completa.
+
+```bash
+curl -X POST http://localhost:3000/api/azkaban/index
+```
+
+---
+
+## 📚 Documentación Azkaban Brain
+
+- 📖 [Guía Completa](AZKABAN_BRAIN_SETUP.md) - Instalación paso a paso
+- 🚀 [Quick Start](AZKABAN_QUICK_START.md) - Resumen ejecutivo
+- ✅ [Checklist](CHECKLIST_INSTALACION.md) - Verificación de instalación
+
+## 🛠️ Scripts NPM
+
+```bash
+npm start              # Iniciar servidor
+npm run dev            # Modo desarrollo (nodemon)
+npm run setup-arm      # Instalar Azkaban Brain ARM
+npm run index-books    # Indexar biblioteca completa
+```
+
+## 🔧 Scripts Shell
+
+```bash
+./setup-azkaban-arm.sh # Setup automático ARM64 (30-40 min)
+./validate-install.sh  # Validar instalación completa
+./test-azkaban.sh      # Test rápido de TinyLlama
+```
+
+---
+
 **"Los libros permanecen capturados entre estos muros... y solo los elegidos pueden acceder a ellos."** 🪄
 
-*Azkaban Reads © 2025*
+**✨ "Las sombras de Azkaban guardan mil historias... ¿Cuál deseas descubrir?"** 🔮
+
+*Azkaban Reads + Azkaban Brain © 2025-2026*
 
 ### Google Drive Integration
 

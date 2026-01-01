@@ -1,0 +1,398 @@
+/**
+ * Página de prueba de Azkaban Brain
+ * Interfaz simple para probar el asistente antes de integrar con LUMOS
+ */
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🔮 Azkaban Brain - Test</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Courier New', monospace;
+      background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+      color: #19E6D6;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 800px;
+      width: 100%;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 40px;
+      padding: 30px;
+      border: 2px solid #19E6D6;
+      border-radius: 10px;
+      background: rgba(25, 230, 214, 0.05);
+      box-shadow: 0 0 20px rgba(25, 230, 214, 0.3);
+    }
+
+    h1 {
+      font-size: 2.5em;
+      margin-bottom: 10px;
+      text-shadow: 0 0 10px rgba(25, 230, 214, 0.8);
+    }
+
+    .subtitle {
+      color: #888;
+      font-size: 0.9em;
+    }
+
+    .status {
+      display: inline-block;
+      padding: 5px 15px;
+      border-radius: 20px;
+      font-size: 0.8em;
+      margin-top: 10px;
+    }
+
+    .status.online {
+      background: rgba(25, 230, 214, 0.2);
+      border: 1px solid #19E6D6;
+    }
+
+    .status.offline {
+      background: rgba(255, 50, 50, 0.2);
+      border: 1px solid #ff3232;
+      color: #ff3232;
+    }
+
+    .chat-container {
+      background: rgba(0, 0, 0, 0.6);
+      border: 2px solid #19E6D6;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 20px;
+      min-height: 400px;
+      max-height: 600px;
+      overflow-y: auto;
+    }
+
+    .message {
+      margin-bottom: 20px;
+      padding: 15px;
+      border-radius: 8px;
+      animation: fadeIn 0.3s;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .message.user {
+      background: rgba(25, 230, 214, 0.1);
+      border-left: 3px solid #19E6D6;
+    }
+
+    .message.azkaban {
+      background: rgba(138, 43, 226, 0.1);
+      border-left: 3px solid #8a2be2;
+    }
+
+    .message.system {
+      background: rgba(255, 165, 0, 0.1);
+      border-left: 3px solid #ffa500;
+      font-style: italic;
+    }
+
+    .message-header {
+      font-weight: bold;
+      margin-bottom: 8px;
+      font-size: 0.9em;
+    }
+
+    .message-body {
+      line-height: 1.6;
+      white-space: pre-wrap;
+    }
+
+    .message-meta {
+      margin-top: 8px;
+      font-size: 0.75em;
+      color: #666;
+    }
+
+    .input-area {
+      display: flex;
+      gap: 10px;
+    }
+
+    #queryInput {
+      flex: 1;
+      padding: 15px;
+      background: rgba(0, 0, 0, 0.6);
+      border: 2px solid #19E6D6;
+      border-radius: 8px;
+      color: #19E6D6;
+      font-family: 'Courier New', monospace;
+      font-size: 1em;
+    }
+
+    #queryInput:focus {
+      outline: none;
+      box-shadow: 0 0 15px rgba(25, 230, 214, 0.5);
+    }
+
+    button {
+      padding: 15px 30px;
+      background: #19E6D6;
+      color: #0a0a0a;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      font-family: 'Courier New', monospace;
+      transition: all 0.3s;
+    }
+
+    button:hover {
+      background: #00d4d4;
+      box-shadow: 0 0 20px rgba(25, 230, 214, 0.6);
+    }
+
+    button:disabled {
+      background: #555;
+      color: #999;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    .examples {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 15px;
+    }
+
+    .example-btn {
+      padding: 8px 15px;
+      background: rgba(25, 230, 214, 0.1);
+      border: 1px solid #19E6D6;
+      border-radius: 5px;
+      color: #19E6D6;
+      font-size: 0.85em;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .example-btn:hover {
+      background: rgba(25, 230, 214, 0.2);
+    }
+
+    .loading {
+      display: inline-block;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .sources {
+      margin-top: 10px;
+      padding: 10px;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 5px;
+      font-size: 0.85em;
+    }
+
+    .source-item {
+      margin: 5px 0;
+      color: #888;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🔮 AZKABAN BRAIN</h1>
+      <p class="subtitle">Guardián Literario ARM-powered</p>
+      <div id="statusBadge" class="status offline">⏳ Verificando...</div>
+    </header>
+
+    <div class="chat-container" id="chatContainer">
+      <div class="message system">
+        <div class="message-header">📜 Sistema</div>
+        <div class="message-body">Bienvenido al test de Azkaban Brain.
+Escribe una pregunta sobre libros o usa los ejemplos de abajo.</div>
+      </div>
+    </div>
+
+    <div class="input-area">
+      <input 
+        type="text" 
+        id="queryInput" 
+        placeholder="¿Qué deseas saber de la biblioteca?"
+        autocomplete="off"
+      />
+      <button id="sendBtn" onclick="sendQuery()">Enviar</button>
+    </div>
+
+    <div class="examples">
+      <button class="example-btn" onclick="askExample('¿Quién eres?')">¿Quién eres?</button>
+      <button class="example-btn" onclick="askExample('Resumen de 1984')">Resumen de 1984</button>
+      <button class="example-btn" onclick="askExample('Recomienda libros de ciencia ficción')">Recomienda sci-fi</button>
+      <button class="example-btn" onclick="askExample('¿Qué libros hay sobre magia?')">Libros de magia</button>
+    </div>
+  </div>
+
+  <script>
+    let isLoading = false;
+
+    // Verificar estado al cargar
+    window.addEventListener('DOMContentLoaded', async () => {
+      await checkStatus();
+      
+      // Enter para enviar
+      document.getElementById('queryInput').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter' && !isLoading) {
+          sendQuery();
+        }
+      });
+    });
+
+    async function checkStatus() {
+      try {
+        const response = await fetch('/api/azkaban/status');
+        const data = await response.json();
+        
+        const badge = document.getElementById('statusBadge');
+        if (data.available) {
+          badge.className = 'status online';
+          badge.textContent = `✅ Online - ${data.model}`;
+        } else {
+          badge.className = 'status offline';
+          badge.textContent = '⚠️ TinyLlama no disponible (fallback mode)';
+        }
+      } catch (error) {
+        const badge = document.getElementById('statusBadge');
+        badge.className = 'status offline';
+        badge.textContent = '❌ Servidor desconectado';
+      }
+    }
+
+    function askExample(query) {
+      document.getElementById('queryInput').value = query;
+      sendQuery();
+    }
+
+    async function sendQuery() {
+      if (isLoading) return;
+      
+      const input = document.getElementById('queryInput');
+      const query = input.value.trim();
+      
+      if (!query) return;
+      
+      // Limpiar input
+      input.value = '';
+      
+      // Agregar mensaje del usuario
+      addMessage('user', query);
+      
+      // Mostrar loading
+      const loadingId = addMessage('system', 'El guardián de Azkaban piensa... <span class="loading">⏳</span>');
+      
+      isLoading = true;
+      document.getElementById('sendBtn').disabled = true;
+      
+      const startTime = Date.now();
+      
+      try {
+        const response = await fetch('/api/azkaban/ask', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ query })
+        });
+        
+        const data = await response.json();
+        
+        // Remover loading
+        removeMessage(loadingId);
+        
+        if (data.success) {
+          // Agregar respuesta
+          addMessage('azkaban', data.response, {
+            elapsed: data.elapsed || ((Date.now() - startTime) / 1000).toFixed(1),
+            sources: data.sources,
+            model: data.model
+          });
+        } else {
+          addMessage('system', `❌ Error: ${data.error || 'Desconocido'}`);
+        }
+        
+      } catch (error) {
+        removeMessage(loadingId);
+        addMessage('system', `❌ Error de conexión: ${error.message}`);
+      } finally {
+        isLoading = false;
+        document.getElementById('sendBtn').disabled = false;
+      }
+    }
+
+    function addMessage(type, content, meta = null) {
+      const container = document.getElementById('chatContainer');
+      const messageId = `msg-${Date.now()}`;
+      
+      const headers = {
+        user: '👤 Usuario',
+        azkaban: '🔮 Azkaban',
+        system: '📜 Sistema'
+      };
+      
+      let metaHtml = '';
+      if (meta) {
+        metaHtml = `<div class="message-meta">`;
+        if (meta.elapsed) metaHtml += `⏱️ ${meta.elapsed}s | `;
+        if (meta.model) metaHtml += `🧠 ${meta.model}`;
+        metaHtml += `</div>`;
+        
+        if (meta.sources && meta.sources.length > 0) {
+          metaHtml += `<div class="sources">📚 Fuentes:<br>`;
+          meta.sources.forEach(s => {
+            metaHtml += `<div class="source-item">• ${s.type}: ${s.book || s.source}</div>`;
+          });
+          metaHtml += `</div>`;
+        }
+      }
+      
+      const messageHtml = `
+        <div class="message ${type}" id="${messageId}">
+          <div class="message-header">${headers[type]}</div>
+          <div class="message-body">${content}</div>
+          ${metaHtml}
+        </div>
+      `;
+      
+      container.insertAdjacentHTML('beforeend', messageHtml);
+      container.scrollTop = container.scrollHeight;
+      
+      return messageId;
+    }
+
+    function removeMessage(messageId) {
+      const msg = document.getElementById(messageId);
+      if (msg) msg.remove();
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+{
+  "chunks": [],
+  "books": {},
+  "metadata": {
+    "version": "1.0",
+    "created": "2026-01-01",
+    "description": "Chunks de libros con embeddings para RAG de Azkaban Brain"
+  }
+}

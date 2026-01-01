@@ -19,6 +19,10 @@ const adminRouter = require('./routes/admin');
 const spoilersRouter = require('./routes/spoilers');
 const notifier = require('./services/notifier');
 
+// Azkaban Brain imports
+const { askAzkaban, summarizeBook, recommendBooks, isTinyLlamaAvailable } = require('./services/azkabanBrain');
+const { indexAllBooks } = require('./services/ragService');
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 const GOOGLE_BOOKS_API_KEY = process.env.GOOGLE_BOOKS_API_KEY || 'AIzaSyA4Rm0J2mdQuCK7MChxJP-SnMrV9HVrnGo';
@@ -33,6 +37,145 @@ app.use('/api/books', booksRouter);
 app.use('/api/requests', requestsRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api/spoilers', spoilersRouter);
+
+// ========== AZKABAN BRAIN API ==========
+
+/**
+ * Endpoint principal de Azkaban Brain
+ * POST /api/azkaban/ask
+ * Body: { query: string }
+ */
+app.post('/api/azkaban/ask', async (req, res) => {
+  try {
+    const { query } = req.body;
+    
+    if (!query || query.trim().length === 0) {
+      return res.status(400).json({
+        error: 'Query vacío',
+        message: 'Debes proporcionar una pregunta'
+      });
+    }
+    
+    console.log(`🔮 Pregunta recibida: "${query}"`);
+    
+    const result = await askAzkaban(query);
+    
+    res.json({
+      success: true,
+      ...result,
+      timestamp: new Date().toISOString()
+    });
+    
+  } catch (error) {
+    console.error('Error en /api/azkaban/ask:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+      response: 'Las sombras de Azkaban se agitan... Un error oscuro impide mi respuesta.'
+    });
+  }
+});
+
+/**
+ * Resumen de un libro específico
+ * POST /api/azkaban/summarize
+ * Body: { bookTitle: string }
+ */
+app.post('/api/azkaban/summarize', async (req, res) => {
+  try {
+    const { bookTitle } = req.body;
+    
+    if (!bookTitle) {
+      return res.status(400).json({
+        error: 'bookTitle requerido'
+      });
+    }
+    
+    const result = await summarizeBook(bookTitle);
+    res.json({ success: true, ...result });
+    
+  } catch (error) {
+    console.error('Error en /api/azkaban/summarize:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+/**
+ * Recomendaciones personalizadas
+ * POST /api/azkaban/recommend
+ * Body: { preferences: string }
+ */
+app.post('/api/azkaban/recommend', async (req, res) => {
+  try {
+    const { preferences } = req.body;
+    
+    if (!preferences) {
+      return res.status(400).json({
+        error: 'preferences requerido'
+      });
+    }
+    
+    const result = await recommendBooks(preferences);
+    res.json({ success: true, ...result });
+    
+  } catch (error) {
+    console.error('Error en /api/azkaban/recommend:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+/**
+ * Estado del sistema Azkaban Brain
+ * GET /api/azkaban/status
+ */
+app.get('/api/azkaban/status', async (req, res) => {
+  const status = {
+    available: isTinyLlamaAvailable(),
+    model: 'TinyLlama-7B-ARM',
+    platform: process.platform,
+    arch: process.arch,
+    uptime: process.uptime(),
+    memory: process.memoryUsage()
+  };
+  
+  res.json(status);
+});
+
+/**
+ * Indexar biblioteca completa
+ * POST /api/azkaban/index
+ * Requiere autenticación (opcional)
+ */
+app.post('/api/azkaban/index', async (req, res) => {
+  try {
+    console.log('📚 Iniciando indexación de biblioteca...');
+    
+    // Ejecutar en background
+    indexAllBooks().catch(err => {
+      console.error('Error en indexación:', err);
+    });
+    
+    res.json({
+      success: true,
+      message: 'Indexación iniciada en background'
+    });
+    
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// ========== FIN AZKABAN BRAIN API ==========
+
 
 // Middleware para archivos multipart
 const upload = multer({
