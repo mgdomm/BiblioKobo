@@ -181,24 +181,81 @@ app.post('/api/azkaban/index', async (req, res) => {
 const GROQ_API_KEY = process.env.GROQ_API_KEY;
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 
-const LUMOS_SYSTEM_PROMPT = `Eres LUMOS, el guardián mágico de Azkaban Reads, una biblioteca digital.
+const LUMOS_SYSTEM_PROMPT = `Eres LUMOS, el guardián mágico de Azkaban Reads, una biblioteca digital donde los libros están "encarcelados".
 
 PERSONALIDAD:
-- Tono místico y enigmático, como un ser antiguo que custodia secretos
-- Metáforas de prisiones, sombras, magia y libros encadenados
+- Tono místico y enigmático, como un carcelero antiguo que custodia libros prohibidos
+- Metáforas de prisiones, sombras, magia, cadenas y libros encadenados
 - Servicial pero dramático y misterioso
 - Referencias sutiles a Harry Potter (Azkaban, dementores, hechizos)
 - Respondes siempre en español
 
-CAPACIDADES:
-- Recomendar libros por género, autor o estado de ánimo
-- Información sobre literatura y autores famosos
-- Ayudar a encontrar la próxima lectura
+REGLAS CRÍTICAS:
+- Si recibes CONTEXTO DE BIBLIOTECA sobre un libro, usa ESA información (es la más precisa)
+- Si NO recibes contexto de biblioteca, usa tu conocimiento general para responder
+- Si te preguntan por un libro que NO conoces o es muy reciente (2023-2024), responde algo como: "Ese tomo aún no ha sido capturado por los guardianes de Azkaban... pero sin duda pronto será encadenado en nuestras celdas. Las sombras ya susurran su nombre."
+- NUNCA inventes información sobre libros que no conoces
+- Si conoces el libro (porque es anterior a tu corte de conocimiento), responde normalmente
 
 ESTILO:
-- Respuestas concisas (2-4 oraciones)
-- Frases como "Las sombras susurran...", "Entre estos muros...", "Los libros encadenados revelan..."
+- Respuestas concisas pero evocadoras (2-5 oraciones)
+- Frases como "Las sombras susurran...", "Entre estos muros...", "Los libros encadenados revelan...", "Esta celda contiene..."
 - Misterioso pero útil`;
+
+// Función para buscar libro en la biblioteca
+function searchBookInLibrary(query) {
+  if (!query || !bookMetadata || bookMetadata.length === 0) return null;
+  
+  const queryLower = query.toLowerCase().trim();
+  
+  // Buscar por título exacto
+  let found = bookMetadata.find(b => 
+    b.title && b.title.toLowerCase() === queryLower
+  );
+  
+  // Buscar por título parcial
+  if (!found) {
+    found = bookMetadata.find(b => 
+      b.title && b.title.toLowerCase().includes(queryLower)
+    );
+  }
+  
+  // Buscar coincidencia inversa (query contiene título)
+  if (!found) {
+    found = bookMetadata.find(b => 
+      b.title && queryLower.includes(b.title.toLowerCase())
+    );
+  }
+  
+  return found;
+}
+
+// Función para extraer posible título de libro de la pregunta
+function extractBookQuery(message) {
+  const lowerMsg = message.toLowerCase();
+  
+  // Primero buscar si menciona algún libro de la biblioteca directamente
+  for (const book of bookMetadata) {
+    if (book.title && lowerMsg.includes(book.title.toLowerCase())) {
+      return book.title;
+    }
+  }
+  
+  // Patrones para extraer títulos
+  const patterns = [
+    /(?:sobre|de|del libro|libro|conoces|sabes de|qué es|cuéntame de|háblame de|resumen de|de qué trata|qué sabes sobre|información de)\s+["""]?([^"""?.!]+)["""]?/i,
+    /["""]([^"""]+)["""]/
+  ];
+  
+  for (const pattern of patterns) {
+    const match = message.match(pattern);
+    if (match && match[1]) {
+      return match[1].trim();
+    }
+  }
+  
+  return null;
+}
 
 app.post('/lumos-chat', async (req, res) => {
   try {
@@ -219,17 +276,50 @@ app.post('/lumos-chat', async (req, res) => {
 
     console.log(`[LUMOS] 💬 "${message.substring(0, 50)}..."`);
 
-    const libraryContext = `
-CONTEXTO: ${bookMetadata.length} libros, ${[...new Set(bookMetadata.map(b => b.author))].length} autores, ${[...new Set(bookMetadata.filter(b => b.saga?.name).map(b => b.saga.name))].length} sagas.`;
+    // Intentar extraer búsqueda de libro
+    const bookQuery = extractBookQuery(message);
+    let bookContext = '';
+    let bookFound = null;
+    
+    if (bookQuery) {
+      console.log(`[LUMOS] 🔍 Buscando en biblioteca: "${bookQuery}"`);
+      bookFound = searchBookInLibrary(bookQuery);
+      
+      if (bookFound) {
+        console.log(`[LUMOS] 📚 Encontrado en biblioteca: "${bookFound.title}"`);
+        bookContext = `
+═══════════════════════════════════════════════════════════
+📚 LIBRO ENCONTRADO EN AZKABAN READS (INFORMACIÓN VERIFICADA):
+═══════════════════════════════════════════════════════════
+- Título: ${bookFound.title}
+- Autor: ${bookFound.author || 'Desconocido'}
+- Saga: ${bookFound.saga?.name || 'Libro independiente'}${bookFound.saga?.number ? ` (Libro #${bookFound.saga.number})` : ''}
+- Descripción: ${bookFound.description || 'Sin descripción disponible'}
+- Categorías: ${bookFound.categories?.join(', ') || 'Sin categorías'}
+- Páginas: ${bookFound.pageCount || 'Desconocido'}
+- Idioma: ${bookFound.language || 'es'}
+
+INSTRUCCIÓN: Este libro ESTÁ en nuestra biblioteca. Usa esta información para responder. Es PRECISA y VERIFICADA.
+═══════════════════════════════════════════════════════════`;
+      } else {
+        console.log(`[LUMOS] 🔎 No está en biblioteca, Groq usará su conocimiento: "${bookQuery}"`);
+        // No añadimos contexto especial, dejamos que Groq use su conocimiento
+        // El system prompt ya le dice qué hacer si no conoce el libro
+      }
+    }
+
+    // Contexto de la biblioteca
+    const libraryStats = `
+ESTADÍSTICAS DE AZKABAN READS: ${bookMetadata.length} libros encarcelados, ${[...new Set(bookMetadata.map(b => b.author))].length} autores, ${[...new Set(bookMetadata.filter(b => b.saga?.name).map(b => b.saga.name))].length} sagas.`;
 
     const response = await axios.post(GROQ_API_URL, {
       model: 'llama-3.1-8b-instant',
       messages: [
-        { role: 'system', content: LUMOS_SYSTEM_PROMPT + libraryContext },
-        { role: 'user', content: message }
+        { role: 'system', content: LUMOS_SYSTEM_PROMPT + libraryStats },
+        { role: 'user', content: bookContext ? bookContext + '\n\nPREGUNTA: ' + message : message }
       ],
       temperature: 0.7,
-      max_tokens: 500
+      max_tokens: 600
     }, {
       headers: {
         'Authorization': `Bearer ${GROQ_API_KEY}`,
@@ -241,8 +331,11 @@ CONTEXTO: ${bookMetadata.length} libros, ${[...new Set(bookMetadata.map(b => b.a
     const reply = response.data.choices?.[0]?.message?.content || 
       'Las sombras guardan silencio...';
 
-    console.log(`[LUMOS] ✅ Respuesta (${reply.length} chars)`);
-    res.json({ reply });
+    console.log(`[LUMOS] ✅ Respuesta (${reply.length} chars)${bookFound ? ' [Libro de biblioteca]' : ''}`);
+    res.json({ 
+      reply,
+      bookFound: bookFound ? { title: bookFound.title, author: bookFound.author } : null
+    });
 
   } catch (error) {
     console.error('[LUMOS] ❌', error.response?.data || error.message);
