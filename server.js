@@ -184,22 +184,31 @@ const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 const LUMOS_SYSTEM_PROMPT = `Eres LUMOS, el guardián mágico de Azkaban Reads, una biblioteca digital donde los libros están "encarcelados".
 
 PERSONALIDAD:
-- Tono místico y enigmático, como un carcelero antiguo que custodia libros prohibidos
-- Metáforas de prisiones, sombras, magia, cadenas y libros encadenados
-- Servicial pero dramático y misterioso
-- Referencias sutiles a Harry Potter (Azkaban, dementores, hechizos)
+- Tono místico y enigmático, como un carcelero antiguo
+- Metáforas de prisiones, sombras, magia, cadenas
+- Referencias sutiles a Harry Potter
 - Respondes siempre en español
 
-REGLAS CRÍTICAS:
-- Si recibes CONTEXTO DE BIBLIOTECA sobre un libro, usa ESA información (es la más precisa)
-- Si NO recibes contexto de biblioteca, usa tu conocimiento general para responder
-- Si te preguntan por un libro que NO conoces o es muy reciente (2023-2024), responde algo como: "Ese tomo aún no ha sido capturado por los guardianes de Azkaban... pero sin duda pronto será encadenado en nuestras celdas. Las sombras ya susurran su nombre."
-- NUNCA inventes información sobre libros que no conoces
-- Si conoces el libro (porque es anterior a tu corte de conocimiento), responde normalmente
+⚠️ REGLAS ABSOLUTAS:
+1. Si recibes CONTEXTO VERIFICADO (📖/📚/✍️), usa ÚNICAMENTE esa información
+2. NUNCA inventes autores, personajes, tramas o datos no proporcionados
+3. Si preguntan algo que NO está en el contexto, di que no tienes esa información
+4. Para OPINIONES sobre autores: basa tu respuesta en fortalezas/debilidades del contexto
+5. Si NO hay contexto verificado, di: "Ese tomo/autor/saga no reposa en las celdas de Azkaban..."
+6. Es MEJOR admitir desconocimiento que inventar
+
+SOBRE SAGAS:
+- Menciona el orden de lectura cuando pregunten
+- Indica cuántos libros hay y cuántos tenemos disponibles
+- Menciona conexiones con otras sagas si existen
+
+SOBRE AUTORES:
+- Da tu "opinión" basándote en el análisis de estilo proporcionado
+- Menciona fortalezas y debilidades como observaciones del guardián
 
 ESTILO:
-- Respuestas concisas pero evocadoras (2-5 oraciones)
-- Frases como "Las sombras susurran...", "Entre estos muros...", "Los libros encadenados revelan...", "Esta celda contiene..."
+- Respuestas de 2-5 oraciones
+- "Las sombras susurran...", "Entre estos muros...", "Los pergaminos revelan..."
 - Misterioso pero útil`;
 
 // Función para buscar libro en la biblioteca
@@ -261,7 +270,7 @@ app.post('/lumos-chat', async (req, res) => {
   try {
     const { message } = req.body;
     
-    if (!message || message.trim().length === 0) {
+    if (!message?.trim()) {
       return res.status(400).json({
         reply: 'Las sombras no interpretan el silencio... Escribe algo, mortal.'
       });
@@ -274,7 +283,85 @@ app.post('/lumos-chat', async (req, res) => {
       });
     }
 
-    console.log(`[LUMOS] 💬 "${message.substring(0, 50)}..."`);
+    console.log(`[LUMOS] 💬 "${message.substring(0, 60)}..."`);
+
+    // 1. Detectar tipo e intentar encontrar entidad
+    const entityType = detectEntityType(message);
+    const entity = extractEntity(message);
+    
+    console.log(`[LUMOS] 🔍 Tipo: ${entityType} | Entidad: ${entity?.name || 'ninguna'} | Encontrada: ${entity?.data ? 'SÍ' : 'NO'}`);
+
+    // 2. Construir contexto según lo encontrado
+    let context = '';
+    let foundEntity = null;
+    
+    if (entity?.data) {
+      foundEntity = entity;
+      
+      switch (entity.type) {
+        case 'saga':
+          context = buildSagaContext(entity.data);
+          console.log(`[LUMOS] 📚 Saga: "${entity.data.name}"`);
+          break;
+        case 'author':
+          context = buildAuthorContext(entity.data);
+          console.log(`[LUMOS] ✍️ Autor: "${entity.data.name}"`);
+          break;
+        case 'book':
+          context = buildBookContext(entity.data);
+          console.log(`[LUMOS] 📖 Libro: "${entity.data.title}"`);
+          break;
+      }
+    } else if (entity?.name) {
+      context = `
+⚠️ IMPORTANTE: El usuario pregunta sobre "${entity.name}" pero NO ESTÁ en la biblioteca de Azkaban Reads.
+NO tienes información verificada. Responde que no está en la biblioteca. NO INVENTES.`;
+      console.log(`[LUMOS] ❌ No encontrado: "${entity.name}"`);
+    }
+
+    // 3. Estadísticas
+    const stats = `\n📊 AZKABAN: ${bookMetadata.length} libros, ${sagaMetadata.length} sagas, ${authorMetadata.length} autores.`;
+
+    // 4. Llamar a Groq
+    const response = await axios.post(GROQ_API_URL, {
+      model: 'llama-3.1-8b-instant',
+      messages: [
+        { role: 'system', content: LUMOS_SYSTEM_PROMPT + stats },
+        { role: 'user', content: context ? `${context}\n\nPREGUNTA: ${message}` : message }
+      ],
+      temperature: 0.7,
+      max_tokens: 800
+    }, {
+      headers: {
+        'Authorization': `Bearer ${GROQ_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      timeout: 30000
+    });
+
+    const reply = response.data.choices?.[0]?.message?.content || 
+      'Las sombras guardan silencio...';
+
+    console.log(`[LUMOS] ✅ Respuesta (${reply.length} chars) [${foundEntity?.type || 'general'}]`);
+    
+    res.json({ 
+      reply,
+      entityFound: foundEntity ? {
+        type: foundEntity.type,
+        name: foundEntity.name
+      } : null
+    });
+
+  } catch (error) {
+    console.error('[LUMOS] ❌', error.response?.data || error.message);
+    
+    const fallbackReply = error.response?.status === 429 
+      ? 'Demasiadas almas buscan respuestas... Aguarda un momento.'
+      : 'Un velo oscuro cubre mi visión... Intenta de nuevo.';
+    
+    res.json({ reply: fallbackReply });
+  }
+});
 
     // Intentar extraer búsqueda de libro
     const bookQuery = extractBookQuery(message);
