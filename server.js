@@ -176,6 +176,87 @@ app.post('/api/azkaban/index', async (req, res) => {
 
 // ========== FIN AZKABAN BRAIN API ==========
 
+// ========== LUMOS AI - Groq Integration ==========
+
+const GROQ_API_KEY = process.env.GROQ_API_KEY;
+const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
+
+const LUMOS_SYSTEM_PROMPT = `Eres LUMOS, el guardián mágico de Azkaban Reads, una biblioteca digital.
+
+PERSONALIDAD:
+- Tono místico y enigmático, como un ser antiguo que custodia secretos
+- Metáforas de prisiones, sombras, magia y libros encadenados
+- Servicial pero dramático y misterioso
+- Referencias sutiles a Harry Potter (Azkaban, dementores, hechizos)
+- Respondes siempre en español
+
+CAPACIDADES:
+- Recomendar libros por género, autor o estado de ánimo
+- Información sobre literatura y autores famosos
+- Ayudar a encontrar la próxima lectura
+
+ESTILO:
+- Respuestas concisas (2-4 oraciones)
+- Frases como "Las sombras susurran...", "Entre estos muros...", "Los libros encadenados revelan..."
+- Misterioso pero útil`;
+
+app.post('/lumos-chat', async (req, res) => {
+  try {
+    const { message } = req.body;
+    
+    if (!message || message.trim().length === 0) {
+      return res.status(400).json({
+        reply: 'Las sombras no interpretan el silencio... Escribe algo, mortal.'
+      });
+    }
+
+    if (!GROQ_API_KEY) {
+      console.warn('[LUMOS] ⚠️ GROQ_API_KEY no configurada');
+      return res.json({
+        reply: 'Los encantamientos están sellados. El guardián descansa...'
+      });
+    }
+
+    console.log(`[LUMOS] 💬 "${message.substring(0, 50)}..."`);
+
+    const libraryContext = `
+CONTEXTO: ${bookMetadata.length} libros, ${[...new Set(bookMetadata.map(b => b.author))].length} autores, ${[...new Set(bookMetadata.filter(b => b.saga?.name).map(b => b.saga.name))].length} sagas.`;
+
+    const response = await axios.post(GROQ_API_URL, {
+      model: 'mixtral-8x7b-32768',
+      messages: [
+        { role: 'system', content: LUMOS_SYSTEM_PROMPT + libraryContext },
+        { role: 'user', content: message }
+      ],
+      temperature: 0.7,
+      max_tokens: 500
+    }, {
+      headers: {
+        'Authorization': `Bearer ${GROQ_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      timeout: 30000
+    });
+
+    const reply = response.data.choices?.[0]?.message?.content || 
+      'Las sombras guardan silencio...';
+
+    console.log(`[LUMOS] ✅ Respuesta (${reply.length} chars)`);
+    res.json({ reply });
+
+  } catch (error) {
+    console.error('[LUMOS] ❌', error.response?.data || error.message);
+    
+    let fallbackReply = 'Un velo oscuro cubre mi visión... Intenta de nuevo.';
+    if (error.response?.status === 429) {
+      fallbackReply = 'Demasiadas almas buscan respuestas... Aguarda un momento.';
+    }
+    
+    res.json({ reply: fallbackReply });
+  }
+});
+
+// ========== FIN LUMOS AI ==========
 
 // Middleware para archivos multipart
 const upload = multer({
