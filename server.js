@@ -669,6 +669,238 @@ function reloadAllMetadata() {
 // Cargar al iniciar
 reloadAllMetadata();
 
+// ========== UTILIDADES DE BÚSQUEDA ==========
+
+function normalize(str) {
+  if (!str) return '';
+  return str
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s]/g, '')
+    .trim();
+}
+
+// Buscar LIBRO
+function searchBook(query) {
+  if (!query || !bookMetadata?.length) return null;
+  
+  const queryNorm = normalize(query);
+  const queryWords = queryNorm.split(/\s+/).filter(w => w.length > 2);
+  
+  return bookMetadata.find(b => normalize(b.title) === queryNorm)
+    || bookMetadata.find(b => normalize(b.title).includes(queryNorm))
+    || bookMetadata.find(b => queryNorm.includes(normalize(b.title)))
+    || bookMetadata.find(b => {
+        const titleNorm = normalize(b.title);
+        const matches = queryWords.filter(w => titleNorm.includes(w));
+        return matches.length >= Math.min(2, queryWords.length);
+      });
+}
+
+// Buscar SAGA
+function searchSaga(query) {
+  if (!query || !sagaMetadata?.length) return null;
+  
+  const queryNorm = normalize(query);
+  
+  return sagaMetadata.find(s => normalize(s.name) === queryNorm)
+    || sagaMetadata.find(s => s.nameOriginal && normalize(s.nameOriginal) === queryNorm)
+    || sagaMetadata.find(s => normalize(s.name).includes(queryNorm))
+    || sagaMetadata.find(s => s.nameOriginal && normalize(s.nameOriginal).includes(queryNorm))
+    || sagaMetadata.find(s => queryNorm.includes(normalize(s.name)));
+}
+
+// Buscar AUTOR
+function searchAuthor(query) {
+  if (!query || !authorMetadata?.length) return null;
+  
+  const queryNorm = normalize(query);
+  
+  return authorMetadata.find(a => normalize(a.name) === queryNorm)
+    || authorMetadata.find(a => a.aliases?.some(alias => normalize(alias) === queryNorm))
+    || authorMetadata.find(a => normalize(a.name).includes(queryNorm))
+    || authorMetadata.find(a => queryNorm.includes(normalize(a.name)));
+}
+
+// ========== DETECTORES DE INTENCIÓN ==========
+
+function detectEntityType(message) {
+  const lowerMsg = message.toLowerCase();
+  
+  const patterns = {
+    saga: /saga|serie|orden.*lectura|orden.*libros|cuántos.*libros|cuantos.*libros|libros.*tiene|secuela|precuela|spin.?off|en qué orden|en que orden|trilog|bilog|tetralog|pentalog/i,
+    author: /autor[ai]?|escritor[ai]?|escribió|escribio|escribe|estilo.*escrit|cómo escribe|como escribe|obras.*de|qué opinas|que opinas|qué piensas|que piensas|su escritura|su estilo|su prosa/i,
+    book: /libro|leer|trata|protagonista|personaje|sinopsis|resumen|spoiler|final|argumento|de qué va|de que va/i
+  };
+  
+  if (patterns.author.test(lowerMsg)) return 'author';
+  if (patterns.saga.test(lowerMsg)) return 'saga';
+  if (patterns.book.test(lowerMsg)) return 'book';
+  
+  return 'unknown';
+}
+
+function extractEntity(message) {
+  const lowerMsg = message.toLowerCase();
+  
+  // 1. Buscar saga mencionada
+  for (const saga of sagaMetadata || []) {
+    if (normalize(lowerMsg).includes(normalize(saga.name))) {
+      return { type: 'saga', name: saga.name, data: saga };
+    }
+    if (saga.nameOriginal && normalize(lowerMsg).includes(normalize(saga.nameOriginal))) {
+      return { type: 'saga', name: saga.name, data: saga };
+    }
+  }
+  
+  // 2. Buscar autor mencionado
+  for (const author of authorMetadata || []) {
+    if (normalize(lowerMsg).includes(normalize(author.name))) {
+      return { type: 'author', name: author.name, data: author };
+    }
+    if (author.aliases?.some(a => normalize(lowerMsg).includes(normalize(a)))) {
+      return { type: 'author', name: author.name, data: author };
+    }
+  }
+  
+  // 3. Buscar libro mencionado
+  for (const book of bookMetadata || []) {
+    if (book.title && normalize(lowerMsg).includes(normalize(book.title))) {
+      return { type: 'book', name: book.title, data: book };
+    }
+  }
+  
+  // 4. Intentar extraer con patrones
+  const extractPatterns = [
+    /(?:sobre|de|del|acerca de)\s+["«"]?([^"»"?.!,]+)["»"]?/i,
+    /["«"]([^"»"]+)["»"]/,
+    /(?:saga|serie|autor|libro|autora)\s+(.+?)(?:\?|$|,|\.|!)/i
+  ];
+  
+  for (const pattern of extractPatterns) {
+    const match = message.match(pattern);
+    if (match?.[1]) {
+      const query = match[1].trim();
+      
+      const saga = searchSaga(query);
+      if (saga) return { type: 'saga', name: saga.name, data: saga };
+      
+      const author = searchAuthor(query);
+      if (author) return { type: 'author', name: author.name, data: author };
+      
+      const book = searchBook(query);
+      if (book) return { type: 'book', name: book.title, data: book };
+      
+      return { type: 'unknown', name: query, data: null };
+    }
+  }
+  
+  return null;
+}
+
+// ========== GENERADORES DE CONTEXTO ==========
+
+function buildBookContext(book) {
+  const sagaInfo = book.saga?.name 
+    ? `Saga: ${book.saga.name}${book.saga.number ? ` (Libro #${book.saga.number})` : ''}`
+    : 'Libro independiente';
+  
+  return `
+═══════════════════════════════════════════════════════════
+📖 LIBRO EN AZKABAN READS - INFORMACIÓN VERIFICADA
+═══════════════════════════════════════════════════════════
+Título: ${book.title}
+Autor: ${book.author || 'Desconocido'}
+${sagaInfo}
+Géneros: ${book.categories?.join(', ') || 'Sin categorías'}
+Páginas: ${book.pageCount || 'Desconocido'}
+
+📝 SINOPSIS:
+${book.description || 'Sin descripción disponible'}
+
+⚠️ USA SOLO esta información. NO inventes datos adicionales.
+═══════════════════════════════════════════════════════════`;
+}
+
+function buildSagaContext(saga) {
+  const booksInLibrary = bookMetadata.filter(b => 
+    b.saga?.name && normalize(b.saga.name) === normalize(saga.name)
+  );
+  
+  const readingOrderStr = saga.readingOrder
+    ? saga.readingOrder.map(b => `  ${b.number}. "${b.title}"${b.year ? ` (${b.year})` : ''}${b.type ? ` [${b.type}]` : ''}`).join('\n')
+    : booksInLibrary.map((b, i) => `  ${b.saga?.number || i + 1}. "${b.title}"`).join('\n');
+  
+  return `
+═══════════════════════════════════════════════════════════
+📚 SAGA EN AZKABAN READS - INFORMACIÓN VERIFICADA
+═══════════════════════════════════════════════════════════
+Nombre: ${saga.name}
+${saga.nameOriginal ? `Nombre original: ${saga.nameOriginal}` : ''}
+Autor: ${saga.author}
+Estado: ${saga.status === 'completa' ? '✅ Completa' : saga.status === 'en_progreso' ? '📝 En progreso' : saga.status || 'Desconocido'}
+Total de libros: ${saga.totalBooks || booksInLibrary.length}
+
+📖 ORDEN DE LECTURA:
+${readingOrderStr || 'No especificado'}
+
+${saga.protagonist ? `Protagonista: ${saga.protagonist}` : ''}
+${saga.setting ? `Ambientación: ${saga.setting}` : ''}
+${saga.genre?.length ? `Géneros: ${saga.genre.join(', ')}` : ''}
+${saga.themes?.length ? `Temas: ${saga.themes.join(', ')}` : ''}
+
+📝 DESCRIPCIÓN:
+${saga.description || 'Sin descripción disponible'}
+
+${saga.connectedTo?.length ? `🔗 Conexiones: ${saga.connectedTo.join(', ')}` : ''}
+
+📊 EN BIBLIOTECA: ${booksInLibrary.length} libros disponibles
+${booksInLibrary.map(b => `  ✓ "${b.title}"`).join('\n')}
+
+⚠️ USA SOLO esta información. NO inventes datos adicionales.
+═══════════════════════════════════════════════════════════`;
+}
+
+function buildAuthorContext(author) {
+  const booksInLibrary = bookMetadata.filter(b => 
+    normalize(b.author) === normalize(author.name)
+  );
+  
+  const style = author.writingStyle || {};
+  
+  return `
+═══════════════════════════════════════════════════════════
+✍️ AUTOR EN AZKABAN READS - INFORMACIÓN VERIFICADA
+═══════════════════════════════════════════════════════════
+Nombre: ${author.name}
+${author.nationality ? `Nacionalidad: ${author.nationality}` : ''}
+${author.genres?.length ? `Géneros: ${author.genres.join(', ')}` : ''}
+${author.sagas?.length ? `Sagas: ${author.sagas.join(', ')}` : ''}
+
+📝 ESTILO DE ESCRITURA:
+${style.prose || 'No hay análisis disponible'}
+
+${style.pacing ? `⚡ RITMO: ${style.pacing}` : ''}
+
+${style.strengths?.length ? `✅ FORTALEZAS:\n${style.strengths.map(s => `  • ${s}`).join('\n')}` : ''}
+
+${style.weaknesses?.length ? `⚠️ DEBILIDADES:\n${style.weaknesses.map(w => `  • ${w}`).join('\n')}` : ''}
+
+${style.tropes?.length ? `🎭 TROPOS:\n${style.tropes.map(t => `  • ${t}`).join('\n')}` : ''}
+
+${style.comparison ? `📊 COMPARACIÓN: ${style.comparison}` : ''}
+${style.recommendedFor ? `👍 RECOMENDADO PARA: ${style.recommendedFor}` : ''}
+${style.notRecommendedFor ? `👎 NO PARA: ${style.notRecommendedFor}` : ''}
+
+📚 EN BIBLIOTECA: ${booksInLibrary.length} libros
+${booksInLibrary.slice(0, 8).map(b => `  ✓ "${b.title}"`).join('\n')}
+${booksInLibrary.length > 8 ? `  ... y ${booksInLibrary.length - 8} más` : ''}
+
+⚠️ USA SOLO esta información. Puedes dar "opiniones" basándote en fortalezas/debilidades.
+═══════════════════════════════════════════════════════════`;
+}
+
 // Contadores simples de descargas y uploads (memoria)
 let downloadCount = 0;
 let uploadCount = 0;
