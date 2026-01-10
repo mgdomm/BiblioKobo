@@ -603,19 +603,71 @@ function bufferToStream(buffer) {
   return Readable.from(buffer);
 }
 
-// Leer o crear JSON con metadata de libros
-let bookMetadata = [];
+// ========== RUTAS DE DATOS ==========
 const BOOKS_FILE = path.join(__dirname, 'books.json');
-try {
-  if (fs.existsSync(BOOKS_FILE)) {
-    bookMetadata = JSON.parse(fs.readFileSync(BOOKS_FILE));
-  } else {
-    fs.writeFileSync(BOOKS_FILE, JSON.stringify([], null, 2));
+const SAGAS_FILE = path.join(__dirname, 'sagaMetadata.json');
+const AUTHORS_FILE = path.join(__dirname, 'authorMetadata.json');
+
+// ========== DATOS EN MEMORIA ==========
+let bookMetadata = [];
+let sagaMetadata = [];
+let authorMetadata = [];
+
+// ========== FUNCIONES DE CARGA ==========
+function reloadBooksMetadata() {
+  try {
+    if (fs.existsSync(BOOKS_FILE)) {
+      bookMetadata = JSON.parse(fs.readFileSync(BOOKS_FILE, 'utf8'));
+    } else {
+      fs.writeFileSync(BOOKS_FILE, JSON.stringify([], null, 2));
+    }
+  } catch (err) {
+    console.warn('Error leyendo books.json:', err.message);
+    bookMetadata = [];
   }
-} catch (err) {
-  console.warn('Error leyendo books.json. Se usará un arreglo vacío.');
-  bookMetadata = [];
 }
+
+function reloadSagaMetadata() {
+  try {
+    if (fs.existsSync(SAGAS_FILE)) {
+      sagaMetadata = JSON.parse(fs.readFileSync(SAGAS_FILE, 'utf8'));
+    } else {
+      console.warn('⚠️ sagaMetadata.json no encontrado');
+      sagaMetadata = [];
+    }
+  } catch (err) {
+    console.warn('Error leyendo sagaMetadata.json:', err.message);
+    sagaMetadata = [];
+  }
+}
+
+function reloadAuthorMetadata() {
+  try {
+    if (fs.existsSync(AUTHORS_FILE)) {
+      authorMetadata = JSON.parse(fs.readFileSync(AUTHORS_FILE, 'utf8'));
+    } else {
+      console.warn('⚠️ authorMetadata.json no encontrado');
+      authorMetadata = [];
+    }
+  } catch (err) {
+    console.warn('Error leyendo authorMetadata.json:', err.message);
+    authorMetadata = [];
+  }
+}
+
+function reloadAllMetadata() {
+  reloadBooksMetadata();
+  reloadSagaMetadata();
+  reloadAuthorMetadata();
+  
+  console.log('📚 Biblioteca cargada:');
+  console.log(`   - ${bookMetadata.length} libros`);
+  console.log(`   - ${sagaMetadata.length} sagas`);
+  console.log(`   - ${authorMetadata.length} autores`);
+}
+
+// Cargar al iniciar
+reloadAllMetadata();
 
 // Contadores simples de descargas y uploads (memoria)
 let downloadCount = 0;
