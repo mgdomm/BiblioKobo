@@ -988,6 +988,327 @@ ${booksInLibrary.length > 8 ? `  ... y ${booksInLibrary.length - 8} más` : ''}
 ═══════════════════════════════════════════════════════════`;
 }
 
+// ========== AUTO-ENRIQUECIMIENTO DE METADATA ==========
+
+// Buscar info de libro en Google Books API
+async function fetchGoogleBooksInfo(title, author) {
+  try {
+    const query = encodeURIComponent(`${title} ${author || ''}`);
+    const url = `https://www.googleapis.com/books/v1/volumes?q=${query}&key=${GOOGLE_BOOKS_API_KEY}&maxResults=3&langRestrict=es`;
+    
+    const response = await axios.get(url, { timeout: 10000 });
+    const items = response.data.items;
+    
+    if (!items || items.length === 0) return null;
+    
+    // Buscar el mejor match
+    const book = items.find(item => {
+      const info = item.volumeInfo;
+      const titleMatch = normalize(info.title || '').includes(normalize(title)) ||
+                        normalize(title).includes(normalize(info.title || ''));
+      return titleMatch;
+    })?.volumeInfo || items[0].volumeInfo;
+    
+    return {
+      description: book.description || null,
+      coverUrl: book.imageLinks?.thumbnail?.replace('http:', 'https:') || 
+                book.imageLinks?.smallThumbnail?.replace('http:', 'https:') || null,
+      pageCount: book.pageCount || null,
+      categories: book.categories || [],
+      publishedDate: book.publishedDate || null,
+      language: book.language || 'es',
+      previewLink: book.previewLink || null
+    };
+  } catch (error) {
+    console.warn(`[ENRICH] ⚠️ Error Google Books para "${title}":`, error.message);
+    return null;
+  }
+}
+
+// Generar info de SAGA con Groq
+async function generateSagaInfoWithGroq(sagaName, authorName, existingBooks = []) {
+  if (!GROQ_API_KEY) return null;
+  
+  try {
+    const booksList = existingBooks.map(b => `- ${b.title}`).join('\n');
+    
+    const prompt = `Necesito información sobre la saga "${sagaName}" de ${authorName}.
+
+Libros que conozco de esta saga:
+${booksList || 'Ninguno aún'}
+
+Responde SOLO en este formato JSON (sin markdown, sin explicación):
+{
+  "description": "Descripción breve de la saga (2-3 oraciones)",
+  "totalBooks": número total de libros en la saga,
+  "status": "completa" o "en_progreso",
+  "protagonist": "nombre del protagonista principal",
+  "setting": "ambientación principal",
+  "genre": ["género1", "género2"],
+  "themes": ["tema1", "tema2", "tema3"],
+  "readingOrder": [
+    {"number": 1, "title": "Título libro 1", "year": 2020},
+    {"number": 2, "title": "Título libro 2", "year": 2021}
+  ],
+  "connectedTo": ["Otras sagas relacionadas del mismo autor"]
+}
+
+Si no conoces la saga o no estás seguro, responde: {"unknown": true}`;
+
+    const response = await axios.post(GROQ_API_URL, {
+      model: 'llama-3.1-8b-instant',
+      messages: [
+        { role: 'system', content: 'Eres un experto en literatura. Responde SOLO con JSON válido, sin markdown ni explicaciones.' },
+        { role: 'user', content: prompt }
+      ],
+      temperature: 0.3,
+      max_tokens: 1000
+    }, {
+      headers: {
+        'Authorization': `Bearer ${GROQ_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      timeout: 30000
+    });
+
+    const content = response.data.choices?.[0]?.message?.content || '';
+    const jsonMatch = content.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) return null;
+    
+    const parsed = JSON.parse(jsonMatch[0]);
+    if (parsed.unknown) return null;
+    
+    return parsed;
+  } catch (error) {
+    console.warn(`[ENRICH] ⚠️ Error Groq para saga "${sagaName}":`, error.message);
+    return null;
+  }
+}
+
+// Generar info de AUTOR con Groq
+async function generateAuthorInfoWithGroq(authorName, bookYear) {
+  if (!GROQ_API_KEY) return null;
+  
+  const year = parseInt(bookYear) || 2020;
+  if (year >= 2023) {
+    console.log(`[ENRICH] ⏭️ Autor "${authorName}" - libro de ${year}, saltando análisis Groq`);
+    return null;
+  }
+  
+  try {
+    const prompt = `Analiza el estilo de escritura del autor/a "${authorName}".
+
+Responde SOLO en este formato JSON (sin markdown, sin explicación):
+{
+  "nationality": "nacionalidad",
+  "genres": ["género1", "género2"],
+  "sagas": ["saga1", "saga2"],
+  "writingStyle": {
+    "prose": "Descripción del estilo de prosa (2-3 oraciones)",
+    "pacing": "Descripción del ritmo narrativo (1-2 oraciones)",
+    "strengths": ["fortaleza1", "fortaleza2", "fortaleza3"],
+    "weaknesses": ["debilidad1", "debilidad2"],
+    "tropes": ["tropo1", "tropo2", "tropo3"],
+    "comparison": "Comparación con otros autores similares",
+    "recommendedFor": "Para qué tipo de lectores es recomendado",
+    "notRecommendedFor": "Para quién NO es recomendado"
+  }
+}
+
+Si no conoces al autor o no estás seguro, responde: {"unknown": true}`;
+
+    const response = await axios.post(GROQ_API_URL, {
+      model: 'llama-3.1-8b-instant',
+      messages: [
+        { role: 'system', content: 'Eres un crítico literario experto. Responde SOLO con JSON válido, sin markdown ni explicaciones.' },
+        { role: 'user', content: prompt }
+      ],
+      temperature: 0.3,
+      max_tokens: 1000
+    }, {
+      headers: {
+        'Authorization': `Bearer ${GROQ_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      timeout: 30000
+    });
+
+    const content = response.data.choices?.[0]?.message?.content || '';
+    const jsonMatch = content.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) return null;
+    
+    const parsed = JSON.parse(jsonMatch[0]);
+    if (parsed.unknown) return null;
+    
+    return parsed;
+  } catch (error) {
+    console.warn(`[ENRICH] ⚠️ Error Groq para autor "${authorName}":`, error.message);
+    return null;
+  }
+}
+
+// Asegurar que existe la saga en sagaMetadata
+async function ensureSagaExists(sagaName, authorName) {
+  if (!sagaName) return;
+  
+  const existingSaga = sagaMetadata.find(s => 
+    normalize(s.name) === normalize(sagaName)
+  );
+  
+  if (existingSaga) {
+    console.log(`[ENRICH] ✅ Saga "${sagaName}" ya existe`);
+    return existingSaga;
+  }
+  
+  console.log(`[ENRICH] 🔍 Creando saga "${sagaName}"...`);
+  
+  const booksInSaga = bookMetadata.filter(b => 
+    b.saga?.name && normalize(b.saga.name) === normalize(sagaName)
+  );
+  
+  const groqInfo = await generateSagaInfoWithGroq(sagaName, authorName, booksInSaga);
+  
+  const newSaga = {
+    id: sagaName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
+    name: sagaName,
+    author: authorName,
+    totalBooks: groqInfo?.totalBooks || booksInSaga.length,
+    status: groqInfo?.status || 'en_progreso',
+    genre: groqInfo?.genre || [],
+    description: groqInfo?.description || '',
+    readingOrder: groqInfo?.readingOrder || booksInSaga.map((b, i) => ({
+      number: b.saga?.number || i + 1,
+      title: b.title
+    })),
+    protagonist: groqInfo?.protagonist || '',
+    setting: groqInfo?.setting || '',
+    themes: groqInfo?.themes || [],
+    connectedTo: groqInfo?.connectedTo || []
+  };
+  
+  sagaMetadata.push(newSaga);
+  
+  try {
+    fs.writeFileSync(SAGAS_FILE, JSON.stringify(sagaMetadata, null, 2));
+    console.log(`[ENRICH] ✅ Saga "${sagaName}" creada y guardada`);
+  } catch (err) {
+    console.error(`[ENRICH] ❌ Error guardando saga:`, err.message);
+  }
+  
+  return newSaga;
+}
+
+// Asegurar que existe el autor en authorMetadata
+async function ensureAuthorExists(authorName, bookYear) {
+  if (!authorName || authorName === 'Desconocido') return;
+  
+  const existingAuthor = authorMetadata.find(a => 
+    normalize(a.name) === normalize(authorName)
+  );
+  
+  if (existingAuthor) {
+    console.log(`[ENRICH] ✅ Autor "${authorName}" ya existe`);
+    return existingAuthor;
+  }
+  
+  console.log(`[ENRICH] 🔍 Creando autor "${authorName}"...`);
+  
+  const groqInfo = await generateAuthorInfoWithGroq(authorName, bookYear);
+  
+  const authorBooks = bookMetadata.filter(b => 
+    normalize(b.author) === normalize(authorName)
+  );
+  
+  const authorSagas = [...new Set(
+    authorBooks.filter(b => b.saga?.name).map(b => b.saga.name)
+  )];
+  
+  const newAuthor = {
+    id: authorName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
+    name: authorName,
+    nationality: groqInfo?.nationality || '',
+    genres: groqInfo?.genres || [],
+    sagas: groqInfo?.sagas || authorSagas,
+    totalBooksInLibrary: authorBooks.length,
+    writingStyle: groqInfo?.writingStyle || {
+      prose: '',
+      strengths: [],
+      weaknesses: [],
+      tropes: []
+    }
+  };
+  
+  authorMetadata.push(newAuthor);
+  
+  try {
+    fs.writeFileSync(AUTHORS_FILE, JSON.stringify(authorMetadata, null, 2));
+    console.log(`[ENRICH] ✅ Autor "${authorName}" creado y guardado`);
+  } catch (err) {
+    console.error(`[ENRICH] ❌ Error guardando autor:`, err.message);
+  }
+  
+  return newAuthor;
+}
+
+// Enriquecer un libro con toda la información
+async function enrichBook(book) {
+  console.log(`[ENRICH] 📚 Enriqueciendo "${book.title}"...`);
+  
+  const googleInfo = await fetchGoogleBooksInfo(book.title, book.author);
+  
+  if (googleInfo) {
+    book.description = book.description || googleInfo.description;
+    book.coverUrl = book.coverUrl || googleInfo.coverUrl;
+    book.pageCount = book.pageCount || googleInfo.pageCount;
+    book.categories = book.categories || googleInfo.categories;
+    book.publishedDate = book.publishedDate || googleInfo.publishedDate;
+    book.language = book.language || googleInfo.language;
+    book.previewLink = book.previewLink || googleInfo.previewLink;
+    
+    console.log(`[ENRICH] ✅ Google Books: portada=${!!googleInfo.coverUrl}, desc=${!!googleInfo.description}`);
+  } else {
+    console.log(`[ENRICH] ⚠️ No encontrado en Google Books`);
+  }
+  
+  if (book.saga?.name) {
+    await ensureSagaExists(book.saga.name, book.author);
+  }
+  
+  const bookYear = book.publishedDate?.substring(0, 4);
+  await ensureAuthorExists(book.author, bookYear);
+  
+  return book;
+}
+
+// Enriquecer libros nuevos en segundo plano
+async function enrichNewBooksInBackground(books) {
+  console.log(`[ENRICH] 🚀 Iniciando enriquecimiento de ${books.length} libros...`);
+  
+  for (const book of books) {
+    try {
+      const bookIndex = bookMetadata.findIndex(b => b.id === book.id);
+      if (bookIndex === -1) continue;
+      
+      const enrichedBook = await enrichBook(bookMetadata[bookIndex]);
+      bookMetadata[bookIndex] = enrichedBook;
+      
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+    } catch (error) {
+      console.error(`[ENRICH] ❌ Error enriqueciendo "${book.title}":`, error.message);
+    }
+  }
+  
+  try {
+    fs.writeFileSync(BOOKS_FILE, JSON.stringify(bookMetadata, null, 2));
+    console.log(`[ENRICH] ✅ Enriquecimiento completado y guardado`);
+  } catch (err) {
+    console.error(`[ENRICH] ❌ Error guardando:`, err.message);
+  }
+}
+
+// ========== FIN AUTO-ENRIQUECIMIENTO ==========
+
 // Contadores simples de descargas y uploads (memoria)
 let downloadCount = 0;
 let uploadCount = 0;
@@ -1760,15 +2081,18 @@ function reloadBooksMetadata() {
   }
 }
 
-function actualizarBooksJSON(newFiles) {
+async function actualizarBooksJSON(newFiles) {
   let updated = false;
-  newFiles.forEach(f => {
+  const newBooks = [];
+  
+  for (const f of newFiles) {
     const exists = bookMetadata.some(b => b.id === f.id);
     if (!exists) {
       const base = f.name.replace(/\.[^/.]+$/, "");
       const parts = base.split(' - ');
       const title = parts[0]?.trim() || f.name;
       const author = parts[1]?.trim() || 'Desconocido';
+      
       let saga = null;
       if (parts[2]) {
         const sagaMatch = parts[2].match(/^(.*?)(?:\s*#(\d+))?$/);
@@ -1777,16 +2101,32 @@ function actualizarBooksJSON(newFiles) {
           if (sagaMatch[2]) saga.number = parseInt(sagaMatch[2], 10);
         }
       }
-      bookMetadata.push({ id: f.id, title, author, saga });
+      
+      const newBook = { 
+        id: f.id, 
+        title, 
+        author, 
+        saga,
+        createdTime: f.createdTime || new Date().toISOString()
+      };
+      
+      newBooks.push(newBook);
+      bookMetadata.push(newBook);
       updated = true;
+      
+      console.log(`[SYNC] 📖 Nuevo libro: "${title}" de ${author}`);
     }
-  });
+  }
+  
   if (updated) {
     bookMetadata = uniqueBooks(bookMetadata);
     fs.writeFileSync(BOOKS_FILE, JSON.stringify(bookMetadata, null, 2));
+    console.log(`[SYNC] 💾 books.json actualizado con ${newBooks.length} libros nuevos`);
+    
+    // Enriquecer en background (no bloquea)
+    enrichNewBooksInBackground(newBooks);
   }
 }
-
 function getCoverForBook(bookId) {
   if (coverImages.length === 0) return null;
   const index = bookId.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0) % coverImages.length;
