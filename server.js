@@ -223,7 +223,7 @@ app.post('/lumos-chat', async (req, res) => {
 CONTEXTO: ${bookMetadata.length} libros, ${[...new Set(bookMetadata.map(b => b.author))].length} autores, ${[...new Set(bookMetadata.filter(b => b.saga?.name).map(b => b.saga.name))].length} sagas.`;
 
     const response = await axios.post(GROQ_API_URL, {
-      model: 'mixtral-8x7b-32768',
+      model: 'llama-3.1-8b-instant',
       messages: [
         { role: 'system', content: LUMOS_SYSTEM_PROMPT + libraryContext },
         { role: 'user', content: message }
