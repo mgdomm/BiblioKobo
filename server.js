@@ -214,6 +214,137 @@ function searchBookInLibrary(query) {
   );
 }
 
+// ================== LUMOS KNOWLEDGE LEVEL ==================
+
+const MODEL_CUTOFF_YEAR = 2024;
+
+/**
+ * Determina el nivel de conocimiento que puede usar LUMOS
+ * @param {Object} params
+ * @param {boolean} params.hasEpub - si el libro existe como EPUB en la biblioteca
+ * @param {number|null} params.publicationYear - año de publicación
+ */
+function determineKnowledgeLevel({ hasEpub, publicationYear }) {
+  if (hasEpub) {
+    return 'LEVEL_1_EPUB'; // leído directamente
+  }
+
+  if (publicationYear && publicationYear <= MODEL_CUTOFF_YEAR) {
+    return 'LEVEL_2A_GROQ'; // conocimiento previo al cutoff
+  }
+
+  if (publicationYear && publicationYear > MODEL_CUTOFF_YEAR) {
+    return 'LEVEL_2B_EXTERNAL'; // Google / Open Library
+  }
+
+  return 'LEVEL_3_UNKNOWN';
+}
+
+// ================== LUMOS GROQ ANALYSIS (LEVEL 2A) ==================
+
+async function analyzeBookWithGroq(book) {
+  const prompt = `
+Analiza el libro "${book.title}" de ${book.author}.
+Publicado en ${book.publishedDate || 'año desconocido'}.
+
+NO escribas una sinopsis editorial.
+NO describas escenas concretas.
+NO menciones spoilers.
+NO inventes eventos específicos.
+
+Extrae:
+- un resumen interpretativo (no narrativo)
+- temas principales
+- tono general
+- opinión crítica (fortalezas y debilidades)
+- tipo de lector recomendado
+
+Responde SOLO en JSON con esta estructura:
+
+{
+  "summary": "...",
+  "themes": [],
+  "tone": "...",
+  "opinion": {
+    "strengths": [],
+    "weaknesses": []
+  },
+  "recommendedFor": "..."
+}
+`;
+
+  const response = await axios.post(
+    GROQ_API_URL,
+    {
+      model: 'llama-3.1-8b-instant',
+      messages: [
+        { role: 'system', content: 'Eres un analista literario. Responde solo con JSON válido.' },
+        { role: 'user', content: prompt }
+      ],
+      temperature: 0.3,
+      max_tokens: 800
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${GROQ_API_KEY}`,
+        'Content-Type': 'application/json'
+      }
+    }
+  );
+
+  const raw = response.data.choices?.[0]?.message?.content || '{}';
+
+  // Extraer JSON seguro
+  const match = raw.match(/\{[\s\S]*\}/);
+  if (!match) throw new Error('Groq no devolvió JSON válido');
+
+  return JSON.parse(match[0]);
+}
+
+async function ensureBookKnowledge(book) {
+  // Si ya tiene conocimiento, no hacer nada
+  if (book.knowledge && book.knowledge.level) {
+    return book;
+  }
+
+  const publicationYear = book.publishedDate
+    ? parseInt(book.publishedDate.substring(0, 4))
+    : null;
+
+  const level = determineKnowledgeLevel({
+    hasEpub: false,
+    publicationYear
+  });
+
+  // Solo analizamos automáticamente en LEVEL_2A
+  if (level !== 'LEVEL_2A_GROQ') {
+    return book;
+  }
+
+  console.log(`[LUMOS] 🧠 Analizando "${book.title}" con Groq (pre-cutoff)`);
+
+  try {
+    const analysis = await analyzeBookWithGroq(book);
+
+    book.knowledge = {
+      level: 'LEVEL_2A_GROQ',
+      source: 'groq-precutoff',
+      confidence: 0.75,
+      analyzedAt: new Date().toISOString(),
+      ...analysis
+    };
+
+    // Guardar en books.json
+    fs.writeFileSync(BOOKS_FILE, JSON.stringify(bookMetadata, null, 2));
+
+    console.log(`[LUMOS] ✅ Conocimiento guardado para "${book.title}"`);
+  } catch (err) {
+    console.error(`[LUMOS] ❌ Error analizando "${book.title}":`, err.message);
+  }
+
+  return book;
+}
+
 function extractBookQuery(message) {
   const lowerMsg = message.toLowerCase();
   for (const book of bookMetadata) {
@@ -235,80 +366,143 @@ function extractBookQuery(message) {
 app.post('/lumos-chat', async (req, res) => {
   try {
     const { message } = req.body;
-    
-    if (!message?.trim()) {
-      return res.status(400).json({ reply: 'Las sombras no interpretan el silencio... Escribe algo, mortal.' });
+
+    // ---------------- VALIDACIONES BÁSICAS ----------------
+    if (!message || !message.trim()) {
+      return res.status(400).json({
+        reply: 'Las sombras no interpretan el silencio... Escribe algo, mortal.'
+      });
     }
 
     if (!GROQ_API_KEY) {
       console.warn('[LUMOS] ⚠️ GROQ_API_KEY no configurada');
-      return res.json({ reply: 'Los encantamientos están sellados. El guardián descansa...' });
+      return res.json({
+        reply: 'Los encantamientos están sellados. El guardián descansa...'
+      });
     }
 
-    console.log(`[LUMOS] 💬 Pregunta: "${message.substring(0, 60)}..."`);
+    console.log(`[LUMOS] 💬 Pregunta: "${message.substring(0, 80)}"`);
 
-    // 1. Intentar encontrar Entidad (Saga/Autor/Libro)
+    // ---------------- DETECCIÓN DE ENTIDAD ----------------
     const entity = extractEntity(message);
     let context = '';
-    let foundEntityData = null;
+    let entityFound = null;
 
-    if (entity?.data) {
-      foundEntityData = entity;
-      if (entity.type === 'saga') context = buildSagaContext(entity.data);
-      else if (entity.type === 'author') context = buildAuthorContext(entity.data);
-      else if (entity.type === 'book') context = buildBookContext(entity.data);
-    } else {
-      // 2. Si no encontró entidad, intentar búsqueda específica de libro
-      const bookQuery = extractBookQuery(message);
-      if (bookQuery) {
-        const bookFound = searchBookInLibrary(bookQuery);
-        if (bookFound) {
-          context = buildBookContext(bookFound);
-          foundEntityData = { type: 'book', name: bookFound.title };
-        }
-      }
+    // ---------------- CASO: LIBRO ----------------
+    if (entity?.type === 'book' && entity.data) {
+      const book = entity.data;
+
+      // 🔥 PASO CLAVE: asegurar conocimiento (LEVEL 2A si aplica)
+      await ensureBookKnowledge(book);
+
+      // Construir contexto SOLO desde JSON
+      context = buildBookContext(book);
+
+      entityFound = {
+        type: 'book',
+        name: book.title
+      };
     }
 
-    // Si se extrajo un nombre pero no se encontró en la base de datos
-    if (!foundEntityData && entity?.name) {
-      context = `\n⚠️ IMPORTANTE: El usuario pregunta sobre "${entity.name}" pero NO ESTÁ en la biblioteca. Di que no lo conoces.`;
+    // ---------------- CASO: AUTOR ----------------
+    else if (entity?.type === 'author' && entity.data) {
+      context = buildAuthorContext(entity.data);
+
+      entityFound = {
+        type: 'author',
+        name: entity.data.name
+      };
     }
 
-    const stats = `\n📊 BIBLIOTECA: ${bookMetadata.length} libros, ${sagaMetadata.length} sagas, ${authorMetadata.length} autores.`;
+    // ---------------- CASO: SAGA ----------------
+    else if (entity?.type === 'saga' && entity.data) {
+      context = buildSagaContext(entity.data);
 
-    // 3. Llamada única a Groq
-    const response = await axios.post(GROQ_API_URL, {
-      model: 'llama-3.1-8b-instant',
-      messages: [
-        { role: 'system', content: LUMOS_SYSTEM_PROMPT + stats },
-        { role: 'user', content: context ? `${context}\n\nPREGUNTA: ${message}` : message }
-      ],
-      temperature: 0.7,
-      max_tokens: 800
-    }, {
-      headers: {
-        'Authorization': `Bearer ${GROQ_API_KEY}`,
-        'Content-Type': 'application/json'
+      entityFound = {
+        type: 'saga',
+        name: entity.data.name
+      };
+    }
+
+    // ---------------- CASO: ENTIDAD NO ENCONTRADA ----------------
+    else if (entity?.name) {
+      context = `
+⚠️ IMPORTANTE:
+El usuario pregunta sobre "${entity.name}", pero este tomo, autor o saga
+NO reposa aún en las celdas de Azkaban.
+
+Si existe conocimiento parcial o externo, indícalo con cautela.
+Si no, admite desconocimiento.
+NO INVENTES.
+`;
+    }
+
+    // ---------------- CONTEXTO GLOBAL ----------------
+    const stats = `
+📊 AZKABAN READS:
+- Libros: ${bookMetadata.length}
+- Autores: ${authorMetadata.length}
+- Sagas: ${sagaMetadata.length}
+`;
+
+    // ---------------- LLAMADA A GROQ ----------------
+    const response = await axios.post(
+      GROQ_API_URL,
+      {
+        model: 'llama-3.1-8b-instant',
+        messages: [
+          {
+            role: 'system',
+            content: LUMOS_SYSTEM_PROMPT + stats
+          },
+          {
+            role: 'user',
+            content: context
+              ? `${context}\n\nPREGUNTA: ${message}`
+              : message
+          }
+        ],
+        temperature: 0.7,
+        max_tokens: 700
       },
-      timeout: 30000
-    });
+      {
+        headers: {
+          Authorization: `Bearer ${GROQ_API_KEY}`,
+          'Content-Type': 'application/json'
+        },
+        timeout: 30000
+      }
+    );
 
-    const reply = response.data.choices?.[0]?.message?.content || 'Las sombras guardan silencio...';
-    
-    res.json({ 
+    const reply =
+      response.data?.choices?.[0]?.message?.content ||
+      'Las sombras guardan silencio...';
+
+    console.log(
+      `[LUMOS] ✅ Respuesta generada (${reply.length} chars)` +
+        (entityFound ? ` | entidad: ${entityFound.type}` : '')
+    );
+
+    // ---------------- RESPUESTA FINAL ----------------
+    res.json({
       reply,
-      entityFound: foundEntityData ? { type: foundEntityData.type, name: foundEntityData.name } : null
+      entityFound
     });
 
   } catch (error) {
-    console.error('[LUMOS] ❌ Error:', error.response?.data || error.message);
-    const fallback = error.response?.status === 429 
-      ? 'Demasiadas almas buscan respuestas... Aguarda un momento.'
-      : 'Un velo oscuro cubre mi visión... Intenta de nuevo.';
+    console.error(
+      '[LUMOS] ❌ Error:',
+      error.response?.data || error.message
+    );
+
+    const fallback =
+      error.response?.status === 429
+        ? 'Demasiadas almas buscan respuestas... Aguarda un momento.'
+        : 'Un velo oscuro cubre mi visión... Intenta de nuevo.';
+
     res.json({ reply: fallback });
   }
 });
-
 // ========== FIN LUMOS AI ==========
 
 // Middleware para archivos multipart
