@@ -1,5 +1,21 @@
 require('dotenv').config();
 
+function normalize(text) {
+  return text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim();
+}
+
+function detectBookFromMessage(message, books) {
+  const msg = normalize(message);
+
+  return books.find(book =>
+    msg.includes(normalize(book.title))
+  );
+}
+
 const express = require('express');
 const { google } = require('googleapis');
 const path = require('path');
