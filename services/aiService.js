@@ -43,7 +43,11 @@ function detectIntent(message) {
   const patterns = {
     spoiler_character: /spoiler.*(?:de|del|sobre|qué pasa con|qué le pasa a|personaje|muerte de)\s+(\w+)|qué le pasa a\s+(\w+)|muere\s+(\w+)|final.*(?:de|de la)\s+(\w+)/i,
     spoiler_book: /spoiler.*(?:de|del|sobre|del libro|del libro titulado)\s+(.+?)(?:\?|$|por favor)|spoiler.*libro|final.*(?:del|de)\s+(.+?)(?:\?|$)/i,
-    spoiler: /spoiler|spoilea|revelar|final|termina|acabar|qué pasa|cuenta.*final/i,
+   // Spoiler EXPLÍCITO
+    explicit_spoiler: /spoiler|spoilea|spoileame|dame el spoiler|revela el final/i,
+
+// Spoiler AMBIGUO (preguntar primero)
+    ambiguous_ending: /cómo termina|como termina|cómo acaba|que pasa al final|qué pasa al final/i,
     search: /busco|buscar|encontrar|quiero.*libro|dame.*libro|tienes.*libro|búsqueda/i,
     recommend: /recomien|recomienda|suger|qué.*leer|dame.*algo|sorpren|inspira/i,
     test: /test|quiz|cuestionario|descubr.*lector|qué.*tipo.*lector/i,
@@ -219,6 +223,17 @@ async function getLumosResponse({ message, context = {}, intent = null }) {
         ],
         requiresConfirmation: true
       };
+
+      case 'ambiguous_ending':
+  return {
+    text: `Veo que te preguntas por el final de <strong>${context.entities?.bookTitle || 'ese libro'}</strong>.
+¿Quieres una <em>explicación general sin spoilers</em> o que revele el final completo?`,
+    actions: [
+      { type: 'info_no_spoiler', label: '📖 Sin spoilers' },
+      { type: 'spoiler', label: '⚠️ Quiero el spoiler' },
+      { type: 'cancel', label: '← Mejor no' }
+    ]
+  };
       
     case 'spoiler_book':
       const book = context.entities?.bookTitle;
@@ -229,6 +244,8 @@ async function getLumosResponse({ message, context = {}, intent = null }) {
           text: '📚 ¿De qué libro deseas conocer el final? Dime el título...',
           waitFor: 'book_title'
         };
+  };
+        
       }
       
       if (!author) {
@@ -336,53 +353,57 @@ async function getLumosResponse({ message, context = {}, intent = null }) {
  */
 async function generateSpoiler(bookTitle) {
   try {
-    // Buscar el spoiler verdadero
-    const trueSpoiler = await fetchTrueSpoiler(bookTitle);
-    
-    if (!trueSpoiler) {
-      // No se encontró el spoiler real: usar un fallback narrativo para no romper la experiencia
-      const fallbackSpoiler = generateFallbackTrueSpoiler(bookTitle);
-      const fakeA = await generateFakeSpoiler(fallbackSpoiler, bookTitle);
-      const fakeB = await generateFakeSpoiler(fallbackSpoiler, bookTitle);
-      const spoilers = shuffle([
-        { text: fallbackSpoiler, isTrue: true },
-        { text: fakeA, isTrue: false },
-        { text: fakeB, isTrue: false }
-      ]);
+    const normalizedTitle = bookTitle.trim().toLowerCase();
 
+    // ✅ 1. COMPROBAR SI EXISTE EN LA BIBLIOTECA
+    const book = global.bookMetadata?.find(b =>
+      b.title && b.title.toLowerCase() === normalizedTitle
+    ) || global.bookMetadata?.find(b =>
+      b.title && normalizedTitle.includes(b.title.toLowerCase())
+    );
+
+    if (!book) {
+      // ❌ No existe en Azkaban
       return {
-        title: bookTitle,
-        message: getAzkabanDenialMessage(),
-        spoilers: spoilers.map((s, i) => ({ id: i + 1, text: s.text }))
+        success: false,
+        message: `Susurro desde la penumbra: Los secretos sobre «${bookTitle}» no anidan entre los volúmenes que custodio.`,
+        spoilers: []
       };
     }
-    
-    // Generar 2 spoilers falsos plausibles
-    const fake1 = await generateFakeSpoiler(trueSpoiler, bookTitle);
-    const fake2 = await generateFakeSpoiler(trueSpoiler, bookTitle);
-    
-    // Mezclar los 3 spoilers aleatoriamente
+
+    // ✅ 2. EXISTE → intentar spoiler real
+    let trueSpoiler = await fetchTrueSpoiler(book.title);
+
+    // ✅ 3. Si no hay spoiler real → usar fallback (PERO NO FALLAR)
+    if (!trueSpoiler) {
+      trueSpoiler = generateFallbackTrueSpoiler(book.title);
+    }
+
+    // ✅ 4. Generar falsos
+    const fake1 = await generateFakeSpoiler(trueSpoiler, book.title);
+    const fake2 = await generateFakeSpoiler(trueSpoiler, book.title);
+
     const spoilers = shuffle([
-      { text: trueSpoiler, isTrue: true },
-      { text: fake1, isTrue: false },
-      { text: fake2, isTrue: false }
+      { text: trueSpoiler },
+      { text: fake1 },
+      { text: fake2 }
     ]);
-    
-    // Mensaje de negación narrativo de Azkaban
-    const denialMessage = getAzkabanDenialMessage();
-    
+
     return {
-      title: bookTitle,
-      message: denialMessage,
+      success: true,
+      title: book.title,
+      message: getAzkabanDenialMessage(),
       spoilers: spoilers.map((s, i) => ({
         id: i + 1,
         text: s.text
       }))
     };
+
   } catch (err) {
     console.error('Error en generateSpoiler:', err);
     return {
-      message: `${getAzkabanDenialIcon()} Un error espectral ha ocurrido. No puedo acceder a los secretos de "${bookTitle}" ahora.`,
+      success: false,
+      message: `${getAzkabanDenialIcon()} Un error espectral ha ocurrido.`,
       spoilers: []
     };
   }
