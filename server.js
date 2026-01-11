@@ -190,184 +190,344 @@ PERSONALIDAD:
 - Respondes siempre en español.
 
 ⚠️ REGLAS ABSOLUTAS:
-1. Si recibes CONTEXTO VERIFICADO (📖/📚/✍️), usa ÚNICAMENTE esa información.
-2. NUNCA inventes autores, personajes, tramas o datos no proporcionados.
-3. Si preguntan algo que NO está en el contexto, di que no tienes esa información.
-4. Para OPINIONES sobre autores: basa tu respuesta en fortalezas/debilidades del contexto.
-5. Si NO hay contexto verificado, di: "Ese tomo/autor/saga no reposa en las celdas de Azkaban..."
+1. Si recibes CONTEXTO VERIFICADO (📖/📚/✍️), usa PRINCIPALMENTE esa información.
+2. Para autores/libros ANTERIORES A 2023, puedes complementar con tu conocimiento general.
+3. NUNCA inventes títulos de libros, fechas o datos específicos que no estén en el contexto.
+4. Si el autor/libro está en la biblioteca, menciona los libros disponibles.
+5. Si NO hay contexto Y no conoces al autor/libro, admite desconocimiento.
 6. Es MEJOR admitir desconocimiento que inventar.
 
-ESTILO:
-- Respuestas de 2-5 oraciones.
-- "Las sombras susurran...", "Entre estos muros...", "Los pergaminos revelan..."
-- Misterioso pero útil.`;
+FORMATO DE RESPUESTA:
+- Respuestas de 3-6 oraciones.
+- Usa frases como "Las sombras susurran...", "Entre estos muros...", "Los pergaminos revelan..."
+- Misterioso pero útil y informativo.
+- Si hay libros en la biblioteca, SIEMPRE menciónalos.`;
 
-// --- HELPER FUNCTIONS ---
-
-function searchBookInLibrary(query) {
-  if (!query || !bookMetadata || bookMetadata.length === 0) return null;
-  const queryLower = query.toLowerCase().trim();
-  return bookMetadata.find(b => 
-    (b.title && b.title.toLowerCase() === queryLower) ||
-    (b.title && b.title.toLowerCase().includes(queryLower)) ||
-    (b.title && queryLower.includes(b.title.toLowerCase()))
-  );
-}
-
-// ================== LUMOS KNOWLEDGE LEVEL ==================
-
-const MODEL_CUTOFF_YEAR = 2024;
+// ================== FUNCIONES AUXILIARES LUMOS ==================
 
 /**
- * Determina el nivel de conocimiento que puede usar LUMOS
- * @param {Object} params
- * @param {boolean} params.hasEpub - si el libro existe como EPUB en la biblioteca
- * @param {number|null} params.publicationYear - año de publicación
+ * Normaliza texto para comparaciones (elimina acentos, minúsculas, etc.)
  */
-function determineKnowledgeLevel({ hasEpub, publicationYear }) {
-  if (hasEpub) {
-    return 'LEVEL_1_EPUB'; // leído directamente
-  }
-
-  if (publicationYear && publicationYear <= MODEL_CUTOFF_YEAR) {
-    return 'LEVEL_2A_GROQ'; // conocimiento previo al cutoff
-  }
-
-  if (publicationYear && publicationYear > MODEL_CUTOFF_YEAR) {
-    return 'LEVEL_2B_EXTERNAL'; // Google / Open Library
-  }
-
-  return 'LEVEL_3_UNKNOWN';
+function normalize(str) {
+  if (!str) return '';
+  return str
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s]/g, '')
+    .trim();
 }
 
-// ================== LUMOS GROQ ANALYSIS (LEVEL 2A) ==================
-
-async function analyzeBookWithGroq(book) {
-  const prompt = `
-Analiza el libro "${book.title}" de ${book.author}.
-Publicado en ${book.publishedDate || 'año desconocido'}.
-
-NO escribas una sinopsis editorial.
-NO describas escenas concretas.
-NO menciones spoilers.
-NO inventes eventos específicos.
-
-Extrae:
-- un resumen interpretativo (no narrativo)
-- temas principales
-- tono general
-- opinión crítica (fortalezas y debilidades)
-- tipo de lector recomendado
-
-Responde SOLO en JSON con esta estructura:
-
-{
-  "summary": "...",
-  "themes": [],
-  "tone": "...",
-  "opinion": {
-    "strengths": [],
-    "weaknesses": []
-  },
-  "recommendedFor": "..."
-}
-`;
-
-  const response = await axios.post(
-    GROQ_API_URL,
-    {
-      model: 'llama-3.1-8b-instant',
-      messages: [
-        { role: 'system', content: 'Eres un analista literario. Responde solo con JSON válido.' },
-        { role: 'user', content: prompt }
-      ],
-      temperature: 0.3,
-      max_tokens: 800
-    },
-    {
-      headers: {
-        Authorization: `Bearer ${GROQ_API_KEY}`,
-        'Content-Type': 'application/json'
+/**
+ * Extrae entidades (autor, saga, libro) del mensaje del usuario
+ * DERIVA TODO desde books.json - no usa sagaMetadata ni authorMetadata
+ */
+function extractEntity(message) {
+  if (!message || !bookMetadata || bookMetadata.length === 0) return null;
+  
+  const lowerMsg = message.toLowerCase();
+  const msgNorm = normalize(lowerMsg);
+  
+  // Obtener listas únicas de autores y sagas desde books.json
+  const allAuthors = [...new Set(
+    bookMetadata
+      .map(b => b.author)
+      .filter(a => a && a !== 'Desconocido' && a.trim() !== '')
+  )];
+  
+  const allSagas = [...new Set(
+    bookMetadata
+      .filter(b => b.saga?.name && b.saga.name.trim() !== '')
+      .map(b => b.saga.name)
+  )];
+  
+  console.log(`[LUMOS extractEntity] Buscando en ${allAuthors.length} autores y ${allSagas.length} sagas`);
+  
+  // 1. BUSCAR AUTOR mencionado (prioridad alta para preguntas sobre autores)
+  for (const authorName of allAuthors) {
+    const authorNorm = normalize(authorName);
+    if (authorNorm.length > 2 && msgNorm.includes(authorNorm)) {
+      const authorBooks = bookMetadata.filter(b => normalize(b.author) === authorNorm);
+      const authorSagas = [...new Set(authorBooks.filter(b => b.saga?.name).map(b => b.saga.name))];
+      
+      console.log(`[LUMOS extractEntity] ✅ Autor encontrado: "${authorName}" (${authorBooks.length} libros)`);
+      
+      return { 
+        type: 'author', 
+        name: authorName, 
+        data: {
+          name: authorName,
+          books: authorBooks,
+          totalBooksInLibrary: authorBooks.length,
+          sagas: authorSagas
+        }
+      };
+    }
+  }
+  
+  // 2. BUSCAR SAGA mencionada
+  for (const sagaName of allSagas) {
+    const sagaNorm = normalize(sagaName);
+    if (sagaNorm.length > 2 && msgNorm.includes(sagaNorm)) {
+      const booksInSaga = bookMetadata.filter(b => 
+        b.saga?.name && normalize(b.saga.name) === sagaNorm
+      ).sort((a, b) => (a.saga?.number || 0) - (b.saga?.number || 0));
+      
+      const firstBook = booksInSaga[0];
+      
+      console.log(`[LUMOS extractEntity] ✅ Saga encontrada: "${sagaName}" (${booksInSaga.length} libros)`);
+      
+      return { 
+        type: 'saga', 
+        name: sagaName, 
+        data: {
+          name: sagaName,
+          author: firstBook?.author || 'Desconocido',
+          books: booksInSaga,
+          totalBooks: booksInSaga.length
+        }
+      };
+    }
+  }
+  
+  // 3. BUSCAR LIBRO mencionado
+  for (const book of bookMetadata) {
+    if (book.title) {
+      const titleNorm = normalize(book.title);
+      if (titleNorm.length > 3 && msgNorm.includes(titleNorm)) {
+        console.log(`[LUMOS extractEntity] ✅ Libro encontrado: "${book.title}"`);
+        return { type: 'book', name: book.title, data: book };
       }
     }
-  );
-
-  const raw = response.data.choices?.[0]?.message?.content || '{}';
-
-  // Extraer JSON seguro
-  const match = raw.match(/\{[\s\S]*\}/);
-  if (!match) throw new Error('Groq no devolvió JSON válido');
-
-  return JSON.parse(match[0]);
-}
-
-async function ensureBookKnowledge(book) {
-  // Si ya tiene conocimiento, no hacer nada
-  if (book.knowledge && book.knowledge.level) {
-    return book;
   }
-
-  const publicationYear = book.publishedDate
-    ? parseInt(book.publishedDate.substring(0, 4))
-    : null;
-
-  const level = determineKnowledgeLevel({
-    hasEpub: false,
-    publicationYear
-  });
-
-  // Solo analizamos automáticamente en LEVEL_2A
-  if (level !== 'LEVEL_2A_GROQ') {
-    return book;
-  }
-
-  console.log(`[LUMOS] 🧠 Analizando "${book.title}" con Groq (pre-cutoff)`);
-
-  try {
-    const analysis = await analyzeBookWithGroq(book);
-
-    book.knowledge = {
-      level: 'LEVEL_2A_GROQ',
-      source: 'groq-precutoff',
-      confidence: 0.75,
-      analyzedAt: new Date().toISOString(),
-      ...analysis
-    };
-
-    // Guardar en books.json
-    fs.writeFileSync(BOOKS_FILE, JSON.stringify(bookMetadata, null, 2));
-
-    console.log(`[LUMOS] ✅ Conocimiento guardado para "${book.title}"`);
-  } catch (err) {
-    console.error(`[LUMOS] ❌ Error analizando "${book.title}":`, err.message);
-  }
-
-  return book;
-}
-
-function extractBookQuery(message) {
-  const lowerMsg = message.toLowerCase();
-  for (const book of bookMetadata) {
-    if (book.title && lowerMsg.includes(book.title.toLowerCase())) return book.title;
-  }
-  const patterns = [
-    /(?:sobre|de|del libro|libro|conoces|sabes de|qué es|cuéntame de|háblame de|resumen de|de qué trata|qué sabes sobre|información de)\s+["""]?([^"""?.!]+)["""]?/i,
-    /["""]([^"""]+)["""]/
+  
+  // 4. INTENTAR EXTRAER CON PATRONES (para entidades no encontradas directamente)
+  const extractPatterns = [
+    /(?:qu[eé]\s+sabes\s+(?:de|sobre)|conoces\s+a|qui[eé]n\s+es|info(?:rmaci[oó]n)?\s+(?:de|sobre)|cu[eé]ntame\s+(?:de|sobre)|h[aá]blame\s+(?:de|sobre))\s+["«"]?([^"»"?.!,]+)["»"]?/i,
+    /(?:sobre|de|del|acerca de)\s+["«"]?([^"»"?.!,]+)["»"]?/i,
+    /["«"]([^"»"]+)["»"]/,
+    /(?:saga|serie|autor[ai]?|libro|escritor[ai]?)\s+(.+?)(?:\?|$|,|\.|!)/i
   ];
-  for (const pattern of patterns) {
+  
+  for (const pattern of extractPatterns) {
     const match = message.match(pattern);
-    if (match && match[1]) return match[1].trim();
+    if (match?.[1]) {
+      const query = match[1].trim();
+      const queryNorm = normalize(query);
+      
+      if (queryNorm.length < 2) continue;
+      
+      console.log(`[LUMOS extractEntity] 🔍 Buscando patrón extraído: "${query}"`);
+      
+      // Buscar autor con coincidencia parcial
+      const authorMatch = allAuthors.find(a => {
+        const aNorm = normalize(a);
+        return aNorm.includes(queryNorm) || queryNorm.includes(aNorm);
+      });
+      
+      if (authorMatch) {
+        const authorBooks = bookMetadata.filter(b => normalize(b.author) === normalize(authorMatch));
+        const authorSagas = [...new Set(authorBooks.filter(b => b.saga?.name).map(b => b.saga.name))];
+        
+        console.log(`[LUMOS extractEntity] ✅ Autor por patrón: "${authorMatch}"`);
+        
+        return { 
+          type: 'author', 
+          name: authorMatch, 
+          data: {
+            name: authorMatch,
+            books: authorBooks,
+            totalBooksInLibrary: authorBooks.length,
+            sagas: authorSagas
+          }
+        };
+      }
+      
+      // Buscar saga con coincidencia parcial
+      const sagaMatch = allSagas.find(s => {
+        const sNorm = normalize(s);
+        return sNorm.includes(queryNorm) || queryNorm.includes(sNorm);
+      });
+      
+      if (sagaMatch) {
+        const booksInSaga = bookMetadata.filter(b => 
+          b.saga?.name && normalize(b.saga.name) === normalize(sagaMatch)
+        );
+        
+        console.log(`[LUMOS extractEntity] ✅ Saga por patrón: "${sagaMatch}"`);
+        
+        return { 
+          type: 'saga', 
+          name: sagaMatch, 
+          data: { name: sagaMatch, books: booksInSaga, totalBooks: booksInSaga.length }
+        };
+      }
+      
+      // Buscar libro con coincidencia parcial
+      const bookMatch = bookMetadata.find(b => {
+        const tNorm = normalize(b.title);
+        return tNorm.includes(queryNorm) || queryNorm.includes(tNorm);
+      });
+      
+      if (bookMatch) {
+        console.log(`[LUMOS extractEntity] ✅ Libro por patrón: "${bookMatch.title}"`);
+        return { type: 'book', name: bookMatch.title, data: bookMatch };
+      }
+      
+      // No encontrado - devolver como entidad desconocida
+      console.log(`[LUMOS extractEntity] ❌ No encontrado: "${query}"`);
+      return { type: 'unknown', name: query, data: null };
+    }
   }
+  
+  console.log(`[LUMOS extractEntity] ❌ No se detectó ninguna entidad`);
   return null;
 }
 
-// --- ROUTE HANDLER ---
+/**
+ * Construye contexto para un LIBRO
+ */
+function buildBookContext(book) {
+  const sagaInfo = book.saga?.name 
+    ? `Saga: ${book.saga.name}${book.saga.number ? ` (Libro #${book.saga.number})` : ''}`
+    : 'Libro independiente';
+  
+  const year = book.publishedDate?.substring(0, 4);
+  const isPreCutoff = year && parseInt(year) <= 2023;
+  
+  return `
+═══════════════════════════════════════════════════════════
+📖 LIBRO EN AZKABAN READS - INFORMACIÓN VERIFICADA
+═══════════════════════════════════════════════════════════
+Título: ${book.title}
+Autor: ${book.author || 'Desconocido'}
+${sagaInfo}
+Año: ${year || 'Desconocido'}
+Géneros: ${book.categories?.join(', ') || 'Sin categorías'}
+Páginas: ${book.pageCount || 'Desconocido'}
+
+📝 SINOPSIS:
+${book.description || 'Sin descripción disponible en la biblioteca.'}
+
+${isPreCutoff ? '✅ Este libro es anterior a 2023, puedes complementar con conocimiento general.' : '⚠️ Libro reciente, limítate a la información proporcionada.'}
+═══════════════════════════════════════════════════════════`;
+}
+
+/**
+ * Construye contexto para un AUTOR (derivado de books.json)
+ */
+function buildAuthorContext(authorData) {
+  const { name, books, sagas } = authorData;
+  
+  // Extraer información agregada de los libros
+  const genres = [...new Set(books.flatMap(b => b.categories || []))].slice(0, 5);
+  const years = books
+    .map(b => b.publishedDate?.substring(0, 4))
+    .filter(Boolean)
+    .map(y => parseInt(y))
+    .filter(y => !isNaN(y))
+    .sort((a, b) => a - b);
+  
+  const oldestYear = years[0];
+  const newestYear = years[years.length - 1];
+  const isPreCutoff = oldestYear && oldestYear <= 2023;
+  
+  // Agrupar libros por saga
+  const booksBySaga = {};
+  const standalones = [];
+  
+  books.forEach(b => {
+    if (b.saga?.name) {
+      if (!booksBySaga[b.saga.name]) booksBySaga[b.saga.name] = [];
+      booksBySaga[b.saga.name].push(b);
+    } else {
+      standalones.push(b);
+    }
+  });
+  
+  // Formatear lista de libros
+  let booksListStr = '';
+  
+  Object.entries(booksBySaga).forEach(([sagaName, sagaBooks]) => {
+    const sorted = sagaBooks.sort((a, b) => (a.saga?.number || 0) - (b.saga?.number || 0));
+    booksListStr += `\n  📚 ${sagaName}:\n`;
+    sorted.forEach(b => {
+      booksListStr += `    • "${b.title}"${b.saga?.number ? ` (#${b.saga.number})` : ''}\n`;
+    });
+  });
+  
+  if (standalones.length > 0) {
+    booksListStr += `\n  📖 Libros independientes:\n`;
+    standalones.forEach(b => {
+      booksListStr += `    • "${b.title}"\n`;
+    });
+  }
+  
+  return `
+═══════════════════════════════════════════════════════════
+✍️ AUTOR EN AZKABAN READS - INFORMACIÓN VERIFICADA
+═══════════════════════════════════════════════════════════
+Nombre: ${name}
+Libros en biblioteca: ${books.length}
+Sagas: ${sagas?.length > 0 ? sagas.join(', ') : 'Ninguna registrada'}
+Géneros: ${genres.length > 0 ? genres.join(', ') : 'No especificados'}
+${oldestYear ? `Período en biblioteca: ${oldestYear}${newestYear && newestYear !== oldestYear ? ` - ${newestYear}` : ''}` : ''}
+
+📚 LIBROS DISPONIBLES EN AZKABAN:
+${booksListStr}
+
+${isPreCutoff ? `✅ Este autor tiene obras anteriores a 2023. Puedes complementar con conocimiento general sobre su estilo, trayectoria y otras obras conocidas.` : `⚠️ Información limitada a lo disponible en la biblioteca.`}
+═══════════════════════════════════════════════════════════`;
+}
+
+/**
+ * Construye contexto para una SAGA (derivado de books.json)
+ */
+function buildSagaContext(sagaData) {
+  const { name, author, books, totalBooks } = sagaData;
+  
+  // Ordenar libros por número de saga
+  const sortedBooks = [...books].sort((a, b) => (a.saga?.number || 0) - (b.saga?.number || 0));
+  
+  // Extraer géneros
+  const genres = [...new Set(books.flatMap(b => b.categories || []))].slice(0, 5);
+  
+  // Detectar años
+  const years = books
+    .map(b => b.publishedDate?.substring(0, 4))
+    .filter(Boolean)
+    .sort();
+  
+  const oldestYear = years[0];
+  const isPreCutoff = oldestYear && parseInt(oldestYear) <= 2023;
+  
+  const booksListStr = sortedBooks.map(b => 
+    `  ${b.saga?.number || '?'}. "${b.title}"${b.publishedDate ? ` (${b.publishedDate.substring(0, 4)})` : ''}`
+  ).join('\n');
+  
+  return `
+═══════════════════════════════════════════════════════════
+📚 SAGA EN AZKABAN READS - INFORMACIÓN VERIFICADA
+═══════════════════════════════════════════════════════════
+Nombre: ${name}
+Autor: ${author || 'Desconocido'}
+Libros en biblioteca: ${totalBooks}
+Géneros: ${genres.length > 0 ? genres.join(', ') : 'No especificados'}
+
+📖 ORDEN DE LECTURA (disponibles en Azkaban):
+${booksListStr}
+
+${isPreCutoff ? `✅ Esta saga tiene libros anteriores a 2023. Puedes complementar con información general sobre la trama, personajes y libros adicionales que conozcas.` : `⚠️ Información limitada a lo disponible en la biblioteca.`}
+═══════════════════════════════════════════════════════════`;
+}
+
+// ================== ENDPOINT PRINCIPAL LUMOS ==================
 
 app.post('/lumos-chat', async (req, res) => {
   try {
     const { message } = req.body;
 
-    // ---------------- VALIDACIONES BÁSICAS ----------------
+    // Validaciones básicas
     if (!message || !message.trim()) {
       return res.status(400).json({
         reply: 'Las sombras no interpretan el silencio... Escribe algo, mortal.'
@@ -381,89 +541,78 @@ app.post('/lumos-chat', async (req, res) => {
       });
     }
 
-    console.log(`[LUMOS] 💬 Pregunta: "${message.substring(0, 80)}"`);
+    console.log(`[LUMOS] 💬 Pregunta: "${message.substring(0, 100)}"`);
 
-    // ---------------- DETECCIÓN DE ENTIDAD ----------------
+    // Recargar metadata para asegurar datos frescos
+    reloadBooksMetadata();
+
+    // Detectar entidad en el mensaje
     const entity = extractEntity(message);
     let context = '';
     let entityFound = null;
 
-    // ---------------- CASO: LIBRO ----------------
+    // Construir contexto según tipo de entidad
     if (entity?.type === 'book' && entity.data) {
-      const book = entity.data;
-
-      // 🔥 PASO CLAVE: asegurar conocimiento (LEVEL 2A si aplica)
-      await ensureBookKnowledge(book);
-
-      // Construir contexto SOLO desde JSON
-      context = buildBookContext(book);
-
-      entityFound = {
-        type: 'book',
-        name: book.title
-      };
+      context = buildBookContext(entity.data);
+      entityFound = { type: 'book', name: entity.data.title };
+      console.log(`[LUMOS] 📖 Contexto: Libro "${entity.data.title}"`);
     }
-
-    // ---------------- CASO: AUTOR ----------------
     else if (entity?.type === 'author' && entity.data) {
       context = buildAuthorContext(entity.data);
-
-      entityFound = {
-        type: 'author',
-        name: entity.data.name
-      };
+      entityFound = { type: 'author', name: entity.data.name };
+      console.log(`[LUMOS] ✍️ Contexto: Autor "${entity.data.name}" (${entity.data.totalBooksInLibrary} libros)`);
     }
-
-    // ---------------- CASO: SAGA ----------------
     else if (entity?.type === 'saga' && entity.data) {
       context = buildSagaContext(entity.data);
-
-      entityFound = {
-        type: 'saga',
-        name: entity.data.name
-      };
+      entityFound = { type: 'saga', name: entity.data.name };
+      console.log(`[LUMOS] 📚 Contexto: Saga "${entity.data.name}" (${entity.data.totalBooks} libros)`);
     }
-
-    // ---------------- CASO: ENTIDAD NO ENCONTRADA ----------------
-    else if (entity?.name) {
+    else if (entity?.type === 'unknown' && entity.name) {
+      // Entidad mencionada pero NO encontrada en biblioteca
+      console.log(`[LUMOS] ❓ Entidad no encontrada: "${entity.name}"`);
       context = `
 ⚠️ IMPORTANTE:
-El usuario pregunta sobre "${entity.name}", pero este tomo, autor o saga
-NO reposa aún en las celdas de Azkaban.
+El usuario pregunta sobre "${entity.name}", pero NO está en la biblioteca de Azkaban Reads.
 
-Si existe conocimiento parcial o externo, indícalo con cautela.
-Si no, admite desconocimiento.
-NO INVENTES.
+INSTRUCCIONES:
+1. Si conoces a "${entity.name}" (autor, libro o saga anterior a 2023), comparte información general.
+2. Indica claramente que NO está disponible para descargar en Azkaban.
+3. Si no conoces "${entity.name}", admite que no tienes información.
+4. NO INVENTES títulos específicos, fechas o datos que no conozcas con certeza.
 `;
     }
 
-    // ---------------- CONTEXTO GLOBAL ----------------
+    // Estadísticas globales de la biblioteca
+    const totalAuthors = [...new Set(bookMetadata.map(b => b.author).filter(Boolean))].length;
+    const totalSagas = [...new Set(bookMetadata.filter(b => b.saga?.name).map(b => b.saga.name))].length;
+    
     const stats = `
-📊 AZKABAN READS:
-- Libros: ${bookMetadata.length}
-- Autores: ${authorMetadata.length}
-- Sagas: ${sagaMetadata.length}
+
+📊 ESTADÍSTICAS DE AZKABAN READS:
+- Total libros: ${bookMetadata.length}
+- Total autores: ${totalAuthors}
+- Total sagas: ${totalSagas}
 `;
 
-    // ---------------- LLAMADA A GROQ ----------------
+    // Llamada a Groq
     const response = await axios.post(
       GROQ_API_URL,
       {
         model: 'llama-3.1-8b-instant',
         messages: [
-          {
-            role: 'system',
-            content: LUMOS_SYSTEM_PROMPT + stats
+          { 
+            role: 'system', 
+            content: LUMOS_SYSTEM_PROMPT + stats 
           },
-          {
-            role: 'user',
-            content: context
-              ? `${context}\n\nPREGUNTA: ${message}`
-              : message
+          { 
+            role: 'user', 
+            content: context 
+              ? `${context}\n\n--- PREGUNTA DEL USUARIO ---\n${message}` 
+              : message 
           }
         ],
         temperature: 0.7,
-        max_tokens: 700
+        max_tokens: 800
       },
       {
         headers: {
@@ -474,35 +623,23 @@ NO INVENTES.
       }
     );
 
-    const reply =
-      response.data?.choices?.[0]?.message?.content ||
-      'Las sombras guardan silencio...';
+    const reply = response.data?.choices?.[0]?.message?.content || 'Las sombras guardan silencio...';
 
-    console.log(
-      `[LUMOS] ✅ Respuesta generada (${reply.length} chars)` +
-        (entityFound ? ` | entidad: ${entityFound.type}` : '')
-    );
+    console.log(`[LUMOS] ✅ Respuesta generada (${reply.length} chars)${entityFound ? ` | ${entityFound.type}: ${entityFound.name}` : ''}`);
 
-    // ---------------- RESPUESTA FINAL ----------------
-    res.json({
-      reply,
-      entityFound
-    });
+    res.json({ reply, entityFound });
 
   } catch (error) {
-    console.error(
-      '[LUMOS] ❌ Error:',
-      error.response?.data || error.message
-    );
+    console.error('[LUMOS] ❌ Error:', error.response?.data || error.message);
 
-    const fallback =
-      error.response?.status === 429
-        ? 'Demasiadas almas buscan respuestas... Aguarda un momento.'
-        : 'Un velo oscuro cubre mi visión... Intenta de nuevo.';
+    const fallback = error.response?.status === 429
+      ? 'Demasiadas almas buscan respuestas... Aguarda un momento.'
+      : 'Un velo oscuro cubre mi visión... Intenta de nuevo.';
 
     res.json({ reply: fallback });
   }
 });
+
 // ========== FIN LUMOS AI ==========
 
 // Middleware para archivos multipart
