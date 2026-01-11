@@ -223,10 +223,22 @@ function normalize(str) {
  * DERIVA TODO desde books.json - no usa sagaMetadata ni authorMetadata
  */
 function extractEntity(message) {
-  if (!message || !bookMetadata || bookMetadata.length === 0) return null;
+  if (!message) {
+    console.log(`[extractEntity] ❌ Mensaje vacío`);
+    return null;
+  }
+  
+  if (!bookMetadata || bookMetadata.length === 0) {
+    console.log(`[extractEntity] ❌ bookMetadata vacío o no cargado`);
+    return null;
+  }
   
   const lowerMsg = message.toLowerCase();
   const msgNorm = normalize(lowerMsg);
+  
+  console.log(`[extractEntity] 🔍 Mensaje: "${message}"`);
+  console.log(`[extractEntity] 🔍 Normalizado: "${msgNorm}"`);
+  console.log(`[extractEntity] 📚 Total libros en memoria: ${bookMetadata.length}`);
   
   // Obtener listas únicas de autores y sagas desde books.json
   const allAuthors = [...new Set(
@@ -241,16 +253,27 @@ function extractEntity(message) {
       .map(b => b.saga.name)
   )];
   
-  console.log(`[LUMOS extractEntity] Buscando en ${allAuthors.length} autores y ${allSagas.length} sagas`);
+  console.log(`[extractEntity] 👥 Autores únicos: ${allAuthors.length}`);
+  console.log(`[extractEntity] 📖 Sagas únicas: ${allSagas.length}`);
   
-  // 1. BUSCAR AUTOR mencionado (prioridad alta para preguntas sobre autores)
+  // DEBUG: Buscar específicamente a Rebecca
+  const rebeccaCheck = allAuthors.filter(a => a.toLowerCase().includes('rebecca'));
+  console.log(`[extractEntity] 🔎 Autores con 'rebecca': ${JSON.stringify(rebeccaCheck)}`);
+  
+  // 1. BUSCAR AUTOR mencionado
   for (const authorName of allAuthors) {
     const authorNorm = normalize(authorName);
+    
+    // DEBUG para Rebecca
+    if (authorName.toLowerCase().includes('rebecca')) {
+      console.log(`[extractEntity] 🧪 Comparando: msgNorm="${msgNorm}" includes authorNorm="${authorNorm}"? ${msgNorm.includes(authorNorm)}`);
+    }
+    
     if (authorNorm.length > 2 && msgNorm.includes(authorNorm)) {
       const authorBooks = bookMetadata.filter(b => normalize(b.author) === authorNorm);
       const authorSagas = [...new Set(authorBooks.filter(b => b.saga?.name).map(b => b.saga.name))];
       
-      console.log(`[LUMOS extractEntity] ✅ Autor encontrado: "${authorName}" (${authorBooks.length} libros)`);
+      console.log(`[extractEntity] ✅ AUTOR ENCONTRADO: "${authorName}" (${authorBooks.length} libros)`);
       
       return { 
         type: 'author', 
@@ -275,7 +298,7 @@ function extractEntity(message) {
       
       const firstBook = booksInSaga[0];
       
-      console.log(`[LUMOS extractEntity] ✅ Saga encontrada: "${sagaName}" (${booksInSaga.length} libros)`);
+      console.log(`[extractEntity] ✅ SAGA ENCONTRADA: "${sagaName}" (${booksInSaga.length} libros)`);
       
       return { 
         type: 'saga', 
@@ -295,13 +318,13 @@ function extractEntity(message) {
     if (book.title) {
       const titleNorm = normalize(book.title);
       if (titleNorm.length > 3 && msgNorm.includes(titleNorm)) {
-        console.log(`[LUMOS extractEntity] ✅ Libro encontrado: "${book.title}"`);
+        console.log(`[extractEntity] ✅ LIBRO ENCONTRADO: "${book.title}"`);
         return { type: 'book', name: book.title, data: book };
       }
     }
   }
   
-  // 4. INTENTAR EXTRAER CON PATRONES (para entidades no encontradas directamente)
+  // 4. INTENTAR EXTRAER CON PATRONES
   const extractPatterns = [
     /(?:qu[eé]\s+sabes\s+(?:de|sobre)|conoces\s+a|qui[eé]n\s+es|info(?:rmaci[oó]n)?\s+(?:de|sobre)|cu[eé]ntame\s+(?:de|sobre)|h[aá]blame\s+(?:de|sobre))\s+["«"]?([^"»"?.!,]+)["»"]?/i,
     /(?:sobre|de|del|acerca de)\s+["«"]?([^"»"?.!,]+)["»"]?/i,
@@ -317,7 +340,7 @@ function extractEntity(message) {
       
       if (queryNorm.length < 2) continue;
       
-      console.log(`[LUMOS extractEntity] 🔍 Buscando patrón extraído: "${query}"`);
+      console.log(`[extractEntity] 🔍 Patrón extraído: "${query}" → "${queryNorm}"`);
       
       // Buscar autor con coincidencia parcial
       const authorMatch = allAuthors.find(a => {
@@ -329,7 +352,7 @@ function extractEntity(message) {
         const authorBooks = bookMetadata.filter(b => normalize(b.author) === normalize(authorMatch));
         const authorSagas = [...new Set(authorBooks.filter(b => b.saga?.name).map(b => b.saga.name))];
         
-        console.log(`[LUMOS extractEntity] ✅ Autor por patrón: "${authorMatch}"`);
+        console.log(`[extractEntity] ✅ AUTOR POR PATRÓN: "${authorMatch}"`);
         
         return { 
           type: 'author', 
@@ -354,7 +377,7 @@ function extractEntity(message) {
           b.saga?.name && normalize(b.saga.name) === normalize(sagaMatch)
         );
         
-        console.log(`[LUMOS extractEntity] ✅ Saga por patrón: "${sagaMatch}"`);
+        console.log(`[extractEntity] ✅ SAGA POR PATRÓN: "${sagaMatch}"`);
         
         return { 
           type: 'saga', 
@@ -370,17 +393,17 @@ function extractEntity(message) {
       });
       
       if (bookMatch) {
-        console.log(`[LUMOS extractEntity] ✅ Libro por patrón: "${bookMatch.title}"`);
+        console.log(`[extractEntity] ✅ LIBRO POR PATRÓN: "${bookMatch.title}"`);
         return { type: 'book', name: bookMatch.title, data: bookMatch };
       }
       
       // No encontrado - devolver como entidad desconocida
-      console.log(`[LUMOS extractEntity] ❌ No encontrado: "${query}"`);
+      console.log(`[extractEntity] ❌ No encontrado en biblioteca: "${query}"`);
       return { type: 'unknown', name: query, data: null };
     }
   }
   
-  console.log(`[LUMOS extractEntity] ❌ No se detectó ninguna entidad`);
+  console.log(`[extractEntity] ❌ No se detectó ninguna entidad en el mensaje`);
   return null;
 }
 
